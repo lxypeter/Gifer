@@ -12,11 +12,25 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
-
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        
+        self.window = UIWindow(frame: UIScreen.main.bounds)
+        let navigationController = UINavigationController(rootViewController: GalleryViewController())
+        self.window?.rootViewController = navigationController
+        self.window?.makeKeyAndVisible()
+        
+        self.configureAppreance()
+        
         return true
+    }
+    
+    func configureAppreance() {
+        self.window?.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        UINavigationBar.appearance().isTranslucent = false
+        UINavigationBar.appearance().barTintColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        let attributes = [NSForegroundColorAttributeName:#colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)];
+        UINavigationBar.appearance().titleTextAttributes = attributes;
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

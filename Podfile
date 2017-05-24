@@ -11,5 +11,4 @@ target 'Gifer' do
   pod 'SwiftyJSON'
   pod 'ObjectMapper'
   pod 'Kingfisher'
-  pod 'ReactiveCocoa', '~> 5.0.0'
 end
