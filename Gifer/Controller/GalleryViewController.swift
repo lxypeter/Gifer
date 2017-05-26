@@ -92,5 +92,14 @@ class GalleryViewController: UIViewController, UICollectionViewDataSource, UICol
         return cell
     }
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let photoController = PhotoViewController(gifArray: self.gifArray, currentIndex: indexPath.row)
+        self.navigationController?.pushViewController(photoController, animated: true)
+    }
     
+    override func didReceiveMemoryWarning() {
+        for photo in self.gifArray {
+            photo.fullImageData = nil
+        }
+    }
 }

@@ -12,7 +12,7 @@ import Photos
 class Photo: NSObject {
     var asset: PHAsset
     var thumbnail: UIImage?
-    var fullImage: UIImage?
+    var fullImageData: NSData?
     
     init(asset: PHAsset) {
         self.asset = asset
