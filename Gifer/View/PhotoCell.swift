@@ -12,15 +12,11 @@ import SnapKit
 class PhotoCell: UICollectionViewCell, UIScrollViewDelegate {
     var photo: Photo? {
         didSet{
-            let photoWidth = CGFloat(self.photo!.asset.pixelWidth) / UIScreen.main.scale
-            let photoHeight = CGFloat(self.photo!.asset.pixelHeight) / UIScreen.main.scale
-            
-            if photoWidth < self.imageView.frame.size.width && photoHeight < self.imageView.frame.size.height {
+            if self.photo != nil && self.photo!.photoWidth < self.imageView.frame.size.width && self.photo!.photoHeight < self.imageView.frame.size.height {
                 imageView.contentMode = .center
             } else {
                 imageView.contentMode = .scaleAspectFit
             }
-            
             self.imageView.gifData = self.photo?.fullImageData
         }
     }
@@ -29,7 +25,7 @@ class PhotoCell: UICollectionViewCell, UIScrollViewDelegate {
         let scrollView = UIScrollView(frame: CGRect.zero)
         scrollView.delegate = self
         scrollView.minimumZoomScale = 1.0
-        scrollView.maximumZoomScale = 3.0
+        scrollView.maximumZoomScale = 2.0
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         var screenSize = UIScreen.main.bounds.size
@@ -39,6 +35,8 @@ class PhotoCell: UICollectionViewCell, UIScrollViewDelegate {
     private lazy var imageView: GifImageView = {
         var imageView = GifImageView()
         imageView.contentMode = .scaleAspectFit
+        imageView.isUserInteractionEnabled = true
+        imageView.backgroundColor = UIColor.clear
         return imageView
     }()
     
@@ -50,14 +48,27 @@ class PhotoCell: UICollectionViewCell, UIScrollViewDelegate {
         }
         self.imageView.frame.size = frame.size
         self.scrollView.addSubview(self.imageView)
+        //gesture
+//        let doubleClickGes: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(doubleClickScrollView))
+//        doubleClickGes.numberOfTapsRequired = 2
+//        self.imageView.addGestureRecognizer(doubleClickGes)
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func doubleClickScrollView() {
+        self.scrollView.setZoomScale(1.0, animated: true)
+    }
+    
+    func resetZoomScale() {
+        self.scrollView.setZoomScale(1.0, animated: false)
+    }
+    
     //MARK: delegate method
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return self.imageView
     }
+
 }

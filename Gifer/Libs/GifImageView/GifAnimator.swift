@@ -109,16 +109,9 @@ class GifAnimator {
         }
         // 减掉 我们每帧间隔时间
         self.timeSinceLastFrameChange -= frameDuration
-//        let lastFrameIndex = self.currentFrameIndex
         currentFrameIndex += 1 // 一直累加
         // 这里取了余数
         currentFrameIndex = currentFrameIndex % animatedFrames.count
-        
-//        if self.animatedFrames.count < frameCount {
-//            animatedFrames[lastFrameIndex] = prepareFrame(index: currentPreloadIndex)
-//            currentPreloadIndex += 1
-//            currentPreloadIndex = currentPreloadIndex % frameCount
-//        }
         return true
     }
 

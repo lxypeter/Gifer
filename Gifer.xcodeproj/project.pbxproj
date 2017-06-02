@@ -18,6 +18,8 @@
 		E12826A71ED42B4600262F63 /* GalleryCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E12826A51ED42B4600262F63 /* GalleryCell.xib */; };
 		E12DFDC51ED6CBE5009608E8 /* PhotoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12DFDC41ED6CBE5009608E8 /* PhotoViewController.swift */; };
 		E12DFDCB1ED6D8F1009608E8 /* GifAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12DFDCA1ED6D8F1009608E8 /* GifAnimator.swift */; };
+		E1330BED1EE13A7C0053ABFD /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1330BEC1EE13A7C0053ABFD /* BaseViewController.swift */; };
+		E1330BEF1EE1488A0053ABFD /* PhotoViewBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1330BEE1EE1488A0053ABFD /* PhotoViewBottomBar.swift */; };
 		E1333D291ED564D60017C07B /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1333D281ED564D60017C07B /* Photo.swift */; };
 		E1B456621EE00D10009555A6 /* PhotoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B456611EE00D10009555A6 /* PhotoCell.swift */; };
 		E1E37F1D1ED80B67000B4B3F /* GifImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E37F1C1ED80B67000B4B3F /* GifImageView.swift */; };
@@ -40,6 +42,8 @@
 		E12826A51ED42B4600262F63 /* GalleryCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = GalleryCell.xib; sourceTree = "<group>"; };
 		E12DFDC41ED6CBE5009608E8 /* PhotoViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoViewController.swift; sourceTree = "<group>"; };
 		E12DFDCA1ED6D8F1009608E8 /* GifAnimator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifAnimator.swift; sourceTree = "<group>"; };
+		E1330BEC1EE13A7C0053ABFD /* BaseViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
+		E1330BEE1EE1488A0053ABFD /* PhotoViewBottomBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoViewBottomBar.swift; sourceTree = "<group>"; };
 		E1333D281ED564D60017C07B /* Photo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		E1B456611EE00D10009555A6 /* PhotoCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCell.swift; sourceTree = "<group>"; };
 		E1E37F1C1ED80B67000B4B3F /* GifImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifImageView.swift; sourceTree = "<group>"; };
@@ -125,6 +129,7 @@
 				E12826A41ED42B4600262F63 /* GalleryCell.swift */,
 				E12826A51ED42B4600262F63 /* GalleryCell.xib */,
 				E1B456611EE00D10009555A6 /* PhotoCell.swift */,
+				E1330BEE1EE1488A0053ABFD /* PhotoViewBottomBar.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -132,6 +137,7 @@
 		E12DFDC81ED6D860009608E8 /* Libs */ = {
 			isa = PBXGroup;
 			children = (
+				E1330BEB1EE13A7C0053ABFD /* BaseViewController */,
 				E12DFDC91ED6D87C009608E8 /* GifImageView */,
 			);
 			path = Libs;
@@ -145,6 +151,14 @@
 				E1E37F1E1ED8107E000B4B3F /* ImageType.swift */,
 			);
 			path = GifImageView;
+			sourceTree = "<group>";
+		};
+		E1330BEB1EE13A7C0053ABFD /* BaseViewController */ = {
+			isa = PBXGroup;
+			children = (
+				E1330BEC1EE13A7C0053ABFD /* BaseViewController.swift */,
+			);
+			path = BaseViewController;
 			sourceTree = "<group>";
 		};
 		E1333D271ED5649A0017C07B /* Model */ = {
@@ -282,6 +296,8 @@
 			files = (
 				E12826A61ED42B4600262F63 /* GalleryCell.swift in Sources */,
 				E1E37F1D1ED80B67000B4B3F /* GifImageView.swift in Sources */,
+				E1330BEF1EE1488A0053ABFD /* PhotoViewBottomBar.swift in Sources */,
+				E1330BED1EE13A7C0053ABFD /* BaseViewController.swift in Sources */,
 				E12DFDCB1ED6D8F1009608E8 /* GifAnimator.swift in Sources */,
 				E12826991ED3DD3200262F63 /* ViewController.swift in Sources */,
 				E12826A21ED4116700262F63 /* GalleryViewController.swift in Sources */,

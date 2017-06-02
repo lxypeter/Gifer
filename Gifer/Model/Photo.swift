@@ -10,11 +10,15 @@ import UIKit
 import Photos
 
 class Photo: NSObject {
-    var asset: PHAsset
+    let asset: PHAsset
+    let photoWidth: CGFloat
+    let photoHeight: CGFloat
     var thumbnail: UIImage?
     var fullImageData: NSData?
     
     init(asset: PHAsset) {
         self.asset = asset
+        self.photoWidth = CGFloat(asset.pixelWidth) / UIScreen.main.scale
+        self.photoHeight = CGFloat(asset.pixelHeight) / UIScreen.main.scale
     }
 }

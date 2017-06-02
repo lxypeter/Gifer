@@ -13,7 +13,7 @@ import MobileCoreServices
 
 let cellId = "GalleryCell"
 
-class GalleryViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+class GalleryViewController: BaseViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
     var gifArray: [Photo] = []
     lazy var collectionView: UICollectionView = {
