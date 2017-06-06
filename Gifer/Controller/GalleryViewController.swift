@@ -11,12 +11,11 @@ import Photos
 import SnapKit
 import MobileCoreServices
 
-let cellId = "GalleryCell"
-
-class GalleryViewController: BaseViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+class GalleryViewController: BaseViewController, UICollectionViewDataSource, UICollectionViewDelegate, CAAnimationDelegate {
     
-    var gifArray: [Photo] = []
-    lazy var collectionView: UICollectionView = {
+    private let cellId = "GalleryCell"
+    private var gifArray: [Photo] = []
+    private lazy var collectionView: UICollectionView = {
         let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         layout.minimumInteritemSpacing = 1
         layout.minimumLineSpacing = 1
@@ -27,9 +26,49 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
-        collectionView.register(UINib(nibName: "GalleryCell", bundle: nil), forCellWithReuseIdentifier: cellId)
+        collectionView.register(UINib(nibName: "GalleryCell", bundle: nil), forCellWithReuseIdentifier: self.cellId)
+        collectionView.allowsMultipleSelection = true
+        collectionView.allowsSelection = true
+        
         return collectionView
     }()
+    private lazy var bottomBar: GalleryViewBottomBar = {
+        let bottomBar = GalleryViewBottomBar()
+        
+        bottomBar.deleteButtonHandler = { [unowned self] in
+            guard let selectedIndexPaths = self.collectionView.indexPathsForSelectedItems, selectedIndexPaths.count > 0 else {
+                self.showNotice(message: "请至少选择一张照片")
+                return
+            }
+            
+            var preDeleteAsset: [PHAsset] = []
+            for indexPath in selectedIndexPaths {
+                let photo = self.gifArray[indexPath.row]
+                preDeleteAsset.append(photo.asset)
+            }
+            PHPhotoLibrary.shared().performChanges({
+                PHAssetChangeRequest.deleteAssets(NSArray(array: preDeleteAsset))
+            }, completionHandler: { [unowned self] (success, error) in
+                DispatchQueue.main.async {
+                    if !success {
+                        self.showNotice(message: "删除失败")
+                    } else {
+                        for indexPath in selectedIndexPaths {
+                            self.gifArray.remove(at: indexPath.row)
+                        }
+                        self.collectionView.reloadData()
+                        self.showNotice(message: "删除成功！")
+                    }
+                }
+            })
+        }
+        bottomBar.shareButtonHandler = {
+            printLog("click share")
+        }
+        return bottomBar;
+    }()
+    private let kBottomBarHeight = 44
+    private var isSelecting = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,9 +79,24 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     func configureSubviews() {
         self.title = "Gifer"
         
+        let selectItem: UIBarButtonItem = UIBarButtonItem(title: "选择", style: .plain, target: self, action: #selector(clickSelectButton))
+        selectItem.tintColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
+        self.navigationItem.rightBarButtonItem = selectItem;
+        
         self.view.addSubview(self.collectionView)
         self.collectionView.snp.makeConstraints { (make) in
-            make.edges.equalTo(self.view)
+            make.top.equalTo(0)
+            make.right.equalTo(0)
+            make.left.equalTo(0)
+            make.bottom.equalTo(0)
+        }
+        
+        self.view.addSubview(self.bottomBar)
+        self.bottomBar.snp.makeConstraints { (make) in
+            make.height.equalTo(kBottomBarHeight)
+            make.right.equalTo(0)
+            make.left.equalTo(0)
+            make.bottom.equalTo(kBottomBarHeight)
         }
     }
     
@@ -76,6 +130,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
                 photo.thumbnail = image
                 gifArray.append(photo)
             })
+            
         })
         self.gifArray = gifArray
     }
@@ -88,13 +143,56 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell: GalleryCell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! GalleryCell
         let photo = self.gifArray[indexPath.row]
+        cell.isEditing = self.isSelecting
         cell.photo = photo;
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        if self.isSelecting {
+            return
+        }
+        
         let photoController = PhotoViewController(gifArray: self.gifArray, currentIndex: indexPath.row)
         self.navigationController?.pushViewController(photoController, animated: true)
+    }
+    
+    func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
+        if self.isSelecting {
+            self.collectionView.snp.updateConstraints({ (make) in
+                make.bottom.equalTo(kBottomBarHeight)
+            })
+            self.bottomBar.snp.updateConstraints({ (make) in
+                make.bottom.equalTo(0)
+            })
+        } else {
+            self.collectionView.snp.updateConstraints({ (make) in
+                make.bottom.equalTo(0)
+            })
+            self.bottomBar.snp.updateConstraints({ (make) in
+                make.bottom.equalTo(kBottomBarHeight)
+            })
+        }
+        self.bottomBar.layer.removeAllAnimations()
+    }
+    
+    //MARK: events
+    func clickSelectButton() {
+        self.isSelecting = !self.isSelecting
+        
+        let animation: CABasicAnimation = CABasicAnimation(keyPath: "position")
+        animation.delegate = self
+        if self.isSelecting {
+            self.navigationItem.rightBarButtonItem?.title = "取消"
+            animation.byValue = CGPoint(x: 0, y: -kBottomBarHeight)
+        } else {
+            self.navigationItem.rightBarButtonItem?.title = "选择"
+            animation.byValue = CGPoint(x: 0, y: kBottomBarHeight)
+        }
+        animation.isRemovedOnCompletion = false
+        animation.fillMode = kCAFillModeForwards;
+        self.bottomBar.layer.add(animation, forKey: nil)
+        self.collectionView.reloadData()
     }
     
     override func didReceiveMemoryWarning() {

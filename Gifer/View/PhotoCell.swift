@@ -48,22 +48,18 @@ class PhotoCell: UICollectionViewCell, UIScrollViewDelegate {
         }
         self.imageView.frame.size = frame.size
         self.scrollView.addSubview(self.imageView)
-        //gesture
-//        let doubleClickGes: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(doubleClickScrollView))
-//        doubleClickGes.numberOfTapsRequired = 2
-//        self.imageView.addGestureRecognizer(doubleClickGes)
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func doubleClickScrollView() {
-        self.scrollView.setZoomScale(1.0, animated: true)
+    func setGifSpeedTimes(_ speedTimes: Double) {
+        self.imageView.speedTimes = speedTimes
     }
     
-    func resetZoomScale() {
-        self.scrollView.setZoomScale(1.0, animated: false)
+    func resetZoomScale(animated: Bool) {
+        self.scrollView.setZoomScale(1.0, animated: animated)
     }
     
     //MARK: delegate method

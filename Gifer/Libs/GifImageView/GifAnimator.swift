@@ -30,6 +30,15 @@ class GifAnimator {
     private var timeSinceLastFrameChange: TimeInterval = 0.0  // 距离上一帧改变的时间
     private var loopCount = 0 // 循环次数
     private let maxTimeStep: TimeInterval = 1.0 // 最大间隔
+    public var speedTimes: Double = 1 {
+        didSet {
+            if self.speedTimes > 3 {
+                self.speedTimes = 3
+            } else if self.speedTimes < 0.5 {
+                self.speedTimes = 0.5
+            }
+        }
+    }
     
     init(data: NSData) {
         self.createImageSource(data: data)
@@ -103,7 +112,7 @@ class GifAnimator {
     func updateCurrentFrame(duration: CFTimeInterval) -> Bool {
         // 计算距离上一帧 改变的时间 每次进来都累加 直到frameDuration  <= timeSinceLastFrameChange 时候才继续走下去
         self.timeSinceLastFrameChange += min(maxTimeStep, duration)
-        let frameDuration = animatedFrames[currentFrameIndex].duration
+        let frameDuration = animatedFrames[currentFrameIndex].duration / self.speedTimes
         if frameDuration > self.timeSinceLastFrameChange {
             return false
         }

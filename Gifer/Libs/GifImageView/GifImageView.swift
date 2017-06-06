@@ -27,6 +27,14 @@ class GifImageView: UIImageView {
         return displayLink
     }()
     
+    public var speedTimes: Double = 1 {
+        didSet {
+            if self.animator != nil {
+                self.animator?.speedTimes = self.speedTimes
+            }
+        }
+    }
+    
     public var runLoopMode: RunLoopMode = .commonModes {
         willSet {
             if runLoopMode == newValue {
@@ -45,7 +53,7 @@ class GifImageView: UIImageView {
             if let gifData = gifData {
                 animator = nil
                 animator = GifAnimator(data: gifData)
-                
+                animator?.speedTimes = self.speedTimes
                 didMove()
                 self.setNeedsDisplay()
                 self.layer.setNeedsDisplay()

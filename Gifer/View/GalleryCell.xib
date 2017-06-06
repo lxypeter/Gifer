@@ -22,7 +22,7 @@
                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="SFF-vN-tIx">
                         <rect key="frame" x="0.0" y="0.0" width="104" height="99"/>
                     </imageView>
-                    <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="select" translatesAutoresizingMaskIntoConstraints="NO" id="q28-im-IYQ">
+                    <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="unselcet" translatesAutoresizingMaskIntoConstraints="NO" id="q28-im-IYQ">
                         <rect key="frame" x="61.5" y="58" width="34.5" height="33"/>
                     </imageView>
                 </subviews>
@@ -46,6 +46,6 @@
         </collectionViewCell>
     </objects>
     <resources>
-        <image name="select" width="240" height="240"/>
+        <image name="unselcet" width="240" height="240"/>
     </resources>
 </document>

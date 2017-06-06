@@ -11,13 +11,15 @@ import Kingfisher
 import SnapKit
 import Photos
 
-let kPhotoCellId = "kPhotoCellId"
-
 class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     //MARK: property
+    let photoCellId = "kPhotoCellId"
+    let kBottomBarHeight = 54
+    
     var gifArray: [Photo] = []
     var currentIndex: Int = 0
+    private var speedTimes: Double = 1
     private lazy var collectionView: UICollectionView = {
         let layout:UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 0
@@ -32,11 +34,17 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
         collectionView.dataSource = self
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.showsVerticalScrollIndicator = false
+        collectionView.register(PhotoCell.self, forCellWithReuseIdentifier: self.photoCellId)
         
-        collectionView.register(PhotoCell.self, forCellWithReuseIdentifier: kPhotoCellId)
-        
+        // gesture
         let singleClickGes: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(clickCollectionView))
         collectionView.addGestureRecognizer(singleClickGes)
+        
+        let doubleClickGes: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(doubleClickCollectionView))
+        doubleClickGes.numberOfTapsRequired = 2
+        collectionView.addGestureRecognizer(doubleClickGes)
+        
+        singleClickGes.require(toFail: doubleClickGes)
         
         return collectionView
     }()
@@ -44,8 +52,34 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
     private var isBrowsing: Bool = false
     private lazy var bottomBar : PhotoViewBottomBar = {
         let bottomBar = PhotoViewBottomBar(frame: CGRect.zero)
-        bottomBar.sliderValueChange = { value in
-            print("\(value)")
+        bottomBar.sliderValueChangeHandler = { [unowned self] value in
+            self.speedTimes = Double(String(format: "%.2f", value))!
+            for cell in self.collectionView.visibleCells {
+                let photoCell = cell as! PhotoCell
+                photoCell.setGifSpeedTimes(self.speedTimes)
+            }
+        }
+        
+        bottomBar.deleteButtonHandler = { [unowned self] in
+            if self.collectionView.indexPathsForVisibleItems.count != 1 {
+                return
+            }
+            let indexPath = self.collectionView.indexPathsForVisibleItems.last!
+            let photo = self.gifArray[indexPath.row]
+            
+            PHPhotoLibrary.shared().performChanges({
+                PHAssetChangeRequest.deleteAssets(NSArray(array: [photo.asset]))
+            }, completionHandler: { [unowned self] (success, error) in
+                DispatchQueue.main.async {
+                    if !success {
+                        self.showNotice(message: "删除失败") 
+                    } else {
+                        self.gifArray.remove(at: indexPath.row)
+                        self.collectionView.reloadData()
+                        self.showNotice(message: "删除成功！")
+                    }
+                }
+            })
         }
         return bottomBar
     }()
@@ -62,7 +96,6 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
         super.viewDidLoad()
         self.extendedLayoutIncludesOpaqueBars = true
         self.configureSubviews()
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -92,30 +125,12 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
             make.bottom.equalTo(0)
             make.right.equalTo(0)
             make.left.equalTo(0)
-            make.height.equalTo(44)
+            make.height.equalTo(self.kBottomBarHeight)
         }
         
         self.collectionView.setNeedsLayout()
         self.collectionView.layoutIfNeeded()
         self.collectionView.scrollToItem(at: IndexPath(item: self.currentIndex, section: 0), at: [.top,.left], animated: false)
-    }
-    
-    func loadImage(in imageView: GifImageView, with photo: Photo){
-        
-        if photo.fullImageData === nil {
-            
-            let requestOptions = PHImageRequestOptions()
-            requestOptions.isSynchronous = true
-            requestOptions.deliveryMode = .highQualityFormat
-            requestOptions.resizeMode = .fast
-            
-            PHImageManager.default().requestImageData(for: photo.asset, options: requestOptions, resultHandler: { (data, type, orientation, info) in
-                photo.fullImageData = data as NSData?
-                imageView.gifData = photo.fullImageData
-            })
-        } else {
-            imageView.gifData = photo.fullImageData
-        }
     }
     
     //MARK: delegate method
@@ -125,7 +140,7 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        let cell: PhotoCell = collectionView.dequeueReusableCell(withReuseIdentifier: kPhotoCellId, for: indexPath) as! PhotoCell
+        let cell: PhotoCell = collectionView.dequeueReusableCell(withReuseIdentifier: self.photoCellId, for: indexPath) as! PhotoCell
         
         let photo = self.gifArray[indexPath.row]
         
@@ -148,18 +163,23 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let photoCell: PhotoCell = cell as! PhotoCell
-        photoCell.resetZoomScale()
+        photoCell.resetZoomScale(animated: false)
         if self.isCollectionViewInit {
             self.title = "\(indexPath.row+1) / \(self.gifArray.count)"
         } else {
             self.isCollectionViewInit = true
         }
+        photoCell.setGifSpeedTimes(self.speedTimes)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: collectionView.frame.size.width, height: collectionView.frame.size.height)
+        
+        let height = self.isBrowsing ? kScreenHeight : UIScreen.main.bounds.height - 64 - 44
+        
+        return CGSize(width: kScreenWidth, height: height)
     }
     
+    //MARK: events
     func clickCollectionView() {
         self.isBrowsing = !self.isBrowsing
         self.setNeedsStatusBarAppearanceUpdate()
@@ -171,7 +191,7 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
                 self.collectionView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
                 
                 self.bottomBar.snp.updateConstraints({ (make) in
-                    make.bottom.equalTo(44)
+                    make.bottom.equalTo(self.kBottomBarHeight)
                 })
             }
         } else {
@@ -185,6 +205,13 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
                     make.bottom.equalTo(0)
                 })
             }
+        }
+    }
+    
+    func doubleClickCollectionView() {
+        for cell in self.collectionView.visibleCells {
+            let photoCell = cell as! PhotoCell
+            photoCell.resetZoomScale(animated: true)
         }
     }
     

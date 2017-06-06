@@ -25,7 +25,15 @@ class GalleryCell: UICollectionViewCell {
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        // Initialization code
     }
-
+    
+    override var isSelected: Bool {
+        didSet {
+            if self.isSelected {
+                self.selectImageView.image = #imageLiteral(resourceName: "select")
+            } else {
+                self.selectImageView.image = #imageLiteral(resourceName: "unselcet")
+            }
+        }
+    }
 }

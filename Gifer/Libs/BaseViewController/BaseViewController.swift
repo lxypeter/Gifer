@@ -30,7 +30,7 @@ class BaseViewController: UIViewController {
         backBtn.setImage(UIImage(named:"back"), for: .normal)
         backBtn.bounds = CGRect(x: 0, y: 0, width: 24, height: 24)
         backBtn.addTarget(self, action: #selector(backToLastController), for: .touchUpInside)
-        let backItem:UIBarButtonItem = UIBarButtonItem(customView:backBtn)
+        let backItem: UIBarButtonItem = UIBarButtonItem(customView:backBtn)
         self.navigationItem.leftBarButtonItem = backItem;
         
     }
