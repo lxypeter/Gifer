@@ -10,8 +10,9 @@ import UIKit
 import Photos
 import SnapKit
 import MobileCoreServices
+import MJRefresh
 
-class GalleryViewController: BaseViewController, UICollectionViewDataSource, UICollectionViewDelegate, CAAnimationDelegate {
+class GalleryViewController: BaseViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, CAAnimationDelegate {
     
     private let cellId = "GalleryCell"
     private var gifArray: [Photo] = []
@@ -19,7 +20,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         layout.minimumInteritemSpacing = 1
         layout.minimumLineSpacing = 1
-        let itemWidth: Double =  Double((UIScreen.main.bounds.width - 5 * layout.minimumInteritemSpacing)/4)
+        let itemWidth: Double =  Double((UIScreen.main.bounds.width - 3 * layout.minimumInteritemSpacing)/4)
         layout.itemSize = CGSize(width: itemWidth, height: itemWidth)
 
         let collectionView = UICollectionView(frame: CGRect.zero,collectionViewLayout: layout)
@@ -29,6 +30,13 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         collectionView.register(UINib(nibName: "GalleryCell", bundle: nil), forCellWithReuseIdentifier: self.cellId)
         collectionView.allowsMultipleSelection = true
         collectionView.allowsSelection = true
+        
+        let refreshHeader = MJRefreshNormalHeader(refreshingTarget: self, refreshingAction: #selector(fetchGIFFromLibrary))
+        refreshHeader?.setTitle("下拉重新加载", for: .idle)
+        refreshHeader?.setTitle("松开开始加载", for: .pulling)
+        refreshHeader?.setTitle("正在加载", for: .refreshing)
+        refreshHeader?.lastUpdatedTimeLabel.isHidden = true
+        collectionView.mj_header = refreshHeader
         
         return collectionView
     }()
@@ -67,13 +75,26 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         }
         return bottomBar;
     }()
+    private lazy var noRecordView: NoRecordView = {
+        let noRecordView = NoRecordView()
+        self.view.addSubview(noRecordView)
+        self.view.bringSubview(toFront: noRecordView)
+        noRecordView.snp.makeConstraints({ (make) in
+            make.edges.equalTo(self.view)
+        })
+        noRecordView.reloadHandler = { [unowned self] in
+            self.collectionView.mj_header.beginRefreshing()
+        }
+        return noRecordView
+    }()
     private let kBottomBarHeight = 44
     private var isSelecting = false
 
+    //MARK: Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         self.configureSubviews()
-        self.fetchGIFFromLibrary()
+        self.collectionView.mj_header.beginRefreshing()
     }
     
     func configureSubviews() {
@@ -81,7 +102,12 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         
         let selectItem: UIBarButtonItem = UIBarButtonItem(title: "选择", style: .plain, target: self, action: #selector(clickSelectButton))
         selectItem.tintColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
-        self.navigationItem.rightBarButtonItem = selectItem;
+        selectItem.isEnabled = false
+        self.navigationItem.leftBarButtonItem = selectItem;
+        
+        let addItem: UIBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(clickAddButton))
+        addItem.tintColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
+        self.navigationItem.rightBarButtonItem = addItem;
         
         self.view.addSubview(self.collectionView)
         self.collectionView.snp.makeConstraints { (make) in
@@ -102,37 +128,52 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     
     func fetchGIFFromLibrary() {
         
+        self.noRecordView.isHidden = true
+        
         var gifArray: [Photo] = []
         
+        self.collectionView.reloadData()
+        
         let option: PHFetchOptions = PHFetchOptions()
-        option.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+        option.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         
         let result: PHFetchResult = PHAsset.fetchAssets(with: .image, options: option)
         result.enumerateObjects({ (asset, index, _) in
-            
-            guard let uti = asset.value(forKey: "uniformTypeIdentifier"), uti as! String == "com.compuserve.gif" else {
-                return
-            }
-            
-            let photo = Photo(asset: asset)
-            
-            let requestOptions = PHImageRequestOptions()
-            requestOptions.isSynchronous = true
-            requestOptions.deliveryMode = .highQualityFormat
-            // 按比例
-            requestOptions.resizeMode = .exact
-            requestOptions.normalizedCropRect = CGRect(x: 0, y: 0, width: 1, height: 1)
+            autoreleasepool{
+                guard let uti = asset.value(forKey: "uniformTypeIdentifier"), uti as! String == "com.compuserve.gif" else {
+                    return
+                }
+                
+                let photo = Photo(asset: asset)
+                
+                let requestOptions = PHImageRequestOptions()
+                requestOptions.isSynchronous = true
+                requestOptions.deliveryMode = .highQualityFormat
+                // 按比例
+                requestOptions.resizeMode = .exact
+                requestOptions.normalizedCropRect = CGRect(x: 0, y: 0, width: 1, height: 1)
 
-            let itemWidth: Double = Double(UIScreen.main.bounds.width/2)
-            let itemSize = CGSize(width: itemWidth, height: itemWidth)
-            
-            PHImageManager.default().requestImage(for: asset, targetSize: itemSize, contentMode: .aspectFill, options: requestOptions, resultHandler: { (image, info) in
-                photo.thumbnail = image
-                gifArray.append(photo)
-            })
-            
+                let itemWidth: Double = Double(UIScreen.main.bounds.width/2)
+                let itemSize = CGSize(width: itemWidth, height: itemWidth)
+                
+                PHImageManager.default().requestImage(for: asset, targetSize: itemSize, contentMode: .aspectFill, options: requestOptions, resultHandler: { (image, info) in
+                    photo.thumbnail = image
+                    gifArray.append(photo)
+                })
+            }
         })
+        
         self.gifArray = gifArray
+        self.collectionView.mj_header.endRefreshing()
+        
+        if self.gifArray.count < 1 {
+            self.noRecordView.isHidden = false
+            self.navigationItem.leftBarButtonItem?.isEnabled = false
+            self.showNotice(message: "未找到GIF图片")
+        } else {
+            self.navigationItem.leftBarButtonItem?.isEnabled = true
+        }
+        self.collectionView.reloadData()
     }
     
     //MARK: Delegate Method
@@ -141,12 +182,13 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell: GalleryCell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! GalleryCell
+        let cell: GalleryCell = collectionView.dequeueReusableCell(withReuseIdentifier: self.cellId, for: indexPath) as! GalleryCell
         let photo = self.gifArray[indexPath.row]
         cell.isEditing = self.isSelecting
         cell.photo = photo;
         return cell
     }
+    
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if self.isSelecting {
@@ -183,16 +225,20 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         let animation: CABasicAnimation = CABasicAnimation(keyPath: "position")
         animation.delegate = self
         if self.isSelecting {
-            self.navigationItem.rightBarButtonItem?.title = "取消"
+            self.navigationItem.leftBarButtonItem?.title = "取消"
             animation.byValue = CGPoint(x: 0, y: -kBottomBarHeight)
         } else {
-            self.navigationItem.rightBarButtonItem?.title = "选择"
+            self.navigationItem.leftBarButtonItem?.title = "选择"
             animation.byValue = CGPoint(x: 0, y: kBottomBarHeight)
         }
         animation.isRemovedOnCompletion = false
         animation.fillMode = kCAFillModeForwards;
         self.bottomBar.layer.add(animation, forKey: nil)
         self.collectionView.reloadData()
+    }
+    
+    func clickAddButton() {
+        
     }
     
     override func didReceiveMemoryWarning() {
