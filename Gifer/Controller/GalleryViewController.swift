@@ -14,7 +14,7 @@ import MJRefresh
 
 class GalleryViewController: BaseViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, CAAnimationDelegate {
     
-    private let cellId = "GalleryCell"
+    private let kCellId = "GalleryCell"
     private var gifArray: [Photo] = []
     private lazy var collectionView: UICollectionView = {
         let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
@@ -27,18 +27,20 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
-        collectionView.register(UINib(nibName: "GalleryCell", bundle: nil), forCellWithReuseIdentifier: self.cellId)
+        collectionView.register(UINib(nibName: "GalleryCell", bundle: nil), forCellWithReuseIdentifier: self.kCellId)
         collectionView.allowsMultipleSelection = true
         collectionView.allowsSelection = true
+        collectionView.mj_header = self.refreshHeader
         
+        return collectionView
+    }()
+    private lazy var refreshHeader: MJRefreshNormalHeader = {
         let refreshHeader = MJRefreshNormalHeader(refreshingTarget: self, refreshingAction: #selector(fetchGIFFromLibrary))
         refreshHeader?.setTitle("下拉重新加载", for: .idle)
         refreshHeader?.setTitle("松开开始加载", for: .pulling)
         refreshHeader?.setTitle("正在加载", for: .refreshing)
         refreshHeader?.lastUpdatedTimeLabel.isHidden = true
-        collectionView.mj_header = refreshHeader
-        
-        return collectionView
+        return refreshHeader!
     }()
     private lazy var bottomBar: GalleryViewBottomBar = {
         let bottomBar = GalleryViewBottomBar()
@@ -182,7 +184,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell: GalleryCell = collectionView.dequeueReusableCell(withReuseIdentifier: self.cellId, for: indexPath) as! GalleryCell
+        let cell: GalleryCell = collectionView.dequeueReusableCell(withReuseIdentifier: self.kCellId, for: indexPath) as! GalleryCell
         let photo = self.gifArray[indexPath.row]
         cell.isEditing = self.isSelecting
         cell.photo = photo;
@@ -227,9 +229,11 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         if self.isSelecting {
             self.navigationItem.leftBarButtonItem?.title = "取消"
             animation.byValue = CGPoint(x: 0, y: -kBottomBarHeight)
+            self.collectionView.mj_header = nil
         } else {
             self.navigationItem.leftBarButtonItem?.title = "选择"
             animation.byValue = CGPoint(x: 0, y: kBottomBarHeight)
+            self.collectionView.mj_header = self.refreshHeader
         }
         animation.isRemovedOnCompletion = false
         animation.fillMode = kCAFillModeForwards;
@@ -238,7 +242,8 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     }
     
     func clickAddButton() {
-        
+        let ctrl = PhotoPickerViewController()
+        self.navigationController?.pushViewController(ctrl, animated: true)
     }
     
     override func didReceiveMemoryWarning() {
