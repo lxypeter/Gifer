@@ -14,7 +14,15 @@ class Photo: NSObject {
     let photoWidth: CGFloat
     let photoHeight: CGFloat
     var thumbnail: UIImage?
-    var fullImageData: NSData?
+    var fullImageData: NSData?{
+        didSet{
+            guard let fullImageData = self.fullImageData else {
+                return
+            }
+            self.fullImage = UIImage(data: fullImageData as Data)
+        }
+    }
+    var fullImage: UIImage?
     
     init(asset: PHAsset) {
         self.asset = asset

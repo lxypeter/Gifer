@@ -12,7 +12,6 @@
 		E11503EC1ECC41D6008BB686 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E11503EA1ECC41D6008BB686 /* Main.storyboard */; };
 		E11503EE1ECC41D6008BB686 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E11503ED1ECC41D6008BB686 /* Assets.xcassets */; };
 		E11503F11ECC41D6008BB686 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E11503EF1ECC41D6008BB686 /* LaunchScreen.storyboard */; };
-		E12826991ED3DD3200262F63 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12826911ED3DD3200262F63 /* ViewController.swift */; };
 		E12826A21ED4116700262F63 /* GalleryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12826A11ED4116700262F63 /* GalleryViewController.swift */; };
 		E12826A61ED42B4600262F63 /* GalleryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12826A41ED42B4600262F63 /* GalleryCell.swift */; };
 		E12826A71ED42B4600262F63 /* GalleryCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E12826A51ED42B4600262F63 /* GalleryCell.xib */; };
@@ -24,6 +23,10 @@
 		E13CACFF1EE50775004D9CAA /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13CACFE1EE50775004D9CAA /* Constants.swift */; };
 		E13CAD021EE5481A004D9CAA /* NoticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13CAD011EE5481A004D9CAA /* NoticeView.swift */; };
 		E13CAD041EE550CA004D9CAA /* NoticeViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13CAD031EE550CA004D9CAA /* NoticeViewManager.swift */; };
+		E171BF8E1EEA45D5001F53E2 /* GifEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E171BF8D1EEA45D5001F53E2 /* GifEditViewController.swift */; };
+		E171BF901EEA7A37001F53E2 /* GifEditViewBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E171BF8F1EEA7A37001F53E2 /* GifEditViewBottomBar.swift */; };
+		E171BF921EEAA196001F53E2 /* GifAchieveViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E171BF911EEAA196001F53E2 /* GifAchieveViewController.swift */; };
+		E19384D01EEE428800BE84A4 /* UIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19384CF1EEE428800BE84A4 /* UIImage.swift */; };
 		E195333A1EE68CF000C23BE2 /* GalleryViewBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19533391EE68CF000C23BE2 /* GalleryViewBottomBar.swift */; };
 		E195333E1EE6A48D00C23BE2 /* PublicMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = E195333D1EE6A48D00C23BE2 /* PublicMethod.swift */; };
 		E19D661A1EE7E0A8008E29F7 /* NoRecordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19D66191EE7E0A8008E29F7 /* NoRecordView.swift */; };
@@ -45,7 +48,6 @@
 		E11503ED1ECC41D6008BB686 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E11503F01ECC41D6008BB686 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E11503F21ECC41D6008BB686 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		E12826911ED3DD3200262F63 /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		E12826A11ED4116700262F63 /* GalleryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GalleryViewController.swift; sourceTree = "<group>"; };
 		E12826A41ED42B4600262F63 /* GalleryCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GalleryCell.swift; sourceTree = "<group>"; };
 		E12826A51ED42B4600262F63 /* GalleryCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = GalleryCell.xib; sourceTree = "<group>"; };
@@ -57,6 +59,10 @@
 		E13CACFE1EE50775004D9CAA /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		E13CAD011EE5481A004D9CAA /* NoticeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoticeView.swift; sourceTree = "<group>"; };
 		E13CAD031EE550CA004D9CAA /* NoticeViewManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoticeViewManager.swift; sourceTree = "<group>"; };
+		E171BF8D1EEA45D5001F53E2 /* GifEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifEditViewController.swift; sourceTree = "<group>"; };
+		E171BF8F1EEA7A37001F53E2 /* GifEditViewBottomBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifEditViewBottomBar.swift; sourceTree = "<group>"; };
+		E171BF911EEAA196001F53E2 /* GifAchieveViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifAchieveViewController.swift; sourceTree = "<group>"; };
+		E19384CF1EEE428800BE84A4 /* UIImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIImage.swift; sourceTree = "<group>"; };
 		E19533391EE68CF000C23BE2 /* GalleryViewBottomBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GalleryViewBottomBar.swift; sourceTree = "<group>"; };
 		E195333D1EE6A48D00C23BE2 /* PublicMethod.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PublicMethod.swift; sourceTree = "<group>"; };
 		E19D66191EE7E0A8008E29F7 /* NoRecordView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoRecordView.swift; sourceTree = "<group>"; };
@@ -135,10 +141,11 @@
 		E12826901ED3DD3200262F63 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
-				E12826911ED3DD3200262F63 /* ViewController.swift */,
 				E12826A11ED4116700262F63 /* GalleryViewController.swift */,
 				E12DFDC41ED6CBE5009608E8 /* PhotoViewController.swift */,
 				E19D661B1EE7F2D5008E29F7 /* PhotoPickerViewController.swift */,
+				E171BF8D1EEA45D5001F53E2 /* GifEditViewController.swift */,
+				E171BF911EEAA196001F53E2 /* GifAchieveViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -154,6 +161,7 @@
 				E19D66191EE7E0A8008E29F7 /* NoRecordView.swift */,
 				E19D661D1EE7F547008E29F7 /* PhotoPickerCell.swift */,
 				E19D661E1EE7F547008E29F7 /* PhotoPickerCell.xib */,
+				E171BF8F1EEA7A37001F53E2 /* GifEditViewBottomBar.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -161,6 +169,7 @@
 		E12DFDC81ED6D860009608E8 /* Libs */ = {
 			isa = PBXGroup;
 			children = (
+				E19384CE1EEE420100BE84A4 /* Category */,
 				E195333C1EE6A48D00C23BE2 /* Public */,
 				E13CAD001EE547D5004D9CAA /* NoticeView */,
 				E1330BEB1EE13A7C0053ABFD /* BaseViewController */,
@@ -210,6 +219,14 @@
 				E13CAD031EE550CA004D9CAA /* NoticeViewManager.swift */,
 			);
 			path = NoticeView;
+			sourceTree = "<group>";
+		};
+		E19384CE1EEE420100BE84A4 /* Category */ = {
+			isa = PBXGroup;
+			children = (
+				E19384CF1EEE428800BE84A4 /* UIImage.swift */,
+			);
+			path = Category;
 			sourceTree = "<group>";
 		};
 		E195333C1EE6A48D00C23BE2 /* Public */ = {
@@ -348,18 +365,21 @@
 			files = (
 				E12826A61ED42B4600262F63 /* GalleryCell.swift in Sources */,
 				E19D661A1EE7E0A8008E29F7 /* NoRecordView.swift in Sources */,
+				E171BF921EEAA196001F53E2 /* GifAchieveViewController.swift in Sources */,
 				E1E37F1D1ED80B67000B4B3F /* GifImageView.swift in Sources */,
 				E1330BEF1EE1488A0053ABFD /* PhotoViewBottomBar.swift in Sources */,
+				E171BF901EEA7A37001F53E2 /* GifEditViewBottomBar.swift in Sources */,
 				E19D661F1EE7F547008E29F7 /* PhotoPickerCell.swift in Sources */,
 				E1330BED1EE13A7C0053ABFD /* BaseViewController.swift in Sources */,
 				E12DFDCB1ED6D8F1009608E8 /* GifAnimator.swift in Sources */,
+				E19384D01EEE428800BE84A4 /* UIImage.swift in Sources */,
 				E13CAD041EE550CA004D9CAA /* NoticeViewManager.swift in Sources */,
-				E12826991ED3DD3200262F63 /* ViewController.swift in Sources */,
 				E13CAD021EE5481A004D9CAA /* NoticeView.swift in Sources */,
 				E12826A21ED4116700262F63 /* GalleryViewController.swift in Sources */,
 				E19D661C1EE7F2D5008E29F7 /* PhotoPickerViewController.swift in Sources */,
 				E13CACFF1EE50775004D9CAA /* Constants.swift in Sources */,
 				E195333E1EE6A48D00C23BE2 /* PublicMethod.swift in Sources */,
+				E171BF8E1EEA45D5001F53E2 /* GifEditViewController.swift in Sources */,
 				E195333A1EE68CF000C23BE2 /* GalleryViewBottomBar.swift in Sources */,
 				E11503E71ECC41D6008BB686 /* AppDelegate.swift in Sources */,
 				E1B456621EE00D10009555A6 /* PhotoCell.swift in Sources */,

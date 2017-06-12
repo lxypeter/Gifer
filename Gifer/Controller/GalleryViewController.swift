@@ -91,6 +91,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     }()
     private let kBottomBarHeight = 44
     private var isSelecting = false
+    private var kGroup: DispatchGroup = DispatchGroup()
 
     //MARK: Life cycle
     override func viewDidLoad() {
@@ -131,15 +132,16 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     func fetchGIFFromLibrary() {
         
         self.noRecordView.isHidden = true
-        
-        var gifArray: [Photo] = []
-        
+        self.gifArray.removeAll()
         self.collectionView.reloadData()
         
         let option: PHFetchOptions = PHFetchOptions()
         option.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         
         let result: PHFetchResult = PHAsset.fetchAssets(with: .image, options: option)
+        
+        self.kGroup = DispatchGroup()
+        
         result.enumerateObjects({ (asset, index, _) in
             autoreleasepool{
                 guard let uti = asset.value(forKey: "uniformTypeIdentifier"), uti as! String == "com.compuserve.gif" else {
@@ -149,33 +151,46 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
                 let photo = Photo(asset: asset)
                 
                 let requestOptions = PHImageRequestOptions()
-                requestOptions.isSynchronous = true
+                requestOptions.isSynchronous = false
                 requestOptions.deliveryMode = .highQualityFormat
                 // 按比例
                 requestOptions.resizeMode = .exact
                 requestOptions.normalizedCropRect = CGRect(x: 0, y: 0, width: 1, height: 1)
-
+                
                 let itemWidth: Double = Double(UIScreen.main.bounds.width/2)
                 let itemSize = CGSize(width: itemWidth, height: itemWidth)
                 
-                PHImageManager.default().requestImage(for: asset, targetSize: itemSize, contentMode: .aspectFill, options: requestOptions, resultHandler: { (image, info) in
+                self.kGroup.enter()
+                
+                PHImageManager.default().requestImage(for: asset, targetSize: itemSize, contentMode: .aspectFill, options: requestOptions, resultHandler: { [unowned self] (image, info) in
                     photo.thumbnail = image
-                    gifArray.append(photo)
+                    self.gifArray.append(photo)
+                    
+                    self.kGroup.leave()
                 })
             }
         })
+        self.kGroup.notify(queue: DispatchQueue.main, execute: { [unowned self] in
+            self.collectionView.mj_header.endRefreshing()
+            if self.gifArray.count < 1 {
+                self.noRecordView.isHidden = false
+                self.navigationItem.leftBarButtonItem?.isEnabled = false
+                self.showNotice(message: "未找到GIF图片")
+            } else {
+                self.gifArray.sort(by: { (photo1, photo2) -> Bool in
+                    guard let date1 = photo1.asset.creationDate else {
+                        return false
+                    }
+                    guard let date2 = photo2.asset.creationDate else {
+                        return true
+                    }
+                    return date1 > date2
+                })
+                self.navigationItem.leftBarButtonItem?.isEnabled = true
+            }
+            self.collectionView.reloadData()
+        })
         
-        self.gifArray = gifArray
-        self.collectionView.mj_header.endRefreshing()
-        
-        if self.gifArray.count < 1 {
-            self.noRecordView.isHidden = false
-            self.navigationItem.leftBarButtonItem?.isEnabled = false
-            self.showNotice(message: "未找到GIF图片")
-        } else {
-            self.navigationItem.leftBarButtonItem?.isEnabled = true
-        }
-        self.collectionView.reloadData()
     }
     
     //MARK: Delegate Method

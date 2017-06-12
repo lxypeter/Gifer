@@ -15,7 +15,7 @@ class PhotoPickerViewController: BaseViewController, UICollectionViewDataSource,
     
     private let kCellId = "PhotoPickerCell"
     private var photoArray: [Photo] = []
-    private var selectdArray: [Photo] = []
+    private var selectedArray: [Photo] = []
     private lazy var collectionView: UICollectionView = {
         let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
         layout.minimumInteritemSpacing = 1
@@ -29,11 +29,12 @@ class PhotoPickerViewController: BaseViewController, UICollectionViewDataSource,
         collectionView.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         collectionView.register(UINib(nibName: "PhotoPickerCell", bundle: nil), forCellWithReuseIdentifier: self.kCellId)
         collectionView.mj_header = self.refreshHeader
-        
         return collectionView
     }()
     private lazy var refreshHeader: MJRefreshNormalHeader = {
-        let refreshHeader = MJRefreshNormalHeader(refreshingTarget: self, refreshingAction: #selector(fetchPhotoFromLibrary))
+        let refreshHeader = MJRefreshNormalHeader(refreshingBlock: { [unowned self] in
+            self.fetchPhotoFromLibrary()
+        })
         refreshHeader?.setTitle("下拉重新加载", for: .idle)
         refreshHeader?.setTitle("松开开始加载", for: .pulling)
         refreshHeader?.setTitle("正在加载", for: .refreshing)
@@ -52,6 +53,7 @@ class PhotoPickerViewController: BaseViewController, UICollectionViewDataSource,
         }
         return noRecordView
     }()
+    private var kGroup: DispatchGroup = DispatchGroup()
     
     //MARK: Life cycle
     override func viewDidLoad() {
@@ -79,25 +81,27 @@ class PhotoPickerViewController: BaseViewController, UICollectionViewDataSource,
     func fetchPhotoFromLibrary() {
         
         self.noRecordView.isHidden = true
-        
-        var photoArray: [Photo] = []
-        
+        self.selectedArray.removeAll()
+        self.photoArray.removeAll()
         self.collectionView.reloadData()
         
         let option: PHFetchOptions = PHFetchOptions()
         option.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         
         let result: PHFetchResult = PHAsset.fetchAssets(with: .image, options: option)
+        
+        self.kGroup = DispatchGroup()
+        
         result.enumerateObjects({ (asset, index, _) in
             autoreleasepool{
                 guard let uti = asset.value(forKey: "uniformTypeIdentifier"), uti as! String != "com.compuserve.gif" else {
                     return
                 }
-                
+            
                 let photo = Photo(asset: asset)
                 
                 let requestOptions = PHImageRequestOptions()
-                requestOptions.isSynchronous = true
+                requestOptions.isSynchronous = false
                 requestOptions.deliveryMode = .highQualityFormat
                 // 按比例
                 requestOptions.resizeMode = .exact
@@ -105,23 +109,35 @@ class PhotoPickerViewController: BaseViewController, UICollectionViewDataSource,
                 
                 let itemWidth: Double = Double(UIScreen.main.bounds.width/2)
                 let itemSize = CGSize(width: itemWidth, height: itemWidth)
-                
-                PHImageManager.default().requestImage(for: asset, targetSize: itemSize, contentMode: .aspectFill, options: requestOptions, resultHandler: { (image, info) in
+            
+                self.kGroup.enter()
+            
+                PHImageManager.default().requestImage(for: asset, targetSize: itemSize, contentMode: .aspectFill, options: requestOptions, resultHandler: { [unowned self] (image, info) in
                     photo.thumbnail = image
-                    photoArray.append(photo)
+                    self.photoArray.append(photo)
+                    
+                    self.kGroup.leave()
                 })
             }
         })
-        
-        self.photoArray = photoArray
-        self.collectionView.mj_header.endRefreshing()
-        
-        if self.photoArray.count < 1 {
-            self.noRecordView.isHidden = false
-            self.showNotice(message: "未找到图片")
-        } else {
-        }
-        self.collectionView.reloadData()
+        self.kGroup.notify(queue: DispatchQueue.main, execute: { [unowned self] in
+            if self.photoArray.count < 1 {
+                self.noRecordView.isHidden = false
+                self.showNotice(message: "未找到图片")
+            } else {
+                self.photoArray.sort(by: { (photo1, photo2) -> Bool in
+                    guard let date1 = photo1.asset.creationDate else {
+                        return false
+                    }
+                    guard let date2 = photo2.asset.creationDate else {
+                        return true
+                    }
+                    return date1 > date2
+                })
+            }
+            self.collectionView.mj_header.endRefreshing()
+            self.collectionView.reloadData()
+        })
     }
     
     //MARK: Delegate Method
@@ -133,9 +149,9 @@ class PhotoPickerViewController: BaseViewController, UICollectionViewDataSource,
         let cell: PhotoPickerCell = collectionView.dequeueReusableCell(withReuseIdentifier: self.kCellId, for: indexPath) as! PhotoPickerCell
         let photo = self.photoArray[indexPath.row]
         
-        if self.selectdArray.contains(photo) {
+        if self.selectedArray.contains(photo) {
             cell.isChoose = true
-            let index = self.selectdArray.index(of: photo)!
+            let index = self.selectedArray.index(of: photo)!
             cell.selectedRankLabel.text = "\(index+1)"
         } else {
             cell.isChoose = false
@@ -146,17 +162,23 @@ class PhotoPickerViewController: BaseViewController, UICollectionViewDataSource,
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let photo = self.photoArray[indexPath.row]
-        if self.selectdArray.contains(photo) {
-            let index = self.selectdArray.index(of: photo)!
-            self.selectdArray.remove(at: index)
+        if self.selectedArray.contains(photo) {
+            let index = self.selectedArray.index(of: photo)!
+            self.selectedArray.remove(at: index)
         } else {
-            self.selectdArray.append(photo)
+            self.selectedArray.append(photo)
         }
         collectionView.reloadData()
     }
     
     //MARK: events
     func clickNextButton() {
-        
+        if self.selectedArray.count < 2 {
+            self.showNotice(message: "请至少选择两张图片！")
+            return
+        }
+        let ctrl = GifEditViewController()
+        ctrl.selectedArray = self.selectedArray
+        self.navigationController?.pushViewController(ctrl, animated: true)
     }
 }

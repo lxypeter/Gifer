@@ -14,7 +14,7 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
 
     //MARK: property
     let photoCellId = "kPhotoCellId"
-    let kBottomBarHeight = 54
+    let kBottomBarHeight: CGFloat = 54
     
     var gifArray: [Photo] = []
     var currentIndex: Int = 0
@@ -49,7 +49,7 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
     }()
     private var isCollectionViewInit: Bool = false
     private var isBrowsing: Bool = false
-    private lazy var bottomBar : PhotoViewBottomBar = {
+    private lazy var bottomBar: PhotoViewBottomBar = {
         let bottomBar = PhotoViewBottomBar(frame: CGRect.zero)
         bottomBar.sliderValueChangeHandler = { [unowned self] value in
             self.speedTimes = Double(String(format: "%.2f", value))!
@@ -111,20 +111,20 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
         
         self.title = "\(self.currentIndex+1) / \(self.gifArray.count)"
         
-        self.view.addSubview(self.collectionView)
-        self.collectionView.snp.makeConstraints { (make) in
-            make.bottom.equalTo(0)
-            make.right.equalTo(0)
-            make.left.equalTo(0)
-            make.top.equalTo(0)
-        }
-        
         self.view.addSubview(self.bottomBar)
         self.bottomBar.snp.makeConstraints { (make) in
             make.bottom.equalTo(0)
             make.right.equalTo(0)
             make.left.equalTo(0)
             make.height.equalTo(self.kBottomBarHeight)
+        }
+        
+        self.view.addSubview(self.collectionView)
+        self.collectionView.snp.makeConstraints { (make) in
+            make.top.equalTo(kStatusBarHeight + kNavigationBarHeight)
+            make.bottom.equalTo(self.bottomBar.snp.top)
+            make.right.equalTo(0)
+            make.left.equalTo(0)
         }
         
         self.collectionView.setNeedsLayout()
@@ -172,9 +172,7 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        
-        let height = self.isBrowsing ? kScreenHeight : UIScreen.main.bounds.height - 64 - 44
-        
+        let height = UIScreen.main.bounds.height - kStatusBarHeight - kNavigationBarHeight - kBottomBarHeight
         return CGSize(width: kScreenWidth, height: height)
     }
     
@@ -190,7 +188,12 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
                 self.collectionView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
                 
                 self.bottomBar.snp.updateConstraints({ (make) in
+                    
                     make.bottom.equalTo(self.kBottomBarHeight)
+                })
+                
+                self.collectionView.snp.updateConstraints({ (make) in
+                    make.top.equalTo(0)
                 })
             }
         } else {
@@ -202,6 +205,10 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
                 
                 self.bottomBar.snp.updateConstraints({ (make) in
                     make.bottom.equalTo(0)
+                })
+                
+                self.collectionView.snp.updateConstraints({ (make) in
+                    make.top.equalTo(kStatusBarHeight + kNavigationBarHeight)
                 })
             }
         }

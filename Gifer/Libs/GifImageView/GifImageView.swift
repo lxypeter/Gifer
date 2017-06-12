@@ -54,7 +54,7 @@ class GifImageView: UIImageView {
                 animator = nil
                 animator = GifAnimator(data: gifData)
                 animator?.speedTimes = self.speedTimes
-                didMove()
+                self.didMove()
                 self.setNeedsDisplay()
                 self.layer.setNeedsDisplay()
             }
@@ -79,21 +79,21 @@ class GifImageView: UIImageView {
     }
     
     override func display(_ layer: CALayer) {
-        if let currentFrame = animator?.currentFrame {
-            layer.contents = currentFrame.cgImage
+        if let currentImage = animator?.currentImage {
+            layer.contents = currentImage.cgImage
         } else {
-            layer.contents = image?.cgImage
+            layer.contents = self.image?.cgImage
         }
     }
     
     override public func didMoveToWindow() {
         super.didMoveToWindow()
-        didMove()
+        self.didMove()
     }
     
     override public func didMoveToSuperview() {
         super.didMoveToSuperview()
-        didMove()
+        self.didMove()
     }
     
     override var isAnimating: Bool {

@@ -21,15 +21,16 @@ struct GifFrame {
 }
 
 class GifAnimator {
-    private let maxFrameCount: Int = 100    // 最大帧数
-    private var imageSource: CGImageSource!  // imageSource 处理帧相关操作
-    private var animatedFrames: [GifFrame] = []  //
-    private var frameCount = 0  // 帧的数量
-    private var currentFrameIndex = 0   // 当前帧下标
+    private let maxFrameCount: Int = 100 // 最大帧数
+    private var imageSource: CGImageSource! // imageSource 处理帧相关操作
+    private var animatedFrames: [GifFrame] = []
+    private var frameCount = 0 // 帧的数量
+    private var currentFrameIndex = 0 // 当前帧下标
     private var currentPreloadIndex = 0 // 当前预缓存帧的下标
-    private var timeSinceLastFrameChange: TimeInterval = 0.0  // 距离上一帧改变的时间
+    private var timeSinceLastFrameChange: TimeInterval = 0.0 // 距离上一帧改变的时间
     private var loopCount = 0 // 循环次数
     private let maxTimeStep: TimeInterval = 1.0 // 最大间隔
+    private let isBigImage: Bool
     public var speedTimes: Double = 1 {
         didSet {
             if self.speedTimes > 3 {
@@ -39,8 +40,13 @@ class GifAnimator {
             }
         }
     }
+    public var currentImage: UIImage? {
+        if self.animatedFrames.count <= 0 { return nil }
+        return self.animatedFrames[self.currentFrameIndex].image
+    }
     
     init(data: NSData) {
+        self.isBigImage = data.length/1024/1024 > 10
         self.createImageSource(data: data)
         self.prepareFrames()
     }
@@ -50,18 +56,45 @@ class GifAnimator {
      
      - parameter data: gif data
      */
-    func createImageSource(data: NSData){
+    private func createImageSource(data: NSData){
         let options: NSDictionary = [
-            kCGImageSourceShouldCache as String: NSNumber(value: true),
+            kCGImageSourceShouldCache as String: NSNumber(value: false),
             kCGImageSourceTypeIdentifierHint as String: kUTTypeGIF
         ]
         self.imageSource = CGImageSourceCreateWithData(data, options)
     }
     
+    /**
+     预备所有frames
+     */
+    private func prepareFrames() {
+        DispatchQueue.global().async { [unowned self] in 
+            self.frameCount = CGImageSourceGetCount(self.imageSource)
+            
+            if let properties = CGImageSourceCopyProperties(self.imageSource, nil),
+                let gifInfo = (properties as NSDictionary)[kCGImagePropertyGIFDictionary as String] as? NSDictionary,
+                let loopCount = gifInfo[kCGImagePropertyGIFLoopCount as String] as? Int {
+                self.loopCount = loopCount
+            }
+            
+            // 总共帧数
+            let frameToProcess = min(self.frameCount, self.maxFrameCount)
+            
+            var animatedFrames: [GifFrame] = []
+            animatedFrames.reserveCapacity(frameToProcess)
+            
+            for i in 0 ..< frameToProcess {
+                animatedFrames.append(self.prepareFrame(index: i))
+            }
+            
+            self.animatedFrames = animatedFrames
+        }
+    }
+    
     // 准备某帧 的 frame
-    func prepareFrame(index: Int) -> GifFrame {
+    private func prepareFrame(index: Int) -> GifFrame {
         // 获取对应帧的 CGImage
-        guard let imageRef = CGImageSourceCreateImageAtIndex(imageSource, index , nil) else {
+        guard let imageRef = CGImageSourceCreateImageAtIndex(self.imageSource, index , nil) else {
             return GifFrame(image: nil, duration: 0)
         }
         // 获取到 gif每帧时间间隔
@@ -71,45 +104,16 @@ class GifAnimator {
             return GifFrame(image: nil, duration: 0)
         }
         
-        let image = UIImage(cgImage: imageRef , scale: UIScreen.main.scale, orientation: .up)
-        return GifFrame(image: image, duration: Double(frameDuration) )
-    }
-    
-    /**
-     预备所有frames
-     */
-    func prepareFrames() {
-        self.frameCount = CGImageSourceGetCount(imageSource)
-        
-        if let properties = CGImageSourceCopyProperties(imageSource, nil),
-            let gifInfo = (properties as NSDictionary)[kCGImagePropertyGIFDictionary as String] as? NSDictionary,
-            let loopCount = gifInfo[kCGImagePropertyGIFLoopCount as String] as? Int {
-            self.loopCount = loopCount
+        var image: UIImage? = UIImage(cgImage: imageRef , scale: UIScreen.main.scale, orientation: .up)
+        if self.isBigImage {
+            image = image?.imageKeepRatioScalingWith(targetSize: CGSize(width: 1000, height: 1000))
         }
-        
-        // 总共帧数
-        let frameToProcess = min(frameCount, maxFrameCount)
-        
-        self.animatedFrames.reserveCapacity(frameToProcess)
-        
-        for i in 0..<frameToProcess {
-            self.animatedFrames.append(prepareFrame(index: i))
-        }
+        return GifFrame(image: image, duration: Double(frameDuration))
         
     }
     
-    /**
-     根据下标获取帧
-     */
-    func frameAtIndex(index: Int) -> UIImage? {
-        return animatedFrames[index].image
-    }
-    
-    var currentFrame: UIImage? {
-        return frameAtIndex(index: self.currentFrameIndex)
-    }
-    
-    func updateCurrentFrame(duration: CFTimeInterval) -> Bool {
+    public func updateCurrentFrame(duration: CFTimeInterval) -> Bool {
+        if self.animatedFrames.count <= 0 { return false }
         // 计算距离上一帧 改变的时间 每次进来都累加 直到frameDuration  <= timeSinceLastFrameChange 时候才继续走下去
         self.timeSinceLastFrameChange += min(maxTimeStep, duration)
         let frameDuration = animatedFrames[currentFrameIndex].duration / self.speedTimes
