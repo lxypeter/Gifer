@@ -40,12 +40,16 @@ class BaseViewController: UIViewController {
         self.navigationController?.popViewController(animated: true)
     }
     
-    func showHudWithMsg(msg:String) {
-        hud.textLabel.text = msg
+    func showHudWithMsg(msg: String) {
+        if msg.isEmpty {
+            hud.textLabel.text = nil
+        } else {
+            hud.textLabel.text = msg
+        }
         hud.show(in: UIApplication.shared.keyWindow, animated: true)
     }
     
-    func showHudWithMsg(msg:String,in view: UIView!) {
+    func showHudWithMsg(msg: String, in view: UIView!) {
         hud.textLabel.text = msg
         hud.show(in: view, animated: true)
     }

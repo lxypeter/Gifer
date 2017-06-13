@@ -260,10 +260,4 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         let ctrl = PhotoPickerViewController()
         self.navigationController?.pushViewController(ctrl, animated: true)
     }
-    
-    override func didReceiveMemoryWarning() {
-        for photo in self.gifArray {
-            photo.fullImageData = nil
-        }
-    }
 }

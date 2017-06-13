@@ -14,6 +14,7 @@ import MobileCoreServices
 
 class GifEditViewController: BaseViewController {
     
+    //MARK: property
     var selectedArray: [Photo] = []
     private var imageArray: [UIImage] = []
     private lazy var imageView: UIImageView = {
@@ -21,7 +22,7 @@ class GifEditViewController: BaseViewController {
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = true
         imageView.backgroundColor = UIColor.clear
-        imageView.animationDuration = self.bottomBar.originDuration
+        imageView.animationDuration = self.bottomBar.originDuration * Double(self.selectedArray.count)
         return imageView
     }()
     private lazy var bottomBar: GifEditViewBottomBar = {
@@ -36,9 +37,14 @@ class GifEditViewController: BaseViewController {
     private let bottomBarHeight = 54
     private var kGroup: DispatchGroup = DispatchGroup()
 
+    //MARK: life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         self.configureSubviews()
+        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
         self.fetchFullImage()
     }
     
@@ -72,15 +78,17 @@ class GifEditViewController: BaseViewController {
         self.kGroup = DispatchGroup()
         for photo in self.selectedArray {
             self.kGroup.enter()
-            if photo.fullImageData === nil {
+            if photo.fullImage === nil {
                 let requestOptions = PHImageRequestOptions()
                 requestOptions.isSynchronous = false
                 requestOptions.deliveryMode = .highQualityFormat
                 requestOptions.resizeMode = .none
                 
                 PHImageManager.default().requestImageData(for: photo.asset, options: requestOptions, resultHandler: { [unowned self](data, type, orientation, info) in
+                    if let data = data {
+                        photo.fullImageData = data as NSData
+                    }
                     self.kGroup.leave()
-                    photo.fullImageData = data as NSData?
                 })
             } else {
                 self.kGroup.leave()
@@ -98,36 +106,37 @@ class GifEditViewController: BaseViewController {
         }
     }
     
-    func clickGenerateButton() {
+    private func isSameSize() {
+        
+    }
+    
+    private func generateGif() {
+        self.showHudWithMsg(msg: "正在生成...")
         
         let fileProperties: CFDictionary = [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]] as CFDictionary;
-
-        let frameProperties: CFDictionary = [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFDelayTime as String: self.bottomBar.currentDuration]] as CFDictionary;
+        
+        let frameProperties: CFDictionary = [
+            kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFDelayTime as String: self.bottomBar.currentDuration],
+            kCGImagePropertyPixelHeight as String: 400,
+            kCGImagePropertyPixelWidth as String: 400
+            ] as CFDictionary;
         
         let dataFormatter = DateFormatter()
         dataFormatter.dateFormat = "YYYYMMddHHmmss"
         let filename = dataFormatter.string(from: Date())
         let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(filename).gif")
-        
-        self.showHudWithMsg(msg: "正在生成...")
-        
-        let destination: CGImageDestination? = CGImageDestinationCreateWithURL(url as CFURL, kUTTypeGIF, self.selectedArray.count, nil);
-
-        if destination != nil {
-            
+        DispatchQueue.global().async { [unowned self] in
+            let destination: CGImageDestination? = CGImageDestinationCreateWithURL(url as CFURL, kUTTypeGIF, self.selectedArray.count, nil);
+            if destination == nil { self.showNotice(message: "生成Gif失败...") }
             CGImageDestinationSetProperties(destination!, fileProperties);
-
+            
             for photo in self.selectedArray {
                 if photo.fullImage != nil {
-                    
-                    let imageData = UIImageJPEGRepresentation(photo.fullImage!, 0.3)
-                    let newImage = UIImage(data: imageData!)
-                    
-                    
+                    let newImage = photo.fullImage?.imageKeepRatioScalingWith(targetSize: CGSize(width: 400, height: 400))
                     CGImageDestinationAddImage(destination!, newImage!.cgImage!, frameProperties);
                 }
             }
-
+            
             if CGImageDestinationFinalize(destination!) {
                 PHPhotoLibrary.shared().performChanges({
                     PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: url)
@@ -141,11 +150,32 @@ class GifEditViewController: BaseViewController {
                     }
                 }
             } else {
-                self.hideHud()
-                self.showNotice(message: "生成Gif失败...")
+                DispatchQueue.main.async { [unowned self] in
+                    self.hideHud()
+                    self.showNotice(message: "生成Gif失败...")
+                }
             }
         }
-
+    }
+    
+    //MARK: event
+    func clickGenerateButton() {
+        let alertController = UIAlertController(title: "选择Gif画质", message: nil, preferredStyle: .actionSheet)
+        let lowQualityAction = UIAlertAction(title: "低清晰度", style: .default) { [unowned self](action) in
+            self.generateGif()
+        }
+        alertController.addAction(lowQualityAction)
+        let mediumQualityAction = UIAlertAction(title: "中等清晰度", style: .default) { [unowned self](action) in
+            self.generateGif()
+        }
+        alertController.addAction(mediumQualityAction)
+        let highQualityAction = UIAlertAction(title: "高清晰度", style: .default) { [unowned self](action) in
+            self.generateGif()
+        }
+        alertController.addAction(highQualityAction)
+        let cancelAction = UIAlertAction(title: "取消", style: .cancel, handler: nil)
+        alertController.addAction(cancelAction)
+        self.present(alertController, animated: true, completion: nil)
     }
     
 }

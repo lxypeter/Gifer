@@ -16,10 +16,10 @@ class Photo: NSObject {
     var thumbnail: UIImage?
     var fullImageData: NSData?{
         didSet{
-            guard let fullImageData = self.fullImageData else {
+            guard let fullImageData = self.fullImageData, fullImageData.imageFormat != .GIF  else {
                 return
             }
-            self.fullImage = UIImage(data: fullImageData as Data)
+            self.fullImage = UIImage(data: fullImageData as Data)?.fixRotation()
         }
     }
     var fullImage: UIImage?

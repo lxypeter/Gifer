@@ -14,20 +14,20 @@ class GifAchieveViewController: BaseViewController {
     
     var photo: Photo? {
         didSet {
-            if self.photo!.fullImageData === nil {
-                
-                let requestOptions = PHImageRequestOptions()
-                requestOptions.isSynchronous = true
-                requestOptions.deliveryMode = .highQualityFormat
-                requestOptions.resizeMode = .fast
-                
-                PHImageManager.default().requestImageData(for: photo!.asset, options: requestOptions, resultHandler: { [unowned self](data, type, orientation, info) in
-                    self.photo!.fullImageData = data as NSData?
-                    self.imageView.gifData = self.photo!.fullImageData
-                })
-            } else {
-                self.imageView.gifData = self.photo!.fullImageData
-            }
+//            if self.photo!.fullImageData === nil {
+//                
+//                let requestOptions = PHImageRequestOptions()
+//                requestOptions.isSynchronous = true
+//                requestOptions.deliveryMode = .highQualityFormat
+//                requestOptions.resizeMode = .fast
+//                
+//                PHImageManager.default().requestImageData(for: photo!.asset, options: requestOptions, resultHandler: { [unowned self](data, type, orientation, info) in
+//                    self.photo!.fullImageData = data as NSData?
+//                    self.imageView.gifData = self.photo!.fullImageData
+//                })
+//            } else {
+//                self.imageView.gifData = self.photo!.fullImageData
+//            }
         }
     }
 
