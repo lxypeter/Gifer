@@ -17,8 +17,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         self.window = UIWindow(frame: UIScreen.main.bounds)
         
-        let navigationController = UINavigationController(rootViewController: GalleryViewController())
-//        let navigationController = UINavigationController(rootViewController: PhotoPickerViewController())
+//        let navigationController = UINavigationController(rootViewController: GalleryViewController())
+        let navigationController = UINavigationController(rootViewController: PhotoPickerViewController())
         
         self.window?.rootViewController = navigationController
         self.window?.makeKeyAndVisible()

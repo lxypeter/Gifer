@@ -10,6 +10,7 @@ import UIKit
 
 class GalleryViewBottomBar: UIView {
 
+    public static let height: CGFloat = 44
     lazy var shareButton: UIButton = {
         let shareButton = UIButton(frame: CGRect.zero)
         shareButton.setImage(#imageLiteral(resourceName: "share"), for: .normal)
@@ -25,7 +26,6 @@ class GalleryViewBottomBar: UIView {
         deleteButton.addTarget(self, action: #selector(clickDeleteButton), for: .touchUpInside)
         return deleteButton
     }()
-    
     
     var shareButtonHandler: (() -> ())?
     var deleteButtonHandler: (() -> ())?

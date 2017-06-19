@@ -89,7 +89,6 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         }
         return noRecordView
     }()
-    private let kBottomBarHeight = 44
     private var isSelecting = false
     private var kGroup: DispatchGroup = DispatchGroup()
 
@@ -122,10 +121,10 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         
         self.view.addSubview(self.bottomBar)
         self.bottomBar.snp.makeConstraints { (make) in
-            make.height.equalTo(kBottomBarHeight)
+            make.height.equalTo(GalleryViewBottomBar.height)
             make.right.equalTo(0)
             make.left.equalTo(0)
-            make.bottom.equalTo(kBottomBarHeight)
+            make.bottom.equalTo(GalleryViewBottomBar.height)
         }
     }
     
@@ -219,7 +218,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
         if self.isSelecting {
             self.collectionView.snp.updateConstraints({ (make) in
-                make.bottom.equalTo(kBottomBarHeight)
+                make.bottom.equalTo(GalleryViewBottomBar.height)
             })
             self.bottomBar.snp.updateConstraints({ (make) in
                 make.bottom.equalTo(0)
@@ -229,7 +228,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
                 make.bottom.equalTo(0)
             })
             self.bottomBar.snp.updateConstraints({ (make) in
-                make.bottom.equalTo(kBottomBarHeight)
+                make.bottom.equalTo(GalleryViewBottomBar.height)
             })
         }
         self.bottomBar.layer.removeAllAnimations()
@@ -243,11 +242,11 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         animation.delegate = self
         if self.isSelecting {
             self.navigationItem.leftBarButtonItem?.title = "取消"
-            animation.byValue = CGPoint(x: 0, y: -kBottomBarHeight)
+            animation.byValue = CGPoint(x: 0, y: -GalleryViewBottomBar.height)
             self.collectionView.mj_header = nil
         } else {
             self.navigationItem.leftBarButtonItem?.title = "选择"
-            animation.byValue = CGPoint(x: 0, y: kBottomBarHeight)
+            animation.byValue = CGPoint(x: 0, y: GalleryViewBottomBar.height)
             self.collectionView.mj_header = self.refreshHeader
         }
         animation.isRemovedOnCompletion = false

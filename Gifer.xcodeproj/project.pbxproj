@@ -36,6 +36,7 @@
 		E1B456621EE00D10009555A6 /* PhotoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B456611EE00D10009555A6 /* PhotoCell.swift */; };
 		E1E37F1D1ED80B67000B4B3F /* GifImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E37F1C1ED80B67000B4B3F /* GifImageView.swift */; };
 		E1E37F1F1ED8107E000B4B3F /* ImageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E37F1E1ED8107E000B4B3F /* ImageType.swift */; };
+		E1F2B4711EF110F8003948EB /* GifEditToolBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2B4701EF110F8003948EB /* GifEditToolBar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -72,6 +73,7 @@
 		E1B456611EE00D10009555A6 /* PhotoCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCell.swift; sourceTree = "<group>"; };
 		E1E37F1C1ED80B67000B4B3F /* GifImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifImageView.swift; sourceTree = "<group>"; };
 		E1E37F1E1ED8107E000B4B3F /* ImageType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageType.swift; sourceTree = "<group>"; };
+		E1F2B4701EF110F8003948EB /* GifEditToolBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifEditToolBar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -162,6 +164,7 @@
 				E19D661D1EE7F547008E29F7 /* PhotoPickerCell.swift */,
 				E19D661E1EE7F547008E29F7 /* PhotoPickerCell.xib */,
 				E171BF8F1EEA7A37001F53E2 /* GifEditViewBottomBar.swift */,
+				E1F2B4701EF110F8003948EB /* GifEditToolBar.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -377,6 +380,7 @@
 				E13CAD021EE5481A004D9CAA /* NoticeView.swift in Sources */,
 				E12826A21ED4116700262F63 /* GalleryViewController.swift in Sources */,
 				E19D661C1EE7F2D5008E29F7 /* PhotoPickerViewController.swift in Sources */,
+				E1F2B4711EF110F8003948EB /* GifEditToolBar.swift in Sources */,
 				E13CACFF1EE50775004D9CAA /* Constants.swift in Sources */,
 				E195333E1EE6A48D00C23BE2 /* PublicMethod.swift in Sources */,
 				E171BF8E1EEA45D5001F53E2 /* GifEditViewController.swift in Sources */,

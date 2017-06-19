@@ -28,7 +28,6 @@ class PhotoCell: UICollectionViewCell, UIScrollViewDelegate {
         scrollView.maximumZoomScale = 2.0
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
-        var screenSize = UIScreen.main.bounds.size
         return scrollView
     }()
     

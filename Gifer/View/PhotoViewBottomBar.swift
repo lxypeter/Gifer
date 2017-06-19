@@ -10,6 +10,8 @@ import UIKit
 import SnapKit
 
 class PhotoViewBottomBar: UIView {
+    
+    public static let height: CGFloat = 54
 
     lazy var resetButton: UIButton = {
         let resetButton = UIButton(frame: CGRect.zero)

@@ -14,7 +14,6 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
 
     //MARK: property
     let photoCellId = "kPhotoCellId"
-    let kBottomBarHeight: CGFloat = 54
     
     var gifArray: [Photo] = []
     var currentIndex: Int = 0
@@ -116,7 +115,7 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
             make.bottom.equalTo(0)
             make.right.equalTo(0)
             make.left.equalTo(0)
-            make.height.equalTo(self.kBottomBarHeight)
+            make.height.equalTo(PhotoViewBottomBar.height)
         }
         
         self.view.addSubview(self.collectionView)
@@ -172,7 +171,7 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let height = UIScreen.main.bounds.height - kStatusBarHeight - kNavigationBarHeight - kBottomBarHeight
+        let height = UIScreen.main.bounds.height - kStatusBarHeight - kNavigationBarHeight - PhotoViewBottomBar.height
         return CGSize(width: kScreenWidth, height: height)
     }
     
@@ -186,31 +185,28 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
                 naviFrame.origin.y = -64
                 self.navigationController?.navigationBar.frame = naviFrame
                 self.collectionView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
-                
-                self.bottomBar.snp.updateConstraints({ (make) in
-                    
-                    make.bottom.equalTo(self.kBottomBarHeight)
-                })
-                
-                self.collectionView.snp.updateConstraints({ (make) in
-                    make.top.equalTo(0)
-                })
             }
+            self.bottomBar.snp.updateConstraints({ (make) in
+                make.bottom.equalTo(PhotoViewBottomBar.height)
+            })
+            
+            self.collectionView.snp.updateConstraints({ (make) in
+                make.top.equalTo(0)
+            })
         } else {
             UIView.animate(withDuration: 0.25) {
                 var frame = self.navigationController!.navigationBar.frame
                 frame.origin.y = 20
                 self.navigationController?.navigationBar.frame = frame
                 self.collectionView.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
-                
-                self.bottomBar.snp.updateConstraints({ (make) in
-                    make.bottom.equalTo(0)
-                })
-                
-                self.collectionView.snp.updateConstraints({ (make) in
-                    make.top.equalTo(kStatusBarHeight + kNavigationBarHeight)
-                })
             }
+            self.bottomBar.snp.updateConstraints({ (make) in
+                make.bottom.equalTo(0)
+            })
+            
+            self.collectionView.snp.updateConstraints({ (make) in
+                make.top.equalTo(kStatusBarHeight + kNavigationBarHeight)
+            })
         }
     }
     
