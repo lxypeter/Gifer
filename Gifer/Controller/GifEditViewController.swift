@@ -13,162 +13,90 @@ import ImageIO
 import MobileCoreServices
 
 class GifEditViewController: BaseViewController {
-    //MARK: property
-    var selectedArray: [Photo] = [] {
-        didSet {
-            if self.selectedArray.count < 1 {
-                return
-            }
-            let height: CGFloat = self.selectedArray[0].photoHeight
-            let width: CGFloat = self.selectedArray[0].photoWidth
-            for index in 0 ..< self.selectedArray.count {
-                let photo = self.selectedArray[index]
-                if width != photo.photoWidth || height != photo.photoHeight {
-                    self.isSameSize = false
-                    return
-                }
-            }
-        }
+    
+    struct State: StateType {
+        var showingRect: CGRect? = nil
+        var isCliping: Bool = false
     }
-    private var imageArray: [UIImage] = []
     
-    private lazy var imageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
-        imageView.isUserInteractionEnabled = true
-        imageView.backgroundColor = UIColor.white
-        imageView.animationDuration = self.bottomBar.originDuration * Double(self.selectedArray.count)
-        let pinchGes = UIPinchGestureRecognizer(target: self, action: #selector(pinchImageView(recognizer:)))
-        imageView.addGestureRecognizer(pinchGes)
-        return imageView
-    }()
-    private lazy var bottomBar: GifEditViewBottomBar = {
-        let bottomBar = GifEditViewBottomBar(frame: CGRect.zero)
-        bottomBar.totalCount = self.selectedArray.count
-        bottomBar.resetButtonHandler = {
-            self.imageView.transform = .identity
-            //masklayer
-            let path = UIBezierPath(rect: CGRect(x: 0, y: 0, width: self.contentView.frame.size.width, height: self.contentView.frame.size.height))
-            let showRect = self.imageView.frame
-            let showPath = UIBezierPath(rect: showRect).reversing()
-            path.append(showPath)
-            self.maskLayer.path = path.cgPath
-            
-            //edgeView
-            self.leftUpEdgeView.center = showRect.origin
-            self.leftDownEdgeView.center = CGPoint(x: showRect.minX, y: showRect.maxY)
-            self.rightUpEdgeView.center = CGPoint(x: showRect.maxX, y: showRect.minY)
-            self.rightDownEdgeView.center = CGPoint(x: showRect.maxX, y: showRect.maxY)
-        }
-        bottomBar.sliderValueChangeHandler = { [unowned self] value in
-            self.imageView.animationDuration = Double(String(format: "%.2f", value))! * Double(self.selectedArray.count)
-            self.imageView.startAnimating()
-        }
-        return bottomBar
-    }()
-    private lazy var toolBar: GifEditToolBar = {
-        let toolBar = GifEditToolBar(frame: CGRect.zero)
-        toolBar.clipButtonHandler = {[unowned self] in
-            self.switchToClipingMode(true)
-        }
-        toolBar.clipConfirmButtonHandler = {[unowned self] in
-            self.switchToClipingMode(false)
-        }
-        toolBar.clipCancelButtonHandler = {[unowned self] in
-            self.switchToClipingMode(false)
-        }
-        return toolBar
-    }()
-    private lazy var contentView: UIView = {
-        let contentView = UIView(frame: CGRect.zero)
-        contentView.clipsToBounds = true
-        contentView.backgroundColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
-        // ImageView拖放手势
-        let panGes = UIPanGestureRecognizer(target: self, action: #selector(panImageView(recognizer:)))
-        contentView.addGestureRecognizer(panGes)
-        return contentView
-    }()
-    private lazy var maskLayer: CAShapeLayer = {
-        let maskLayer = CAShapeLayer()
-        let fillColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
-        maskLayer.fillColor = fillColor.cgColor
-        maskLayer.opacity = 0.5
-        return maskLayer
-    }()
-    private lazy var leftUpEdgeView: UIView = {
-        let leftUpEdgeView = self.configureEdgeView()
-        return leftUpEdgeView
-    }()
-    private lazy var rightUpEdgeView: UIView = {
-        let rightUpEdgeView = self.configureEdgeView()
-        return rightUpEdgeView
-    }()
-    private lazy var rightDownEdgeView: UIView = {
-        let rightDownEdgeView = self.configureEdgeView()
-        return rightDownEdgeView
-    }()
-    private lazy var leftDownEdgeView: UIView = {
-        let leftDownEdgeView = self.configureEdgeView()
-        return leftDownEdgeView
-    }()
+    enum Action: ActionType {
+        case switchCliping
+        case panEdgeView(showingRect: CGRect)
+    }
     
+    enum Command: CommandType {
+        case loadToDos(completion: ([String]) -> Void )
+        case someOtherCommand
+    }
+    
+    lazy var reducer: (State, Action) -> (state: State, command: Command?) = {
+        [weak self] (state: State, action: Action) in
+        
+        var state = state
+        var command: Command? = nil
+        
+        switch action {
+        case .switchCliping:
+            state.isCliping = !state.isCliping
+        case .panEdgeView(let showingRect):
+            state.showingRect = showingRect
+        }
+        return (state, command)
+    }
+    
+    var store: Store<Action, State, Command>!
+    
+    //MARK: property
     private let kEdgeViewWidth: CGFloat = 30
-    private var isSameSize = true
-    private var showingRect: CGRect = CGRect.zero
     private var kGroup: DispatchGroup = DispatchGroup()
     private var isCliping: Bool = false
+    var selectedArray: [Photo] = []
+    private var imageArray: [UIImage] = []
     
     //MARK: life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.configureSubviews()
+        configureSubviews()
+        
+        store = Store<Action, State, Command>(reducer: reducer, initialState: State())
+        store.subscribe { [weak self] state, previousState, command in
+            self?.stateDidChanged(state: state, previousState: previousState, command: command)
+        }
+        stateDidChanged(state: store.state, previousState: nil, command: nil)
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.fetchFullImage()
-        
-        //masklayer
-        let path = UIBezierPath(rect: CGRect(x: 0, y: 0, width: self.contentView.frame.size.width, height: self.contentView.frame.size.height))
-        let showRect = self.imageView.frame
-        let showPath = UIBezierPath(rect: showRect).reversing()
-        path.append(showPath)
-        self.maskLayer.path = path.cgPath
-        
-        //edgeView
-        self.leftUpEdgeView.center = showRect.origin
-        self.leftDownEdgeView.center = CGPoint(x: showRect.minX, y: showRect.maxY)
-        self.rightUpEdgeView.center = CGPoint(x: showRect.maxX, y: showRect.minY)
-        self.rightDownEdgeView.center = CGPoint(x: showRect.maxX, y: showRect.maxY)
-        
+        fetchFullImage()
     }
     
     private func configureSubviews() {
-        self.title = "编辑"
-        self.extendedLayoutIncludesOpaqueBars = true
+        title = "编辑"
+        extendedLayoutIncludesOpaqueBars = true
         
         let generateItem: UIBarButtonItem = UIBarButtonItem(title: "生成", style: .plain, target: self, action: #selector(clickGenerateButton))
         generateItem.tintColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
-        self.navigationItem.rightBarButtonItem = generateItem;
+        navigationItem.rightBarButtonItem = generateItem;
         
-        self.view.addSubview(self.toolBar)
-        self.toolBar.snp.makeConstraints { (make) in
+        view.addSubview(toolBar)
+        toolBar.snp.makeConstraints { (make) in
             make.top.equalTo(kNavigationBarHeight + kStatusBarHeight)
             make.left.equalTo(0)
             make.right.equalTo(0)
             make.height.equalTo(GifEditToolBar.height)
         }
         
-        self.view.addSubview(self.bottomBar)
-        self.bottomBar.snp.makeConstraints { (make) in
+        view.addSubview(bottomBar)
+        bottomBar.snp.makeConstraints { (make) in
             make.bottom.equalTo(0)
             make.left.equalTo(0)
             make.right.equalTo(0)
             make.height.equalTo(GifEditViewBottomBar.height)
         }
         
-        self.view.addSubview(self.contentView)
-        self.contentView.snp.makeConstraints { (make) in
+        view.addSubview(contentView)
+        contentView.snp.makeConstraints { (make) in
             make.top.equalTo(self.toolBar.snp.bottom).offset(0)
             make.left.equalTo(0)
             make.right.equalTo(0)
@@ -176,11 +104,11 @@ class GifEditViewController: BaseViewController {
         }
         
         let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - kNavigationBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
-        self.contentView.addSubview(self.imageView)
-        self.imageView.snp.makeConstraints { (make) in
+        contentView.addSubview(imageView)
+        imageView.snp.makeConstraints { (make) in
             make.center.equalTo(self.contentView.snp.center)
             var imageViewRatio: CGFloat = 1.0
-            if self.isSameSize {
+            if isSameRatio() {
                 let width: CGFloat = self.selectedArray[0].photoWidth
                 let height: CGFloat = self.selectedArray[0].photoHeight
                 imageViewRatio = width / height
@@ -194,13 +122,15 @@ class GifEditViewController: BaseViewController {
             }
         }
         
-        self.contentView.addSubview(self.leftUpEdgeView)
-        self.contentView.addSubview(self.rightUpEdgeView)
-        self.contentView.addSubview(self.rightDownEdgeView)
-        self.contentView.addSubview(self.leftDownEdgeView)
+        contentView.addSubview(leftUpEdgeView)
+        contentView.addSubview(rightUpEdgeView)
+        contentView.addSubview(rightDownEdgeView)
+        contentView.addSubview(leftDownEdgeView)
         
-        self.contentView.layer.addSublayer(self.maskLayer)
+        contentView.layer.addSublayer(maskLayer)
         
+        contentView.setNeedsLayout()
+        contentView.layoutIfNeeded()
     }
     
     private func configureEdgeView() -> UIView {
@@ -214,10 +144,10 @@ class GifEditViewController: BaseViewController {
     
     /// 获取完整大图
     private func fetchFullImage() {
-        self.showHudWithMsg(msg: "")
-        self.kGroup = DispatchGroup()
-        for photo in self.selectedArray {
-            self.kGroup.enter()
+        showHudWithMsg(msg: "")
+        kGroup = DispatchGroup()
+        for photo in selectedArray {
+            kGroup.enter()
             if photo.fullImage === nil {
                 let requestOptions = PHImageRequestOptions()
                 requestOptions.isSynchronous = false
@@ -231,7 +161,7 @@ class GifEditViewController: BaseViewController {
                     self.kGroup.leave()
                 })
             } else {
-                self.kGroup.leave()
+                kGroup.leave()
             }
         }
         self.kGroup.notify(queue: DispatchQueue.main) { [unowned self] in 
@@ -314,215 +244,239 @@ class GifEditViewController: BaseViewController {
         self.present(alertController, animated: true, completion: nil)
     }
     
+    //MARK: gesture
     func pinchImageView(recognizer: UIPinchGestureRecognizer) {
-        if !self.isCliping { return }
-        if recognizer.state != .changed {
-            return
-        }
-        let scale = recognizer.scale
-        let location = recognizer.location(in: self.contentView)
+        if !store.state.isCliping { return }
         
-        let scaleTransform = self.imageView.transform.scaledBy(x: scale, y: scale)
-        recognizer.view!.transform = scaleTransform
-        
-        if self.imageView.frame.size.height < self.imageView.bounds.size.height {
-            recognizer.view!.transform = .identity
+        if recognizer.state == .ended {
+            let imageLeftUpPoint = contentView.convert(leftUpEdgeView.center, to: imageView)
+            let imageRightDownPoint = contentView.convert(rightDownEdgeView.center, to: imageView)
+            
+            let showingRect = CGRect(x: imageLeftUpPoint.x, y: imageLeftUpPoint.y, width: imageRightDownPoint.x - imageLeftUpPoint.x, height: imageRightDownPoint.y - imageLeftUpPoint.y)
+            store.dispatch(.panEdgeView(showingRect: showingRect))
             return
         }
         
-        let dx = recognizer.view!.frame.midX - location.x
-        let dy = recognizer.view!.frame.midY - location.y
+        var scale = recognizer.scale
+        let location = recognizer.location(in: contentView)
+        let scaleTransform = imageView.transform.scaledBy(x: scale, y: scale)
+        imageView.transform = scaleTransform
+        
+        let edgeRect = CGRect(x: leftUpEdgeView.center.x, y: leftUpEdgeView.center.y, width: rightDownEdgeView.center.x - leftUpEdgeView.center.x, height: rightDownEdgeView.center.y - leftUpEdgeView.center.y)
+        
+        // 限制缩放大小
+        if imageView.frame.height < edgeRect.height {
+            imageView.transform = .identity
+            scale = edgeRect.height / imageView.frame.height
+            let scaleTransform = imageView.transform.scaledBy(x: scale, y: scale)
+            imageView.transform = scaleTransform
+        }
+        if imageView.frame.width < edgeRect.width {
+            imageView.transform = .identity
+            scale = edgeRect.width / imageView.frame.width
+            let scaleTransform = imageView.transform.scaledBy(x: scale, y: scale)
+            imageView.transform = scaleTransform
+        }
+        
+        let dx = imageView.frame.midX - location.x
+        let dy = imageView.frame.midY - location.y
         let x = dx * scale - dx
         let y = dy * scale - dy
         
         let translationTransform = CGAffineTransform(translationX: x, y: y)
-        recognizer.view!.transform = recognizer.view!.transform.concatenating(translationTransform)
+        imageView.transform = recognizer.view!.transform.concatenating(translationTransform)
+        
+        // 控制边界
+        var adjustX: CGFloat = 0
+        var adjustY: CGFloat = 0
+        if imageView.frame.minX > edgeRect.minX {
+            adjustX = edgeRect.minX - imageView.frame.minX
+        }
+        if imageView.frame.minY > edgeRect.minY {
+            adjustY = edgeRect.minY - imageView.frame.minY
+        }
+        if imageView.frame.maxX < edgeRect.maxX {
+            adjustX = edgeRect.maxX - imageView.frame.maxX
+        }
+        if imageView.frame.maxY < edgeRect.maxY {
+            adjustY = edgeRect.maxY - imageView.frame.maxY
+        }
+        let adjustTranslation = CGAffineTransform(translationX: adjustX, y: adjustY)
+        imageView.transform = recognizer.view!.transform.concatenating(adjustTranslation)
         
         recognizer.scale = 1
     }
     
     func panImageView(recognizer: UIPanGestureRecognizer) {
+        if !store.state.isCliping { return }
         
-        if !self.isCliping { return }
-        
-        let frame = self.imageView.frame
-        let touchPoint = recognizer.location(in: self.imageView)
+        if recognizer.state == .ended {
+            let imageLeftUpPoint = contentView.convert(leftUpEdgeView.center, to: imageView)
+            let imageRightDownPoint = contentView.convert(rightDownEdgeView.center, to: imageView)
+            
+            let showingRect = CGRect(x: imageLeftUpPoint.x, y: imageLeftUpPoint.y, width: imageRightDownPoint.x - imageLeftUpPoint.x, height: imageRightDownPoint.y - imageLeftUpPoint.y)
+            store.dispatch(.panEdgeView(showingRect: showingRect))
+            return
+        }
         
         // 触碰点是否在ImageView
-        let isInFrame = touchPoint.x > 0 && touchPoint.y > 0 && touchPoint.x < frame.size.width && touchPoint.y < frame.size.height
-        if !isInFrame { return }
+        if !imageView.point(inside: recognizer.location(in: imageView), with: nil) { return }
         
-        let translation = recognizer.translation(in: self.view)
-        let contentViewHeight = self.contentView.frame.size.height
-        let lastScale = self.imageView.frame.size.width / self.imageView.bounds.size.width
-        var translationX = translation.x
+        let translation = recognizer.translation(in: view)
+        let lastScale = imageView.frame.size.width / imageView.bounds.size.width
+        var translationX = translation.x / lastScale
         var translationY = translation.y / lastScale
         
-        let verticalEdge = (contentViewHeight - (self.rightDownEdgeView.center.y - self.leftUpEdgeView.center.y)) / 2
-        let horizontalEdge = (kScreenWidth - (self.rightDownEdgeView.center.x - self.leftUpEdgeView.center.x)) / 2
+        let edgeRect = CGRect(x: leftUpEdgeView.center.x, y: leftUpEdgeView.center.y, width: rightDownEdgeView.center.x - leftUpEdgeView.center.x, height: rightDownEdgeView.center.y - leftUpEdgeView.center.y)
         
         // 控制边界
-        if frame.origin.x + translationX > horizontalEdge { translationX = horizontalEdge - frame.origin.x } // 左
-        if frame.origin.y + translationY > verticalEdge { translationY = verticalEdge - frame.origin.y } // 上
-        if frame.maxX + translationX < kScreenWidth - horizontalEdge { translationX = kScreenWidth - horizontalEdge - frame.maxX  } // 右
-        if frame.maxY + translationY < contentViewHeight - verticalEdge { translationY  = contentViewHeight - verticalEdge - frame.maxY } // 下
+        if imageView.frame.minX + translationX > edgeRect.minX {
+            translationX = edgeRect.minX - imageView.frame.minX
+        }
+        if imageView.frame.minY + translationY > edgeRect.minY {
+            translationY = edgeRect.minY - imageView.frame.minY
+        }
+        if imageView.frame.maxX + translationX < edgeRect.maxX {
+            translationX = edgeRect.maxX - imageView.frame.maxX
+        }
+        if imageView.frame.maxY + translationY < edgeRect.maxY {
+            translationY = edgeRect.maxY - imageView.frame.maxY
+        }
         
-        let transform = self.imageView.transform.translatedBy(x: translationX / lastScale, y: translationY)
+        let transform = imageView.transform.translatedBy(x: translationX, y: translationY)
         imageView.transform = transform
         
         recognizer.setTranslation(CGPoint.zero, in: self.view)
     }
     
     func panEdgeView(recognizer: UIPanGestureRecognizer) {
-        if !self.isCliping { return }
+        if !store.state.isCliping { return }
         
         if recognizer.state == .ended {
-            let leftUpPoint = self.contentView.convert(self.leftUpEdgeView.center, to: self.imageView)
-            let rightDownPoint = self.contentView.convert(self.rightDownEdgeView.center, to: self.imageView)
-            
-            let contentViewHeight = self.contentView.frame.size.height
-            
-            let targetWidth = rightDownPoint.x - leftUpPoint.x
-            let targetHeight = rightDownPoint.y - leftUpPoint.y
-            
-            var maskWidth: CGFloat = 0
-            var maskHeight: CGFloat = 0
-            var maskX: CGFloat = 0
-            var maskY: CGFloat = 0
-            var scale: CGFloat = 1
-            if targetHeight / targetWidth < contentViewHeight / kScreenWidth {
-                maskWidth = kScreenWidth
-                maskHeight = targetHeight / targetWidth * kScreenWidth
-                maskY = (contentViewHeight - maskHeight) / 2
-                scale = kScreenWidth / targetWidth
-            } else {
-                maskHeight = contentViewHeight
-                maskWidth = targetWidth / targetHeight * maskHeight
-                maskX = (kScreenWidth - maskWidth) / 2
-                scale = contentViewHeight / targetHeight
-            }
-            
-            let maskRect = CGRect(x: maskX, y: maskY, width: maskWidth, height: maskHeight)
-            
-            self.updateMaskAndEdgeView(with: maskRect, animated: true)
-            
-            // 缩放
-            self.imageView.transform = .identity
-            let scaleTransform = self.imageView.transform.scaledBy(x: scale, y: scale)
-            self.imageView.transform = scaleTransform
-            
-            // 位移
-            let targetCenterX = (leftUpPoint.x + rightDownPoint.x) / 2
-            let targetCenterY = (leftUpPoint.y + rightDownPoint.y) / 2
-            let dx = self.imageView.bounds.midX - targetCenterX
-            let dy = self.imageView.bounds.midY - targetCenterY
-            let x = dx * scale
-            let y = dy * scale
-            
-            let translationTransform = CGAffineTransform(translationX: x, y: y)
-            self.imageView.transform = self.imageView.transform.concatenating(translationTransform)
+            resizeShowingArea()
+            return
         }
         
-        let translation = recognizer.translation(in: self.view)
+        let translation = recognizer.translation(in: view)
         var centerX: CGFloat = recognizer.view!.center.x + translation.x
         var centerY: CGFloat = recognizer.view!.center.y + translation.y
-        let minDistant: CGFloat = self.kEdgeViewWidth
-        let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
-        let contentViewWidth: CGFloat = kScreenWidth
-        let imageViewFrame = self.imageView.frame
         
-        if recognizer.view! === self.leftUpEdgeView { // 左上
-            centerX = max(imageViewFrame.origin.x, 0, centerX)
-            centerX = min(self.rightUpEdgeView.center.x - minDistant, centerX)
-            centerY = max(imageViewFrame.origin.y, 0, centerY)
-            centerY = min(self.leftDownEdgeView.center.y - minDistant, centerY)
+        var leftUpViewCenter = leftUpEdgeView.center
+        var rightDownViewCenter = rightDownEdgeView.center
+        
+        let minDistant: CGFloat = kEdgeViewWidth
+        
+        let contentViewHeight: CGFloat = contentView.frame.size.height
+        let contentViewWidth: CGFloat = contentView.frame.size.width
+        
+        let imageViewFrame = imageView.frame
+        
+        if recognizer.view! === leftUpEdgeView { // 左上
+            centerX = max(imageViewFrame.origin.x, kEdgeViewWidth / 2, centerX)
+            centerX = min(rightUpEdgeView.center.x - minDistant, centerX)
+            centerY = max(imageViewFrame.origin.y, kEdgeViewWidth / 2, centerY)
+            centerY = min(leftDownEdgeView.center.y - minDistant, centerY)
             
-            var rightUpEdgeViewCenter = self.rightUpEdgeView.center
-            rightUpEdgeViewCenter.y = centerY
-            self.rightUpEdgeView.center = rightUpEdgeViewCenter
+            leftUpViewCenter = CGPoint(x: centerX, y: centerY)
+        } else if recognizer.view! === leftDownEdgeView { // 左下
+            centerX = max(imageViewFrame.origin.x, kEdgeViewWidth / 2, centerX)
+            centerX = min(rightDownEdgeView.center.x - minDistant, centerX)
+            centerY = max(leftUpEdgeView.center.y + minDistant, centerY)
+            centerY = min(imageViewFrame.maxY, contentViewHeight - kEdgeViewWidth / 2 ,centerY)
             
-            var leftDownEdgeViewCenter = self.leftDownEdgeView.center
-            leftDownEdgeViewCenter.x = centerX
-            self.leftDownEdgeView.center = leftDownEdgeViewCenter
-            
-        } else if recognizer.view! === self.leftDownEdgeView { // 左下
-            centerX = max(imageViewFrame.origin.x, 0, centerX)
-            centerX = min(self.rightDownEdgeView.center.x - minDistant, centerX)
-            centerY = max(self.leftUpEdgeView.center.y + minDistant, centerY)
-            centerY = min(imageViewFrame.maxY, contentViewHeight ,centerY)
-            
-            var rightDownEdgeViewCenter = self.rightDownEdgeView.center
-            rightDownEdgeViewCenter.y = centerY
-            self.rightDownEdgeView.center = rightDownEdgeViewCenter
-            
-            var leftUpEdgeViewCenter = self.leftUpEdgeView.center
-            leftUpEdgeViewCenter.x = centerX
-            self.leftUpEdgeView.center = leftUpEdgeViewCenter
-            
-        } else if recognizer.view! === self.rightUpEdgeView { //右上
+            leftUpViewCenter.x = centerX
+            rightDownViewCenter.y = centerY
+        } else if recognizer.view! === rightUpEdgeView { //右上
             centerX = max(self.leftUpEdgeView.center.x + minDistant, centerX)
-            centerX = min(imageViewFrame.maxX, contentViewWidth, centerX)
-            centerY = max(imageViewFrame.origin.y, 0, centerY)
+            centerX = min(imageViewFrame.maxX, contentViewWidth - kEdgeViewWidth / 2, centerX)
+            centerY = max(imageViewFrame.origin.y, kEdgeViewWidth / 2, centerY)
             centerY = min(self.rightDownEdgeView.center.y - minDistant ,centerY)
             
-            var leftUpEdgeViewViewCenter = self.leftUpEdgeView.center
-            leftUpEdgeViewViewCenter.y = centerY
-            self.leftUpEdgeView.center = leftUpEdgeViewViewCenter
-            
-            var rightDownEdgeViewCenter = self.rightDownEdgeView.center
-            rightDownEdgeViewCenter.x = centerX
-            self.rightDownEdgeView.center = rightDownEdgeViewCenter
-            
+            leftUpViewCenter.y = centerY
+            rightDownViewCenter.x = centerX
         } else { //rightDownEdgeView 右下
             centerX = max(self.leftDownEdgeView.center.x + minDistant, centerX)
-            centerX = min(imageViewFrame.maxX, contentViewWidth, centerX)
+            centerX = min(imageViewFrame.maxX, contentViewWidth - kEdgeViewWidth / 2, centerX)
             centerY = max(self.rightUpEdgeView.center.y + minDistant, centerY)
-            centerY = min(imageViewFrame.maxY, contentViewHeight, centerY)
+            centerY = min(imageViewFrame.maxY, contentViewHeight - kEdgeViewWidth / 2, centerY)
             
-            var leftDownEdgeViewCenter = self.leftDownEdgeView.center
-            leftDownEdgeViewCenter.y = centerY
-            self.leftDownEdgeView.center = leftDownEdgeViewCenter
-            
-            var rightUpEdgeViewCenter = self.rightUpEdgeView.center
-            rightUpEdgeViewCenter.x = centerX
-            self.rightUpEdgeView.center = rightUpEdgeViewCenter
+            rightDownViewCenter = CGPoint(x: centerX, y: centerY)
         }
-        
-        let newCenter = CGPoint(x: centerX, y: centerY)
-        recognizer.view!.center = newCenter
         recognizer.setTranslation(CGPoint.zero, in: self.view)
         
-        let path = UIBezierPath(rect: CGRect(x: 0, y: 0, width: kScreenWidth, height: contentViewHeight))
-        let showRectX = self.leftUpEdgeView.center.x
-        let showRectY = self.leftUpEdgeView.center.y
-        let showRectWidth = self.rightUpEdgeView.center.x - self.leftUpEdgeView.center.x
-        let showRectHeight = self.leftDownEdgeView.center.y - self.leftUpEdgeView.center.y
+        let imageLeftUpPoint = contentView.convert(leftUpViewCenter, to: imageView)
+        let imageRightDownPoint = contentView.convert(rightDownViewCenter, to: imageView)
         
-        let showPath = UIBezierPath(rect: CGRect(x: showRectX, y: showRectY, width: showRectWidth, height: showRectHeight)).reversing()
-        path.append(showPath)
-        self.maskLayer.path = path.cgPath
+        let showingRect = CGRect(x: imageLeftUpPoint.x, y: imageLeftUpPoint.y, width: imageRightDownPoint.x - imageLeftUpPoint.x, height: imageRightDownPoint.y - imageLeftUpPoint.y)
+        store.dispatch(.panEdgeView(showingRect: showingRect))
+    }
     
+    //MARK: update view
+    private func resizeShowingArea() {
+        let leftUpPoint = contentView.convert(leftUpEdgeView.center, to: imageView)
+        let rightDownPoint = contentView.convert(rightDownEdgeView.center, to: imageView)
+        let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - kNavigationBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
+        
+        let targetWidth = rightDownPoint.x - leftUpPoint.x
+        let targetHeight = rightDownPoint.y - leftUpPoint.y
+        var scale: CGFloat = 1
+        if targetHeight / targetWidth < contentViewHeight / kScreenWidth {
+            scale = (kScreenWidth - kEdgeViewWidth) / targetWidth
+        } else {
+            scale = (contentViewHeight - kEdgeViewWidth) / targetHeight
+        }
+        
+        // 缩放
+        imageView.transform = .identity
+        let scaleTransform = imageView.transform.scaledBy(x: scale, y: scale)
+        imageView.transform = scaleTransform
+        
+        // 位移
+        let targetCenterX = (leftUpPoint.x + rightDownPoint.x) / 2
+        let targetCenterY = (leftUpPoint.y + rightDownPoint.y) / 2
+        let dx = imageView.bounds.midX - targetCenterX
+        let dy = imageView.bounds.midY - targetCenterY
+        let x = dx * scale
+        let y = dy * scale
+        
+        let translationTransform = CGAffineTransform(translationX: x, y: y)
+        imageView.transform = imageView.transform.concatenating(translationTransform)
+        
+        updateMaskAndEdgeView(animated: true)
     }
     
     /// 更新显示区域
     ///
     /// - Parameters:
-    ///   - rect: 显示区域
+    ///   - showingRect: 显示区域
     ///   - animated: 是否有动画
-    private func updateMaskAndEdgeView(with rect: CGRect, animated: Bool) {
+    private func updateMaskAndEdgeView(animated: Bool) {
         let block: () -> () = {
-            //edgeView
-            self.leftUpEdgeView.center = CGPoint(x: rect.origin.x, y: rect.origin.y)
-            self.leftDownEdgeView.center = CGPoint(x: rect.origin.x, y: rect.maxY)
-            self.rightUpEdgeView.center = CGPoint(x: rect.maxX, y: rect.origin.y)
-            self.rightDownEdgeView.center = CGPoint(x: rect.maxX, y: rect.maxY)
+            self.contentView.setNeedsLayout()
+            self.contentView.layoutIfNeeded()
+            
+            let sr: CGRect
+            if self.store.state.showingRect == nil {
+                sr = self.imageView.bounds
+            } else {
+                sr = self.store.state.showingRect!
+            }
+            let leftUpPoint = self.imageView.convert(CGPoint(x: sr.origin.x, y: sr.origin.y), to: self.contentView)
+            let rightDownPoint = self.imageView.convert(CGPoint(x: sr.maxX, y: sr.maxY), to: self.contentView)
             
             //masklayer
             let path = UIBezierPath(rect: CGRect(x: 0, y: 0, width: kScreenWidth, height: kScreenHeight))
-            let showRect = CGRect(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: rect.size.height)
+            let showRect = CGRect(x: leftUpPoint.x, y: leftUpPoint.y, width: rightDownPoint.x - leftUpPoint.x, height: rightDownPoint.y - leftUpPoint.y)
             let showPath = UIBezierPath(rect: showRect).reversing()
             path.append(showPath)
             self.maskLayer.path = path.cgPath
+            
+            //edgeView
+            self.leftUpEdgeView.center = CGPoint(x: leftUpPoint.x, y: leftUpPoint.y)
+            self.leftDownEdgeView.center = CGPoint(x: leftUpPoint.x, y: rightDownPoint.y)
+            self.rightUpEdgeView.center = CGPoint(x: rightDownPoint.x, y: leftUpPoint.y)
+            self.rightDownEdgeView.center = CGPoint(x: rightDownPoint.x, y: rightDownPoint.y)
+            
         }
         
         if animated {
@@ -532,62 +486,188 @@ class GifEditViewController: BaseViewController {
         }
     }
     
-    //MARK: animate
-    private func switchToClipingMode(_ isCliping: Bool) {
+    private func clipingStateChange() {
+        leftDownEdgeView.isHidden = !store.state.isCliping
+        leftUpEdgeView.isHidden = !store.state.isCliping
+        rightDownEdgeView.isHidden = !store.state.isCliping
+        rightUpEdgeView.isHidden = !store.state.isCliping
         
-        self.isCliping = isCliping
-        var naviBarFrame = self.navigationController!.navigationBar.frame
+        var naviBarFrame = navigationController!.navigationBar.frame
         let toolBarTop: CGFloat
-        let contentViewHeight: CGFloat
-        var leftDownCenter = self.leftDownEdgeView.center
-        var leftUpCenter = self.leftUpEdgeView.center
-        var rightDownCenter = self.rightDownEdgeView.center
-        var rightUpCenter = self.rightUpEdgeView.center
-
-        if isCliping {
+        let scale: CGFloat
+        
+        let showingRect: CGRect
+        if store.state.showingRect == nil {
+            showingRect = imageView.bounds
+        } else {
+            showingRect = store.state.showingRect!
+        }
+        let showingRectRatio = showingRect.size.width / showingRect.size.height
+        
+        let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - kNavigationBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
+        if store.state.isCliping {
+            bottomBar.status = .cliping
             naviBarFrame.origin.y = -(kNavigationBarHeight + kStatusBarHeight)
             toolBarTop = kStatusBarHeight
-            contentViewHeight = kScreenHeight - kStatusBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
-            self.bottomBar.status = .cliping
-            leftDownCenter.y = kNavigationBarHeight / 2 + leftDownCenter.y
-            leftUpCenter.y = kNavigationBarHeight/2 + leftUpCenter.y
-            rightDownCenter.y = kNavigationBarHeight/2 + rightDownCenter.y
-            rightUpCenter.y = kNavigationBarHeight/2 + rightUpCenter.y
+            // 缩
+            if showingRectRatio >= kScreenWidth / contentViewHeight {
+                scale = (kScreenWidth - kEdgeViewWidth) / showingRect.width
+            } else {
+                scale = (contentViewHeight - kEdgeViewWidth) / showingRect.height
+            }
         } else {
+            bottomBar.status = .normal
             naviBarFrame.origin.y = kStatusBarHeight
             toolBarTop = kNavigationBarHeight + kStatusBarHeight
-            contentViewHeight = kScreenHeight - kStatusBarHeight - kNavigationBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
-            self.bottomBar.status = .normal
-            leftDownCenter.y = -kNavigationBarHeight / 2 + leftDownCenter.y
-            leftUpCenter.y = -kNavigationBarHeight/2 + leftUpCenter.y
-            rightDownCenter.y = -kNavigationBarHeight/2 + rightDownCenter.y
-            rightUpCenter.y = -kNavigationBarHeight/2 + rightUpCenter.y
+            // 放
+            if showingRectRatio >= kScreenWidth / contentViewHeight {
+                scale = kScreenWidth / showingRect.width
+            } else {
+                scale = contentViewHeight / showingRect.height
+            }
         }
-
+        
+        // 缩放
+        imageView.transform = .identity
+        let scaleTransform = imageView.transform.scaledBy(x: scale, y: scale)
+        imageView.transform = scaleTransform
+        
+        // 位移
+        let targetCenterX = showingRect.midX
+        let targetCenterY = showingRect.midY
+        let dx = imageView.bounds.midX - targetCenterX
+        let dy = imageView.bounds.midY - targetCenterY
+        let x = dx * scale
+        let y = dy * scale
+        let translationTransform = CGAffineTransform(translationX: x, y: y)
+        imageView.transform = imageView.transform.concatenating(translationTransform)
+        
         UIView.animate(withDuration: 0.25, animations: {
             self.navigationController?.navigationBar.frame = naviBarFrame
         })
         
-        self.toolBar.snp.updateConstraints({ (make) in
+        toolBar.snp.updateConstraints({ (make) in
             make.top.equalTo(toolBarTop)
         })
         
-        //edgeView
-        self.leftDownEdgeView.isHidden = !isCliping
-        self.leftUpEdgeView.isHidden = !isCliping
-        self.rightDownEdgeView.isHidden = !isCliping
-        self.rightUpEdgeView.isHidden = !isCliping
-
-        self.leftDownEdgeView.center = leftDownCenter
-        self.leftUpEdgeView.center = leftUpCenter
-        self.rightDownEdgeView.center = rightDownCenter
-        self.rightUpEdgeView.center = rightUpCenter
-        
-        //masklayer
-        let path = UIBezierPath(rect: CGRect(x: 0, y: 0, width: kScreenWidth, height: contentViewHeight))
-        let showRect = CGRect(x: leftUpCenter.x, y: leftUpCenter.y, width: rightUpCenter.x-leftUpCenter.x, height: leftDownCenter.y - leftUpCenter.y)
-        let showPath = UIBezierPath(rect: showRect).reversing()
-        path.append(showPath)
-        self.maskLayer.path = path.cgPath
+        updateMaskAndEdgeView(animated: false)
     }
+    
+    //MARK: Assist Method
+    func isSameRatio() -> Bool {
+        let height: CGFloat = selectedArray[0].photoHeight
+        let width: CGFloat = selectedArray[0].photoWidth
+        let fistRatio = height / width
+        for index in 0 ..< selectedArray.count {
+            let photo = selectedArray[index]
+            if photo.photoHeight / photo.photoWidth != fistRatio {
+                return false
+            }
+        }
+        return true
+    }
+    
+    func stateDidChanged(state: State, previousState: State?, command: Command?) {
+        
+//        if let command = command {
+//            switch command {
+//            case .loadToDos(let handler):
+//                ToDoStore.shared.getToDoItems(completionHandler: handler)
+//            case .someOtherCommand:
+//                // Placeholder command.
+//                break
+//            }
+//        }
+        
+        if previousState != nil && previousState!.isCliping != state.isCliping {
+            clipingStateChange()
+        }
+        
+        if previousState == nil || previousState!.showingRect != state.showingRect {
+            updateMaskAndEdgeView(animated: false)
+        }
+        
+    }
+    
+    //MARK: UI property
+    private lazy var imageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.isUserInteractionEnabled = true
+        imageView.backgroundColor = UIColor.white
+        imageView.animationDuration = self.bottomBar.originDuration * Double(self.selectedArray.count)
+        let pinchGes = UIPinchGestureRecognizer(target: self, action: #selector(pinchImageView(recognizer:)))
+        imageView.addGestureRecognizer(pinchGes)
+        return imageView
+    }()
+    private lazy var bottomBar: GifEditViewBottomBar = {
+        let bottomBar = GifEditViewBottomBar(frame: CGRect.zero)
+        bottomBar.totalCount = self.selectedArray.count
+        bottomBar.resetButtonHandler = {
+            self.imageView.transform = .identity
+            //masklayer
+            let path = UIBezierPath(rect: CGRect(x: 0, y: 0, width: self.contentView.frame.size.width, height: self.contentView.frame.size.height))
+            let showRect = self.imageView.frame
+            let showPath = UIBezierPath(rect: showRect).reversing()
+            path.append(showPath)
+            self.maskLayer.path = path.cgPath
+            
+            //edgeView
+            self.leftUpEdgeView.center = showRect.origin
+            self.leftDownEdgeView.center = CGPoint(x: showRect.minX, y: showRect.maxY)
+            self.rightUpEdgeView.center = CGPoint(x: showRect.maxX, y: showRect.minY)
+            self.rightDownEdgeView.center = CGPoint(x: showRect.maxX, y: showRect.maxY)
+        }
+        bottomBar.sliderValueChangeHandler = { [unowned self] value in
+            self.imageView.animationDuration = Double(String(format: "%.2f", value))! * Double(self.selectedArray.count)
+            self.imageView.startAnimating()
+        }
+        return bottomBar
+    }()
+    private lazy var toolBar: GifEditToolBar = {
+        let toolBar = GifEditToolBar(frame: CGRect.zero)
+        toolBar.clipButtonHandler = {[unowned self] in
+            self.store.dispatch(.switchCliping)
+        }
+        toolBar.clipConfirmButtonHandler = {[unowned self] in
+            self.store.dispatch(.switchCliping)
+        }
+        toolBar.clipCancelButtonHandler = {[unowned self] in
+            self.store.dispatch(.switchCliping)
+        }
+        return toolBar
+    }()
+    private lazy var contentView: UIView = {
+        let contentView = UIView(frame: CGRect.zero)
+        contentView.clipsToBounds = true
+        contentView.backgroundColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
+        // ImageView拖放手势
+        let panGes = UIPanGestureRecognizer(target: self, action: #selector(panImageView(recognizer:)))
+        contentView.addGestureRecognizer(panGes)
+        return contentView
+    }()
+    private lazy var maskLayer: CAShapeLayer = {
+        let maskLayer = CAShapeLayer()
+        let fillColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
+        //        let fillColor = #colorLiteral(red: 0.9254902005, green: 0.2352941185, blue: 0.1019607857, alpha: 1)
+        maskLayer.fillColor = fillColor.cgColor
+        maskLayer.opacity = 0.5
+        return maskLayer
+    }()
+    private lazy var leftUpEdgeView: UIView = {
+        let leftUpEdgeView = self.configureEdgeView()
+        return leftUpEdgeView
+    }()
+    private lazy var rightUpEdgeView: UIView = {
+        let rightUpEdgeView = self.configureEdgeView()
+        return rightUpEdgeView
+    }()
+    private lazy var rightDownEdgeView: UIView = {
+        let rightDownEdgeView = self.configureEdgeView()
+        return rightDownEdgeView
+    }()
+    private lazy var leftDownEdgeView: UIView = {
+        let leftDownEdgeView = self.configureEdgeView()
+        return leftDownEdgeView
+    }()
 }
