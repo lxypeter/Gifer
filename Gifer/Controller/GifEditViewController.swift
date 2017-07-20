@@ -14,56 +14,25 @@ import MobileCoreServices
 
 class GifEditViewController: BaseViewController {
     
-    struct State: StateType {
-        var showingRect: CGRect? = nil
-        var isCliping: Bool = false
+    enum MaskFadeType {
+        case fadeIn
+        case fadeOut
     }
-    
-    enum Action: ActionType {
-        case switchCliping
-        case panEdgeView(showingRect: CGRect)
-    }
-    
-    enum Command: CommandType {
-        case loadToDos(completion: ([String]) -> Void )
-        case someOtherCommand
-    }
-    
-    lazy var reducer: (State, Action) -> (state: State, command: Command?) = {
-        [weak self] (state: State, action: Action) in
-        
-        var state = state
-        var command: Command? = nil
-        
-        switch action {
-        case .switchCliping:
-            state.isCliping = !state.isCliping
-        case .panEdgeView(let showingRect):
-            state.showingRect = showingRect
-        }
-        return (state, command)
-    }
-    
-    var store: Store<Action, State, Command>!
     
     //MARK: property
-    private let kEdgeViewWidth: CGFloat = 30
-    private var kGroup: DispatchGroup = DispatchGroup()
-    private var isCliping: Bool = false
+    private let kEdgeViewWidth: CGFloat = 50
+    
     var selectedArray: [Photo] = []
     private var imageArray: [UIImage] = []
+    private var kGroup: DispatchGroup = DispatchGroup()
+    private var isCliping: Bool = false
+    private var showingRect: CGRect? = nil
     
     //MARK: life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         configureSubviews()
-        
-        store = Store<Action, State, Command>(reducer: reducer, initialState: State())
-        store.subscribe { [weak self] state, previousState, command in
-            self?.stateDidChanged(state: state, previousState: previousState, command: command)
-        }
-        stateDidChanged(state: store.state, previousState: nil, command: nil)
-        
+        updateMaskAndEdgeView(animated: false)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -122,23 +91,24 @@ class GifEditViewController: BaseViewController {
             }
         }
         
+        contentView.layer.addSublayer(maskLayer)
+        
         contentView.addSubview(leftUpEdgeView)
         contentView.addSubview(rightUpEdgeView)
         contentView.addSubview(rightDownEdgeView)
         contentView.addSubview(leftDownEdgeView)
         
-        contentView.layer.addSublayer(maskLayer)
-        
         contentView.setNeedsLayout()
         contentView.layoutIfNeeded()
     }
     
-    private func configureEdgeView() -> UIView {
-        let edgeView = UIView(frame: CGRect(x: 0, y: 0, width: self.kEdgeViewWidth, height: self.kEdgeViewWidth))
+    private func configureEdgeView() -> UIImageView {
+        let edgeView = UIImageView(frame: CGRect(x: 0, y: 0, width: kEdgeViewWidth, height: kEdgeViewWidth))
         edgeView.isHidden = true
+        edgeView.isUserInteractionEnabled = true
         let gesture = UIPanGestureRecognizer(target: self, action: #selector(panEdgeView(recognizer:)))
         edgeView.addGestureRecognizer(gesture)
-        edgeView.backgroundColor = #colorLiteral(red: 0.3411764801, green: 0.6235294342, blue: 0.1686274558, alpha: 1)
+//        edgeView.backgroundColor = #colorLiteral(red: 0.3411764801, green: 0.6235294342, blue: 0.1686274558, alpha: 1)
         return edgeView
     }
     
@@ -246,14 +216,15 @@ class GifEditViewController: BaseViewController {
     
     //MARK: gesture
     func pinchImageView(recognizer: UIPinchGestureRecognizer) {
-        if !store.state.isCliping { return }
+        if !isCliping { return }
         
         if recognizer.state == .ended {
             let imageLeftUpPoint = contentView.convert(leftUpEdgeView.center, to: imageView)
             let imageRightDownPoint = contentView.convert(rightDownEdgeView.center, to: imageView)
             
             let showingRect = CGRect(x: imageLeftUpPoint.x, y: imageLeftUpPoint.y, width: imageRightDownPoint.x - imageLeftUpPoint.x, height: imageRightDownPoint.y - imageLeftUpPoint.y)
-            store.dispatch(.panEdgeView(showingRect: showingRect))
+            self.showingRect = showingRect
+            updateMaskAndEdgeView(animated: false)
             return
         }
         
@@ -308,14 +279,15 @@ class GifEditViewController: BaseViewController {
     }
     
     func panImageView(recognizer: UIPanGestureRecognizer) {
-        if !store.state.isCliping { return }
+        if !isCliping { return }
         
         if recognizer.state == .ended {
             let imageLeftUpPoint = contentView.convert(leftUpEdgeView.center, to: imageView)
             let imageRightDownPoint = contentView.convert(rightDownEdgeView.center, to: imageView)
             
             let showingRect = CGRect(x: imageLeftUpPoint.x, y: imageLeftUpPoint.y, width: imageRightDownPoint.x - imageLeftUpPoint.x, height: imageRightDownPoint.y - imageLeftUpPoint.y)
-            store.dispatch(.panEdgeView(showingRect: showingRect))
+            self.showingRect = showingRect
+            updateMaskAndEdgeView(animated: false)
             return
         }
         
@@ -350,10 +322,15 @@ class GifEditViewController: BaseViewController {
     }
     
     func panEdgeView(recognizer: UIPanGestureRecognizer) {
-        if !store.state.isCliping { return }
+        if !isCliping { return }
+        
+        if recognizer.state == .began {
+            maskFade(.fadeIn)
+        }
         
         if recognizer.state == .ended {
             resizeShowingArea()
+            maskFade(.fadeOut)
             return
         }
         
@@ -408,7 +385,8 @@ class GifEditViewController: BaseViewController {
         let imageRightDownPoint = contentView.convert(rightDownViewCenter, to: imageView)
         
         let showingRect = CGRect(x: imageLeftUpPoint.x, y: imageLeftUpPoint.y, width: imageRightDownPoint.x - imageLeftUpPoint.x, height: imageRightDownPoint.y - imageLeftUpPoint.y)
-        store.dispatch(.panEdgeView(showingRect: showingRect))
+        self.showingRect = showingRect
+        updateMaskAndEdgeView(animated: false)
     }
     
     //MARK: update view
@@ -456,10 +434,10 @@ class GifEditViewController: BaseViewController {
             self.contentView.layoutIfNeeded()
             
             let sr: CGRect
-            if self.store.state.showingRect == nil {
+            if self.showingRect == nil {
                 sr = self.imageView.bounds
             } else {
-                sr = self.store.state.showingRect!
+                sr = self.showingRect!
             }
             let leftUpPoint = self.imageView.convert(CGPoint(x: sr.origin.x, y: sr.origin.y), to: self.contentView)
             let rightDownPoint = self.imageView.convert(CGPoint(x: sr.maxX, y: sr.maxY), to: self.contentView)
@@ -486,26 +464,27 @@ class GifEditViewController: BaseViewController {
         }
     }
     
-    private func clipingStateChange() {
-        leftDownEdgeView.isHidden = !store.state.isCliping
-        leftUpEdgeView.isHidden = !store.state.isCliping
-        rightDownEdgeView.isHidden = !store.state.isCliping
-        rightUpEdgeView.isHidden = !store.state.isCliping
+    private func clipingStateChange(to nextState: Bool) {
+        isCliping = nextState
+        leftDownEdgeView.isHidden = !isCliping
+        leftUpEdgeView.isHidden = !isCliping
+        rightDownEdgeView.isHidden = !isCliping
+        rightUpEdgeView.isHidden = !isCliping
         
         var naviBarFrame = navigationController!.navigationBar.frame
         let toolBarTop: CGFloat
         let scale: CGFloat
         
         let showingRect: CGRect
-        if store.state.showingRect == nil {
+        if self.showingRect == nil {
             showingRect = imageView.bounds
         } else {
-            showingRect = store.state.showingRect!
+            showingRect = self.showingRect!
         }
         let showingRectRatio = showingRect.size.width / showingRect.size.height
         
         let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - kNavigationBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
-        if store.state.isCliping {
+        if isCliping {
             bottomBar.status = .cliping
             naviBarFrame.origin.y = -(kNavigationBarHeight + kStatusBarHeight)
             toolBarTop = kStatusBarHeight
@@ -567,26 +546,23 @@ class GifEditViewController: BaseViewController {
         return true
     }
     
-    func stateDidChanged(state: State, previousState: State?, command: Command?) {
-        
-//        if let command = command {
-//            switch command {
-//            case .loadToDos(let handler):
-//                ToDoStore.shared.getToDoItems(completionHandler: handler)
-//            case .someOtherCommand:
-//                // Placeholder command.
-//                break
-//            }
-//        }
-        
-        if previousState != nil && previousState!.isCliping != state.isCliping {
-            clipingStateChange()
+    func maskFade(_ fadeType: MaskFadeType) {
+        switch fadeType {
+        case .fadeIn:
+            let animation: CABasicAnimation = CABasicAnimation(keyPath: "opacity")
+            animation.duration = 0.25
+            animation.toValue = 0.5
+            animation.isRemovedOnCompletion = false
+            animation.fillMode = kCAFillModeForwards;
+            maskLayer.add(animation, forKey: nil)
+        default:
+            let animation: CABasicAnimation = CABasicAnimation(keyPath: "opacity")
+            animation.duration = 0.25
+            animation.toValue = 1
+            animation.isRemovedOnCompletion = false
+            animation.fillMode = kCAFillModeForwards;
+            maskLayer.add(animation, forKey: nil)
         }
-        
-        if previousState == nil || previousState!.showingRect != state.showingRect {
-            updateMaskAndEdgeView(animated: false)
-        }
-        
     }
     
     //MARK: UI property
@@ -604,19 +580,20 @@ class GifEditViewController: BaseViewController {
         let bottomBar = GifEditViewBottomBar(frame: CGRect.zero)
         bottomBar.totalCount = self.selectedArray.count
         bottomBar.resetButtonHandler = {
+            // 恢复cliping模式初始状态
+            self.showingRect = nil
+            let showingRectRatio = self.imageView.bounds.size.width / self.imageView.bounds.size.height
+            let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - kNavigationBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
+            let scale: CGFloat
+            if showingRectRatio >= kScreenWidth / contentViewHeight {
+                scale = (kScreenWidth - self.kEdgeViewWidth) / self.imageView.bounds.size.width
+            } else {
+                scale = (contentViewHeight - self.kEdgeViewWidth) / self.imageView.bounds.size.width
+            }
             self.imageView.transform = .identity
-            //masklayer
-            let path = UIBezierPath(rect: CGRect(x: 0, y: 0, width: self.contentView.frame.size.width, height: self.contentView.frame.size.height))
-            let showRect = self.imageView.frame
-            let showPath = UIBezierPath(rect: showRect).reversing()
-            path.append(showPath)
-            self.maskLayer.path = path.cgPath
-            
-            //edgeView
-            self.leftUpEdgeView.center = showRect.origin
-            self.leftDownEdgeView.center = CGPoint(x: showRect.minX, y: showRect.maxY)
-            self.rightUpEdgeView.center = CGPoint(x: showRect.maxX, y: showRect.minY)
-            self.rightDownEdgeView.center = CGPoint(x: showRect.maxX, y: showRect.maxY)
+            let scaleTransform = self.imageView.transform.scaledBy(x: scale, y: scale)
+            self.imageView.transform = scaleTransform
+            self.updateMaskAndEdgeView(animated: true)
         }
         bottomBar.sliderValueChangeHandler = { [unowned self] value in
             self.imageView.animationDuration = Double(String(format: "%.2f", value))! * Double(self.selectedArray.count)
@@ -627,13 +604,13 @@ class GifEditViewController: BaseViewController {
     private lazy var toolBar: GifEditToolBar = {
         let toolBar = GifEditToolBar(frame: CGRect.zero)
         toolBar.clipButtonHandler = {[unowned self] in
-            self.store.dispatch(.switchCliping)
+            self.clipingStateChange(to:true)
         }
         toolBar.clipConfirmButtonHandler = {[unowned self] in
-            self.store.dispatch(.switchCliping)
+            self.clipingStateChange(to:false)
         }
         toolBar.clipCancelButtonHandler = {[unowned self] in
-            self.store.dispatch(.switchCliping)
+            self.clipingStateChange(to:false)
         }
         return toolBar
     }()
@@ -651,23 +628,27 @@ class GifEditViewController: BaseViewController {
         let fillColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         //        let fillColor = #colorLiteral(red: 0.9254902005, green: 0.2352941185, blue: 0.1019607857, alpha: 1)
         maskLayer.fillColor = fillColor.cgColor
-        maskLayer.opacity = 0.5
+        maskLayer.opacity = 1
         return maskLayer
     }()
-    private lazy var leftUpEdgeView: UIView = {
+    private lazy var leftUpEdgeView: UIImageView = {
         let leftUpEdgeView = self.configureEdgeView()
+        leftUpEdgeView.image = #imageLiteral(resourceName: "leftUpBorder")
         return leftUpEdgeView
     }()
     private lazy var rightUpEdgeView: UIView = {
         let rightUpEdgeView = self.configureEdgeView()
+        rightUpEdgeView.image = #imageLiteral(resourceName: "rightUpBorder")
         return rightUpEdgeView
     }()
     private lazy var rightDownEdgeView: UIView = {
         let rightDownEdgeView = self.configureEdgeView()
+        rightDownEdgeView.image = #imageLiteral(resourceName: "rightDownBorder")
         return rightDownEdgeView
     }()
     private lazy var leftDownEdgeView: UIView = {
         let leftDownEdgeView = self.configureEdgeView()
+        leftDownEdgeView.image = #imageLiteral(resourceName: "leftDownBorder")
         return leftDownEdgeView
     }()
 }
