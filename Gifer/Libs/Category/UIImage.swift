@@ -123,4 +123,9 @@ extension UIImage {
         ctx?.flush()
         return UIImage(cgImage: newCgImage)
     }
+    
+    func clipImage(in rect: CGRect) -> UIImage? {
+        let newImageRef = self.cgImage!.cropping(to: rect)
+        return UIImage(cgImage: newImageRef!)
+    }
 }

@@ -19,8 +19,17 @@ class GifEditViewController: BaseViewController {
         case fadeOut
     }
     
+    enum ImageQuality {
+        case low
+        case medium
+        case high
+    }
+    
     //MARK: property
     private let kEdgeViewWidth: CGFloat = 50
+    private let lowQualityLength: CGFloat = 334
+    private let mediumQualityLength: CGFloat = 667
+    private let highQualityLength: CGFloat = 1000
     
     var selectedArray: [Photo] = []
     private var imageArray: [UIImage] = []
@@ -92,6 +101,7 @@ class GifEditViewController: BaseViewController {
         }
         
         contentView.layer.addSublayer(maskLayer)
+        contentView.layer.addSublayer(borderLayer)
         
         contentView.addSubview(leftUpEdgeView)
         contentView.addSubview(rightUpEdgeView)
@@ -146,29 +156,61 @@ class GifEditViewController: BaseViewController {
         }
     }
     
-    private func generateGif() {
+    private func generateGif(by quality: ImageQuality) {
         self.showHudWithMsg(msg: "正在生成...")
+        
+        let sr: CGRect = showingRect == nil ? imageView.bounds : showingRect!
+        let isSameRatio = self.isSameRatio()
+        let targetHeight: CGFloat
+        let targetWidth: CGFloat
+        let maxLength: CGFloat
+        
+        switch quality {
+        case .low:
+            maxLength = lowQualityLength
+        case .medium:
+            maxLength = mediumQualityLength
+        case .high:
+            maxLength = highQualityLength
+        }
+        if sr.size.width > sr.size.height {
+            targetWidth = maxLength
+            targetHeight = maxLength / sr.size.width * sr.size.height
+        } else {
+            targetWidth = maxLength
+            targetHeight = maxLength / sr.size.height * sr.size.width
+        }
         
         let fileProperties: CFDictionary = [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]] as CFDictionary;
         
         let frameProperties: CFDictionary = [
             kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFDelayTime as String: self.bottomBar.currentDuration],
-            kCGImagePropertyPixelHeight as String: 400,
-            kCGImagePropertyPixelWidth as String: 400
+            kCGImagePropertyPixelHeight as String: targetHeight,
+            kCGImagePropertyPixelWidth as String: targetWidth
             ] as CFDictionary;
         
         let dataFormatter = DateFormatter()
         dataFormatter.dateFormat = "YYYYMMddHHmmss"
         let filename = dataFormatter.string(from: Date())
         let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(filename).gif")
+        
         DispatchQueue.global().async { [unowned self] in
             let destination: CGImageDestination? = CGImageDestinationCreateWithURL(url as CFURL, kUTTypeGIF, self.selectedArray.count, nil);
-            if destination == nil { self.showNotice(message: "生成Gif失败...") }
+            if destination == nil {
+                DispatchQueue.main.async {
+                    self.showNotice(message: "生成Gif失败...")
+                }
+            }
             CGImageDestinationSetProperties(destination!, fileProperties);
+            
+            let scale = targetWidth / sr.size.width
             
             for photo in self.selectedArray {
                 if photo.fullImage != nil {
-                    let newImage = photo.fullImage?.imageKeepRatioScalingWith(targetSize: CGSize(width: 400, height: 400))
+                    let originWidth = scale * self.imageView.bounds.width
+                    let originHeight = scale * self.imageView.bounds.height
+                    
+                    let newImage = photo.fullImage?.imageScalingWith(targetSize: CGSize(width: originWidth, height: originHeight))?.clipImage(in: CGRect(x: sr.origin.x * scale, y: sr.origin.y * scale, width: sr.size.width * scale, height: sr.size.height * scale))
                     CGImageDestinationAddImage(destination!, newImage!.cgImage!, frameProperties);
                 }
             }
@@ -198,15 +240,15 @@ class GifEditViewController: BaseViewController {
     func clickGenerateButton() {
         let alertController = UIAlertController(title: "选择Gif画质", message: nil, preferredStyle: .actionSheet)
         let lowQualityAction = UIAlertAction(title: "低清晰度", style: .default) { [unowned self](action) in
-            self.generateGif()
+            self.generateGif(by: .low)
         }
         alertController.addAction(lowQualityAction)
         let mediumQualityAction = UIAlertAction(title: "中等清晰度", style: .default) { [unowned self](action) in
-            self.generateGif()
+            self.generateGif(by: .medium)
         }
         alertController.addAction(mediumQualityAction)
         let highQualityAction = UIAlertAction(title: "高清晰度", style: .default) { [unowned self](action) in
-            self.generateGif()
+            self.generateGif(by: .high)
         }
         alertController.addAction(highQualityAction)
         let cancelAction = UIAlertAction(title: "取消", style: .cancel, handler: nil)
@@ -217,6 +259,16 @@ class GifEditViewController: BaseViewController {
     //MARK: gesture
     func pinchImageView(recognizer: UIPinchGestureRecognizer) {
         if !isCliping { return }
+        
+        if recognizer.state == .began {
+            maskFade(.fadeIn)
+            return
+        }
+        
+        if recognizer.state == .ended {
+            maskFade(.fadeOut)
+            return
+        }
         
         if recognizer.state == .ended {
             let imageLeftUpPoint = contentView.convert(leftUpEdgeView.center, to: imageView)
@@ -281,7 +333,14 @@ class GifEditViewController: BaseViewController {
     func panImageView(recognizer: UIPanGestureRecognizer) {
         if !isCliping { return }
         
+        if recognizer.state == .began {
+            maskFade(.fadeIn)
+            return
+        }
+
         if recognizer.state == .ended {
+            maskFade(.fadeOut)
+            
             let imageLeftUpPoint = contentView.convert(leftUpEdgeView.center, to: imageView)
             let imageRightDownPoint = contentView.convert(rightDownEdgeView.center, to: imageView)
             
@@ -326,6 +385,7 @@ class GifEditViewController: BaseViewController {
         
         if recognizer.state == .began {
             maskFade(.fadeIn)
+            return
         }
         
         if recognizer.state == .ended {
@@ -391,8 +451,10 @@ class GifEditViewController: BaseViewController {
     
     //MARK: update view
     private func resizeShowingArea() {
-        let leftUpPoint = contentView.convert(leftUpEdgeView.center, to: imageView)
-        let rightDownPoint = contentView.convert(rightDownEdgeView.center, to: imageView)
+        let sr: CGRect = showingRect == nil ? imageView.bounds : showingRect!
+        let leftUpPoint = sr.origin
+        let rightDownPoint = CGPoint(x: sr.maxX, y: sr.maxY)
+        
         let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - kNavigationBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
         
         let targetWidth = rightDownPoint.x - leftUpPoint.x
@@ -433,21 +495,32 @@ class GifEditViewController: BaseViewController {
             self.contentView.setNeedsLayout()
             self.contentView.layoutIfNeeded()
             
-            let sr: CGRect
-            if self.showingRect == nil {
-                sr = self.imageView.bounds
-            } else {
-                sr = self.showingRect!
-            }
+            let sr: CGRect = self.showingRect == nil ? self.imageView.bounds : self.showingRect!
             let leftUpPoint = self.imageView.convert(CGPoint(x: sr.origin.x, y: sr.origin.y), to: self.contentView)
             let rightDownPoint = self.imageView.convert(CGPoint(x: sr.maxX, y: sr.maxY), to: self.contentView)
             
-            //masklayer
+            //maskLayer
             let path = UIBezierPath(rect: CGRect(x: 0, y: 0, width: kScreenWidth, height: kScreenHeight))
             let showRect = CGRect(x: leftUpPoint.x, y: leftUpPoint.y, width: rightDownPoint.x - leftUpPoint.x, height: rightDownPoint.y - leftUpPoint.y)
             let showPath = UIBezierPath(rect: showRect).reversing()
             path.append(showPath)
             self.maskLayer.path = path.cgPath
+            
+            //borderLayer
+            let borderPath = UIBezierPath(rect: CGRect(x: leftUpPoint.x, y: leftUpPoint.y, width: rightDownPoint.x - leftUpPoint.x, height: rightDownPoint.y - leftUpPoint.y))
+            let oneThirdX = (rightDownPoint.x - leftUpPoint.x) / 3 + leftUpPoint.x
+            let twoThirdX = (rightDownPoint.x - leftUpPoint.x) / 3 * 2 + leftUpPoint.x
+            let oneThirdY = (rightDownPoint.y - leftUpPoint.y) / 3 + leftUpPoint.y
+            let twoThirdY = (rightDownPoint.y - leftUpPoint.y) / 3 * 2 + leftUpPoint.y
+            borderPath.move(to: CGPoint(x: oneThirdX, y: leftUpPoint.y))
+            borderPath.addLine(to: CGPoint(x: oneThirdX, y: rightDownPoint.y))
+            borderPath.move(to: CGPoint(x: twoThirdX, y: leftUpPoint.y))
+            borderPath.addLine(to: CGPoint(x: twoThirdX, y: rightDownPoint.y))
+            borderPath.move(to: CGPoint(x: leftUpPoint.x, y: oneThirdY))
+            borderPath.addLine(to: CGPoint(x: rightDownPoint.x, y: oneThirdY))
+            borderPath.move(to: CGPoint(x: leftUpPoint.x, y: twoThirdY))
+            borderPath.addLine(to: CGPoint(x: rightDownPoint.x, y: twoThirdY))
+            self.borderLayer.path = borderPath.cgPath
             
             //edgeView
             self.leftUpEdgeView.center = CGPoint(x: leftUpPoint.x, y: leftUpPoint.y)
@@ -547,22 +620,27 @@ class GifEditViewController: BaseViewController {
     }
     
     func maskFade(_ fadeType: MaskFadeType) {
+        let maskAnimation: CABasicAnimation = CABasicAnimation(keyPath: "opacity")
+        maskAnimation.isRemovedOnCompletion = false
+        maskAnimation.fillMode = kCAFillModeForwards;
+        maskAnimation.duration = 0.25
+        
+        let borderAnimation: CABasicAnimation = CABasicAnimation(keyPath: "opacity")
+        borderAnimation.isRemovedOnCompletion = false
+        borderAnimation.fillMode = kCAFillModeForwards;
+        borderAnimation.duration = 0.25
+        
         switch fadeType {
         case .fadeIn:
-            let animation: CABasicAnimation = CABasicAnimation(keyPath: "opacity")
-            animation.duration = 0.25
-            animation.toValue = 0.5
-            animation.isRemovedOnCompletion = false
-            animation.fillMode = kCAFillModeForwards;
-            maskLayer.add(animation, forKey: nil)
+            maskAnimation.toValue = 0.5
+            borderAnimation.toValue = 1
         default:
-            let animation: CABasicAnimation = CABasicAnimation(keyPath: "opacity")
-            animation.duration = 0.25
-            animation.toValue = 1
-            animation.isRemovedOnCompletion = false
-            animation.fillMode = kCAFillModeForwards;
-            maskLayer.add(animation, forKey: nil)
+            maskAnimation.toValue = 1
+            borderAnimation.toValue = 0
         }
+        
+        maskLayer.add(maskAnimation, forKey: nil)
+        borderLayer.add(borderAnimation, forKey: nil)
     }
     
     //MARK: UI property
@@ -582,18 +660,7 @@ class GifEditViewController: BaseViewController {
         bottomBar.resetButtonHandler = {
             // 恢复cliping模式初始状态
             self.showingRect = nil
-            let showingRectRatio = self.imageView.bounds.size.width / self.imageView.bounds.size.height
-            let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - kNavigationBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
-            let scale: CGFloat
-            if showingRectRatio >= kScreenWidth / contentViewHeight {
-                scale = (kScreenWidth - self.kEdgeViewWidth) / self.imageView.bounds.size.width
-            } else {
-                scale = (contentViewHeight - self.kEdgeViewWidth) / self.imageView.bounds.size.width
-            }
-            self.imageView.transform = .identity
-            let scaleTransform = self.imageView.transform.scaledBy(x: scale, y: scale)
-            self.imageView.transform = scaleTransform
-            self.updateMaskAndEdgeView(animated: true)
+            self.resizeShowingArea()
         }
         bottomBar.sliderValueChangeHandler = { [unowned self] value in
             self.imageView.animationDuration = Double(String(format: "%.2f", value))! * Double(self.selectedArray.count)
@@ -630,6 +697,15 @@ class GifEditViewController: BaseViewController {
         maskLayer.fillColor = fillColor.cgColor
         maskLayer.opacity = 1
         return maskLayer
+    }()
+    private lazy var borderLayer: CAShapeLayer = {
+        let borderLayer = CAShapeLayer()
+        borderLayer.fillColor = UIColor.clear.cgColor
+        let strokeColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        borderLayer.strokeColor = strokeColor.cgColor
+        borderLayer.lineWidth = 1.0
+        borderLayer.opacity = 0
+        return borderLayer
     }()
     private lazy var leftUpEdgeView: UIImageView = {
         let leftUpEdgeView = self.configureEdgeView()

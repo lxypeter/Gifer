@@ -26,7 +26,7 @@ class Photo: NSObject {
     
     init(asset: PHAsset) {
         self.asset = asset
-        self.photoWidth = CGFloat(asset.pixelWidth) / UIScreen.main.scale
-        self.photoHeight = CGFloat(asset.pixelHeight) / UIScreen.main.scale
+        self.photoWidth = CGFloat(asset.pixelWidth)
+        self.photoHeight = CGFloat(asset.pixelHeight)
     }
 }
