@@ -46,31 +46,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         let bottomBar = GalleryViewBottomBar()
         
         bottomBar.deleteButtonHandler = { [unowned self] in
-            guard let selectedIndexPaths = self.collectionView.indexPathsForSelectedItems, selectedIndexPaths.count > 0 else {
-                self.showNotice(message: "请至少选择一张照片")
-                return
-            }
-            
-            var preDeleteAsset: [PHAsset] = []
-            for indexPath in selectedIndexPaths {
-                let photo = self.gifArray[indexPath.row]
-                preDeleteAsset.append(photo.asset)
-            }
-            PHPhotoLibrary.shared().performChanges({
-                PHAssetChangeRequest.deleteAssets(NSArray(array: preDeleteAsset))
-            }, completionHandler: { [unowned self] (success, error) in
-                DispatchQueue.main.async {
-                    if !success {
-                        self.showNotice(message: "删除失败")
-                    } else {
-                        for indexPath in selectedIndexPaths {
-                            self.gifArray.remove(at: indexPath.row)
-                        }
-                        self.collectionView.reloadData()
-                        self.showNotice(message: "删除成功！")
-                    }
-                }
-            })
+            self.clickDeleteButton()
         }
         bottomBar.shareButtonHandler = {
             printLog("click share")
@@ -97,6 +73,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         super.viewDidLoad()
         self.configureSubviews()
         self.collectionView.mj_header.beginRefreshing()
+        NotificationCenter.default.addObserver(self, selector: #selector(fetchGIFFromLibrary), name: NSNotification.Name(rawValue: kNotiKeyGalleryUpdate), object: nil)
     }
     
     func configureSubviews() {
@@ -105,22 +82,22 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         let selectItem: UIBarButtonItem = UIBarButtonItem(title: "选择", style: .plain, target: self, action: #selector(clickSelectButton))
         selectItem.tintColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         selectItem.isEnabled = false
-        self.navigationItem.leftBarButtonItem = selectItem;
+        navigationItem.leftBarButtonItem = selectItem;
         
         let addItem: UIBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(clickAddButton))
         addItem.tintColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
-        self.navigationItem.rightBarButtonItem = addItem;
+        navigationItem.rightBarButtonItem = addItem;
         
-        self.view.addSubview(self.collectionView)
-        self.collectionView.snp.makeConstraints { (make) in
+        view.addSubview(self.collectionView)
+        collectionView.snp.makeConstraints { (make) in
             make.top.equalTo(0)
             make.right.equalTo(0)
             make.left.equalTo(0)
             make.bottom.equalTo(0)
         }
         
-        self.view.addSubview(self.bottomBar)
-        self.bottomBar.snp.makeConstraints { (make) in
+        view.addSubview(self.bottomBar)
+        bottomBar.snp.makeConstraints { (make) in
             make.height.equalTo(GalleryViewBottomBar.height)
             make.right.equalTo(0)
             make.left.equalTo(0)
@@ -130,16 +107,16 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     
     func fetchGIFFromLibrary() {
         
-        self.noRecordView.isHidden = true
-        self.gifArray.removeAll()
-        self.collectionView.reloadData()
+        noRecordView.isHidden = true
+        gifArray.removeAll()
+        collectionView.reloadData()
         
         let option: PHFetchOptions = PHFetchOptions()
         option.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         
         let result: PHFetchResult = PHAsset.fetchAssets(with: .image, options: option)
         
-        self.kGroup = DispatchGroup()
+        kGroup = DispatchGroup()
         
         result.enumerateObjects({ (asset, index, _) in
             autoreleasepool{
@@ -169,7 +146,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
                 })
             }
         })
-        self.kGroup.notify(queue: DispatchQueue.main, execute: { [unowned self] in
+        kGroup.notify(queue: DispatchQueue.main, execute: { [unowned self] in
             self.collectionView.mj_header.endRefreshing()
             if self.gifArray.count < 1 {
                 self.noRecordView.isHidden = false
@@ -257,6 +234,46 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     
     func clickAddButton() {
         let ctrl = PhotoPickerViewController()
-        self.navigationController?.pushViewController(ctrl, animated: true)
+        navigationController?.pushViewController(ctrl, animated: true)
+    }
+    
+    func clickDeleteButton() {
+        guard let selectedIndexPaths = collectionView.indexPathsForSelectedItems, selectedIndexPaths.count > 0 else {
+            showNotice(message: "请至少选择一张照片")
+            return
+        }
+        clickSelectButton()
+        
+        var preDeleteAsset: [PHAsset] = []
+        for indexPath in selectedIndexPaths {
+            let photo = gifArray[indexPath.row]
+            preDeleteAsset.append(photo.asset)
+        }
+        
+        PHPhotoLibrary.shared().performChanges({
+            PHAssetChangeRequest.deleteAssets(NSArray(array: preDeleteAsset))
+        }, completionHandler: { [unowned self] (success, error) in
+            DispatchQueue.main.async {
+                if !success {
+                    self.showNotice(message: "删除失败")
+                } else {
+                    var gifArray: [Photo] = []
+                    for (index, photo) in self.gifArray.enumerated() {
+                        var isDeleted = false
+                        for indexPath in selectedIndexPaths {
+                            if indexPath.row == index {
+                                isDeleted = true
+                            }
+                        }
+                        if !isDeleted {
+                            gifArray.append(photo)
+                        }
+                    }
+                    self.gifArray = gifArray
+                    self.collectionView.reloadData()
+                    self.showNotice(message: "删除成功！")
+                }
+            }
+        })
     }
 }

@@ -59,25 +59,7 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
         }
         
         bottomBar.deleteButtonHandler = { [unowned self] in
-            if self.collectionView.indexPathsForVisibleItems.count != 1 {
-                return
-            }
-            let indexPath = self.collectionView.indexPathsForVisibleItems.last!
-            let photo = self.gifArray[indexPath.row]
-            
-            PHPhotoLibrary.shared().performChanges({
-                PHAssetChangeRequest.deleteAssets(NSArray(array: [photo.asset]))
-            }, completionHandler: { [unowned self] (success, error) in
-                DispatchQueue.main.async {
-                    if !success {
-                        self.showNotice(message: "删除失败") 
-                    } else {
-                        self.gifArray.remove(at: indexPath.row)
-                        self.collectionView.reloadData()
-                        self.showNotice(message: "删除成功！")
-                    }
-                }
-            })
+            self.clickDeleteButton()
         }
         return bottomBar
     }()
@@ -92,55 +74,55 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
     //MARK: life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.extendedLayoutIncludesOpaqueBars = true
-        self.configureSubviews()
+        extendedLayoutIncludesOpaqueBars = true
+        configureSubviews()
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        self.navigationController?.interactivePopGestureRecognizer?.isEnabled = false
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = false
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        self.navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
     }
     
     func configureSubviews() {
         
-        self.edgesForExtendedLayout = .all;
+        edgesForExtendedLayout = .all;
         
-        self.title = "\(self.currentIndex+1) / \(self.gifArray.count)"
+        title = "\(currentIndex+1) / \(gifArray.count)"
         
-        self.view.addSubview(self.bottomBar)
-        self.bottomBar.snp.makeConstraints { (make) in
+        view.addSubview(self.bottomBar)
+        bottomBar.snp.makeConstraints { (make) in
             make.bottom.equalTo(0)
             make.right.equalTo(0)
             make.left.equalTo(0)
             make.height.equalTo(PhotoViewBottomBar.height)
         }
         
-        self.view.addSubview(self.collectionView)
-        self.collectionView.snp.makeConstraints { (make) in
+        view.addSubview(self.collectionView)
+        collectionView.snp.makeConstraints { (make) in
             make.top.equalTo(kStatusBarHeight + kNavigationBarHeight)
-            make.bottom.equalTo(self.bottomBar.snp.top)
+            make.bottom.equalTo(bottomBar.snp.top)
             make.right.equalTo(0)
             make.left.equalTo(0)
         }
         
-        self.collectionView.setNeedsLayout()
-        self.collectionView.layoutIfNeeded()
-        self.collectionView.scrollToItem(at: IndexPath(item: self.currentIndex, section: 0), at: [.top,.left], animated: false)
+        collectionView.setNeedsLayout()
+        collectionView.layoutIfNeeded()
+        collectionView.scrollToItem(at: IndexPath(item: currentIndex, section: 0), at: [.top,.left], animated: false)
     }
     
     //MARK: delegate method
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.gifArray.count
+        return gifArray.count
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell: PhotoCell = collectionView.dequeueReusableCell(withReuseIdentifier: self.photoCellId, for: indexPath) as! PhotoCell
         
-        let photo = self.gifArray[indexPath.row]
+        let photo = gifArray[indexPath.row]
         
         if photo.fullImageData === nil {
             
@@ -162,12 +144,12 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let photoCell: PhotoCell = cell as! PhotoCell
         photoCell.resetZoomScale(animated: false)
-        if self.isCollectionViewInit {
+        if isCollectionViewInit {
             self.title = "\(indexPath.row+1) / \(self.gifArray.count)"
         } else {
-            self.isCollectionViewInit = true
+            isCollectionViewInit = true
         }
-        photoCell.setGifSpeedTimes(self.speedTimes)
+        photoCell.setGifSpeedTimes(speedTimes)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -177,20 +159,20 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
     
     //MARK: events
     func clickCollectionView() {
-        self.isBrowsing = !self.isBrowsing
-        self.setNeedsStatusBarAppearanceUpdate()
-        if self.isBrowsing {
+        isBrowsing = !isBrowsing
+        setNeedsStatusBarAppearanceUpdate()
+        if isBrowsing {
             UIView.animate(withDuration: 0.25) {
                 var naviFrame = self.navigationController!.navigationBar.frame
                 naviFrame.origin.y = -64
                 self.navigationController?.navigationBar.frame = naviFrame
                 self.collectionView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
             }
-            self.bottomBar.snp.updateConstraints({ (make) in
+            bottomBar.snp.updateConstraints({ (make) in
                 make.bottom.equalTo(PhotoViewBottomBar.height)
             })
             
-            self.collectionView.snp.updateConstraints({ (make) in
+            collectionView.snp.updateConstraints({ (make) in
                 make.top.equalTo(0)
             })
         } else {
@@ -200,21 +182,44 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
                 self.navigationController?.navigationBar.frame = frame
                 self.collectionView.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
             }
-            self.bottomBar.snp.updateConstraints({ (make) in
+            bottomBar.snp.updateConstraints({ (make) in
                 make.bottom.equalTo(0)
             })
             
-            self.collectionView.snp.updateConstraints({ (make) in
+            collectionView.snp.updateConstraints({ (make) in
                 make.top.equalTo(kStatusBarHeight + kNavigationBarHeight)
             })
         }
     }
     
     func doubleClickCollectionView() {
-        for cell in self.collectionView.visibleCells {
+        for cell in collectionView.visibleCells {
             let photoCell = cell as! PhotoCell
             photoCell.resetZoomScale(animated: true)
         }
+    }
+    
+    func clickDeleteButton() {
+        if collectionView.indexPathsForVisibleItems.count != 1 {
+            return
+        }
+        let indexPath = collectionView.indexPathsForVisibleItems.last!
+        let photo = gifArray[indexPath.row]
+        
+        PHPhotoLibrary.shared().performChanges({
+            PHAssetChangeRequest.deleteAssets(NSArray(array: [photo.asset]))
+        }, completionHandler: { [unowned self] (success, error) in
+            DispatchQueue.main.async {
+                if !success {
+                    self.showNotice(message: "删除失败")
+                } else {
+                    NotificationCenter.default.post(name: NSNotification.Name(rawValue: kNotiKeyGalleryUpdate), object: nil)
+                    self.gifArray.remove(at: indexPath.row)
+                    self.collectionView.reloadData()
+                    self.showNotice(message: "删除成功！")
+                }
+            }
+        })
     }
     
     override var prefersStatusBarHidden: Bool {

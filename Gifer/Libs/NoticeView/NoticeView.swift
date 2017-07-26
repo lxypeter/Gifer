@@ -21,6 +21,7 @@ class NoticeView: UIView {
         return label
     }()
     var hasStatusBar = false
+    var triggeredSwipeGesture = false
     
     convenience init(frame: CGRect, text: String, hasStatusBar: Bool) {
         self.init(frame: frame)

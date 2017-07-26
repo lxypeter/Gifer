@@ -12,30 +12,14 @@ import Photos
 
 class GifAchieveViewController: BaseViewController {
     
-    var photo: Photo? {
-        didSet {
-//            if self.photo!.fullImageData === nil {
-//                
-//                let requestOptions = PHImageRequestOptions()
-//                requestOptions.isSynchronous = true
-//                requestOptions.deliveryMode = .highQualityFormat
-//                requestOptions.resizeMode = .fast
-//                
-//                PHImageManager.default().requestImageData(for: photo!.asset, options: requestOptions, resultHandler: { [unowned self](data, type, orientation, info) in
-//                    self.photo!.fullImageData = data as NSData?
-//                    self.imageView.gifData = self.photo!.fullImageData
-//                })
-//            } else {
-//                self.imageView.gifData = self.photo!.fullImageData
-//            }
-        }
-    }
+    var imageUrl: URL?
 
     private lazy var imageView: GifImageView = {
         var imageView = GifImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = true
-        imageView.backgroundColor = UIColor.clear
+        imageView.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        imageView.gifData = NSData(contentsOf: self.imageUrl!)
         return imageView
     }()
     
@@ -45,8 +29,9 @@ class GifAchieveViewController: BaseViewController {
     }
     
     func configureSubviews() {
-        self.view.addSubview(self.imageView)
-        self.imageView.snp.makeConstraints { (make) in
+        view.backgroundColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
+        view.addSubview(self.imageView)
+        imageView.snp.makeConstraints { (make) in
             make.edges.equalTo(self.view)
         }
     }

@@ -22,7 +22,7 @@ class BaseViewController: UIViewController {
     }
     
     private func configureBackButton() {
-        if (self.navigationController?.viewControllers.count)!<=1 {
+        if navigationController == nil || (navigationController?.viewControllers.count)! <= 1 {
             return
         }
         

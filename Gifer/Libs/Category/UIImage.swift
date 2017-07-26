@@ -10,6 +10,10 @@ import UIKit
 
 extension UIImage {
     
+    /// 按比例缩放
+    ///
+    /// - Parameter targetSize: 目标大小
+    /// - Returns: 缩放结果
     func imageKeepRatioScalingWith(targetSize: CGSize) -> UIImage? {
         let imageSize = self.size
         var scaleFactor: CGFloat = 0.0
@@ -43,6 +47,10 @@ extension UIImage {
         return resultImage
     }
     
+    /// 拉伸缩放
+    ///
+    /// - Parameter targetSize: 目标大小
+    /// - Returns: 缩放结果
     func imageScalingWith(targetSize: CGSize) -> UIImage? {
         let imageSize = self.size
         var scaleFactor: CGFloat = 0.0
@@ -70,6 +78,44 @@ extension UIImage {
         var thumbnailRect = CGRect.zero
         thumbnailRect.size.width = scaledWidth;
         thumbnailRect.size.height = scaledHeight;
+        thumbnailRect.origin = thumbnailPoint
+        
+        self.draw(in: thumbnailRect)
+        let resultImage = UIGraphicsGetImageFromCurrentImageContext()
+        
+        UIGraphicsEndImageContext();
+        
+        return resultImage
+    }
+    
+    /// 按比例留白缩放
+    ///
+    /// - Parameter targetSize: 目标大小
+    /// - Returns: 缩放结果
+    func imageCenterScalingWith(targetSize: CGSize) -> UIImage? {
+        let imageSize = self.size
+        var scaleFactor: CGFloat = 0.0
+        let scaledWidth = targetSize.width
+        let scaledHeight = targetSize.height
+        var thumbnailPoint = CGPoint.zero
+        
+        if imageSize.equalTo(targetSize) { return self }
+        
+        let widthFactor = targetSize.width / imageSize.width
+        let heightFactor = targetSize.height / imageSize.height
+        
+        if widthFactor > heightFactor {
+            scaleFactor = heightFactor
+            thumbnailPoint.x = (targetSize.width - scaleFactor * imageSize.width) * 0.5;
+        } else {
+            scaleFactor = widthFactor
+            thumbnailPoint.y = (targetSize.height - scaleFactor * imageSize.height) * 0.5;
+        }
+        
+        UIGraphicsBeginImageContext(CGSize(width: scaledWidth, height: scaledHeight))
+        var thumbnailRect = CGRect.zero
+        thumbnailRect.size.width = imageSize.width * scaleFactor;
+        thumbnailRect.size.height = imageSize.height * scaleFactor;
         thumbnailRect.origin = thumbnailPoint
         
         self.draw(in: thumbnailRect)

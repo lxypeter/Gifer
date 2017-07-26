@@ -58,19 +58,19 @@ class PhotoPickerViewController: BaseViewController, UICollectionViewDataSource,
     //MARK: Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.configureSubviews()
-        self.collectionView.mj_header.beginRefreshing()
+        configureSubviews()
+        collectionView.mj_header.beginRefreshing()
     }
     
     func configureSubviews() {
-        self.title = "选择图片"
+        title = "选择图片"
         
         let nextItem: UIBarButtonItem = UIBarButtonItem(title: "下一步", style: .plain, target: self, action: #selector(clickNextButton))
         nextItem.tintColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
-        self.navigationItem.rightBarButtonItem = nextItem;
+        navigationItem.rightBarButtonItem = nextItem;
         
-        self.view.addSubview(self.collectionView)
-        self.collectionView.snp.makeConstraints { (make) in
+        view.addSubview(self.collectionView)
+        collectionView.snp.makeConstraints { (make) in
             make.top.equalTo(0)
             make.right.equalTo(0)
             make.left.equalTo(0)
@@ -80,17 +80,17 @@ class PhotoPickerViewController: BaseViewController, UICollectionViewDataSource,
     
     func fetchPhotoFromLibrary() {
         
-        self.noRecordView.isHidden = true
-        self.selectedArray.removeAll()
-        self.photoArray.removeAll()
-        self.collectionView.reloadData()
+        noRecordView.isHidden = true
+        selectedArray.removeAll()
+        photoArray.removeAll()
+        collectionView.reloadData()
         
         let option: PHFetchOptions = PHFetchOptions()
         option.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         
         let result: PHFetchResult = PHAsset.fetchAssets(with: .image, options: option)
         
-        self.kGroup = DispatchGroup()
+        kGroup = DispatchGroup()
         
         result.enumerateObjects({ (asset, index, _) in
             autoreleasepool{
@@ -142,16 +142,16 @@ class PhotoPickerViewController: BaseViewController, UICollectionViewDataSource,
     
     //MARK: Delegate Method
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.photoArray.count
+        return photoArray.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell: PhotoPickerCell = collectionView.dequeueReusableCell(withReuseIdentifier: self.kCellId, for: indexPath) as! PhotoPickerCell
-        let photo = self.photoArray[indexPath.row]
+        let photo = photoArray[indexPath.row]
         
         if self.selectedArray.contains(photo) {
             cell.isChoose = true
-            let index = self.selectedArray.index(of: photo)!
+            let index = selectedArray.index(of: photo)!
             cell.selectedRankLabel.text = "\(index+1)"
         } else {
             cell.isChoose = false
@@ -161,24 +161,24 @@ class PhotoPickerViewController: BaseViewController, UICollectionViewDataSource,
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let photo = self.photoArray[indexPath.row]
+        let photo = photoArray[indexPath.row]
         if self.selectedArray.contains(photo) {
-            let index = self.selectedArray.index(of: photo)!
-            self.selectedArray.remove(at: index)
+            let index = selectedArray.index(of: photo)!
+            selectedArray.remove(at: index)
         } else {
-            self.selectedArray.append(photo)
+            selectedArray.append(photo)
         }
         collectionView.reloadData()
     }
     
     //MARK: events
     func clickNextButton() {
-        if self.selectedArray.count < 2 {
-            self.showNotice(message: "请至少选择两张图片！")
+        if selectedArray.count < 2 {
+            showNotice(message: "请至少选择两张图片！")
             return
         }
         let ctrl = GifEditViewController()
-        ctrl.selectedArray = self.selectedArray
-        self.navigationController?.pushViewController(ctrl, animated: true)
+        ctrl.selectedArray = selectedArray
+        navigationController?.pushViewController(ctrl, animated: true)
     }
 }

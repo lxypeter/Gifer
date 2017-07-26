@@ -13,3 +13,5 @@ let kScreenHeight: CGFloat = UIScreen.main.bounds.size.height
 let kStatusBarHeight: CGFloat = 20.0
 let kNavigationBarHeight: CGFloat = 44.0
 
+let kNotiKeyGalleryUpdate = "kNotiKeyGalleryUpdate"
+

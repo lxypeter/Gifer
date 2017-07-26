@@ -160,7 +160,6 @@ class GifEditViewController: BaseViewController {
         self.showHudWithMsg(msg: "正在生成...")
         
         let sr: CGRect = showingRect == nil ? imageView.bounds : showingRect!
-        let isSameRatio = self.isSameRatio()
         let targetHeight: CGFloat
         let targetWidth: CGFloat
         let maxLength: CGFloat
@@ -210,7 +209,7 @@ class GifEditViewController: BaseViewController {
                     let originWidth = scale * self.imageView.bounds.width
                     let originHeight = scale * self.imageView.bounds.height
                     
-                    let newImage = photo.fullImage?.imageScalingWith(targetSize: CGSize(width: originWidth, height: originHeight))?.clipImage(in: CGRect(x: sr.origin.x * scale, y: sr.origin.y * scale, width: sr.size.width * scale, height: sr.size.height * scale))
+                    let newImage = photo.fullImage?.imageCenterScalingWith(targetSize: CGSize(width: originWidth, height: originHeight))?.clipImage(in: CGRect(x: sr.origin.x * scale, y: sr.origin.y * scale, width: sr.size.width * scale, height: sr.size.height * scale))
                     CGImageDestinationAddImage(destination!, newImage!.cgImage!, frameProperties);
                 }
             }
@@ -222,8 +221,14 @@ class GifEditViewController: BaseViewController {
                     DispatchQueue.main.async { [unowned self] in
                         self.hideHud()
                         if success {
+                            
+                            NotificationCenter.default.post(name: NSNotification.Name(rawValue: kNotiKeyGalleryUpdate), object: nil)
                             self.navigationController?.popToRootViewController(animated: true)
                             self.showNotice(message: "生成Gif成功！")
+                            
+                            let ctrl = GifAchieveViewController()
+                            ctrl.imageUrl = url
+                            self.present(ctrl, animated: true, completion: nil)
                         }
                     }
                 }
