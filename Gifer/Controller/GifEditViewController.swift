@@ -243,12 +243,9 @@ class GifEditViewController: BaseViewController {
                         if success {
                             
                             NotificationCenter.default.post(name: NSNotification.Name(rawValue: kNotiKeyGalleryUpdate), object: nil)
+                            NotificationCenter.default.post(name: NSNotification.Name(rawValue: kNotiKeyGifGenerated), object: url)
                             self.navigationController?.popToRootViewController(animated: true)
                             self.showNotice(message: "生成Gif成功！")
-                            
-                            let ctrl = GifAchieveViewController()
-                            ctrl.imageUrl = url
-                            self.present(ctrl, animated: true, completion: nil)
                         }
                     }
                 }

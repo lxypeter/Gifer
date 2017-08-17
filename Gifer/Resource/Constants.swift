@@ -14,4 +14,5 @@ let kStatusBarHeight: CGFloat = 20.0
 let kNavigationBarHeight: CGFloat = 44.0
 
 let kNotiKeyGalleryUpdate = "kNotiKeyGalleryUpdate"
+let kNotiKeyGifGenerated = "kNotiKeyGifGenerated"
 

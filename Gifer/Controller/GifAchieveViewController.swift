@@ -56,5 +56,5 @@ class GifAchieveViewController: BaseViewController {
     func dismissController() {
         dismiss(animated: true, completion: nil)
     }
-
+    
 }

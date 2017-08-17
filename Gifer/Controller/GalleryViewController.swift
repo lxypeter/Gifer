@@ -74,6 +74,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         self.configureSubviews()
         self.collectionView.mj_header.beginRefreshing()
         NotificationCenter.default.addObserver(self, selector: #selector(fetchGIFFromLibrary), name: NSNotification.Name(rawValue: kNotiKeyGalleryUpdate), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(gifGenerated(_:)), name: NSNotification.Name(rawValue: kNotiKeyGifGenerated), object: nil)
     }
     
     func configureSubviews() {
@@ -275,5 +276,11 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
                 }
             }
         })
+    }
+    
+    func gifGenerated(_ notification: NSNotification) {
+        let ctrl = GifAchieveViewController()
+        ctrl.imageUrl = notification.object as? URL
+        self.present(ctrl, animated: true, completion: nil)
     }
 }
