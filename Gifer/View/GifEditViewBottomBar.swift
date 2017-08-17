@@ -13,6 +13,25 @@ enum GifEditViewBottomBarStatus {
     case cliping
 }
 
+enum RatioStatus {
+    case noLimit
+    case fourToThree
+    case sixteenToNine
+    
+    var floatValue: CGFloat {
+        var result : CGFloat
+        switch self {
+        case .noLimit:
+            result = 0
+        case .fourToThree:
+            result = 4/3
+        case .sixteenToNine:
+            result = 16/9
+        }
+        return result
+    }
+}
+
 class GifEditViewBottomBar: UIView, CAAnimationDelegate {
     
     public static let height: CGFloat = 54
@@ -105,6 +124,21 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate {
     
     var sliderValueChangeHandler: ((Float) -> ())?
     var rotateButtonHandler: (() -> ())?
+    var ratioStatus: RatioStatus = .noLimit {
+        didSet {
+            switch ratioStatus {
+            case .fourToThree:
+                ratioButton.setImage(#imageLiteral(resourceName: "ratio_4_3"), for: .normal)
+                ratioButton.setImage(#imageLiteral(resourceName: "ratio_4_3_hl"), for: .highlighted)
+            case .sixteenToNine:
+                ratioButton.setImage(#imageLiteral(resourceName: "ratio_16_9"), for: .normal)
+                ratioButton.setImage(#imageLiteral(resourceName: "ratio_16_9_hl"), for: .highlighted)
+            default:
+                ratioButton.setImage(#imageLiteral(resourceName: "ratio"), for: .normal)
+                ratioButton.setImage(#imageLiteral(resourceName: "ratio_hl"), for: .highlighted)
+            }
+        }
+    }
     var ratioButtonHandler: (() -> ())?
     var resetButtonHandler: (() -> ())?
     

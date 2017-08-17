@@ -92,7 +92,8 @@ extension UIImage {
     ///
     /// - Parameter targetSize: 目标大小
     /// - Returns: 缩放结果
-    func imageCenterScalingWith(targetSize: CGSize) -> UIImage? {
+    func imageCenterScalingWith(targetSize: CGSize, backgroundColor: UIColor = UIColor
+        .white) -> UIImage? {
         let imageSize = self.size
         var scaleFactor: CGFloat = 0.0
         let scaledWidth = targetSize.width
@@ -113,6 +114,12 @@ extension UIImage {
         }
         
         UIGraphicsBeginImageContext(CGSize(width: scaledWidth, height: scaledHeight))
+        
+        let context = UIGraphicsGetCurrentContext()
+        let bounds = CGRect(x: 0, y: 0, width: scaledWidth, height: scaledHeight)
+        context!.setFillColor(backgroundColor.cgColor)
+        context!.fill(bounds)
+        
         var thumbnailRect = CGRect.zero
         thumbnailRect.size.width = imageSize.width * scaleFactor;
         thumbnailRect.size.height = imageSize.height * scaleFactor;
@@ -166,6 +173,69 @@ extension UIImage {
         guard let newCgImage = ctx?.makeImage() else {
             return self
         }
+        ctx?.flush()
+        return UIImage(cgImage: newCgImage)
+    }
+    
+    func rotate(orient: UIImageOrientation) -> UIImage {
+        guard let cgImage = self.cgImage else {
+            return self
+        }
+        var rect: CGRect = CGRect.zero
+        var transform: CGAffineTransform = .identity
+        
+        rect.size.width = CGFloat(cgImage.width)
+        rect.size.height = CGFloat(cgImage.height)
+        var bnds: CGRect = rect
+        
+        let swapWidthAndHeight: (CGRect) -> (CGRect) = {(swapRect) in
+            var resultRect = CGRect.zero
+            resultRect.origin = swapRect.origin
+            resultRect.size.width = rect.size.height;
+            resultRect.size.height = rect.size.width;
+            return resultRect
+        }
+        
+        switch orient {
+        case .up:
+            return self
+        case .upMirrored:
+            transform = transform.translatedBy(x: rect.size.width, y: 0)
+            transform = transform.scaledBy(x: -1.0, y: 1.0)
+        case .down:
+            transform = transform.translatedBy(x: rect.size.width, y: rect.size.height)
+            transform = transform.rotated(by: .pi)
+        case .downMirrored:
+            transform = transform.translatedBy(x: 0.0, y: rect.size.height)
+            transform = transform.scaledBy(x: 1.0, y: -1.0)
+        case .left:
+            bnds = swapWidthAndHeight(bnds)
+            transform = transform.translatedBy(x: 0.0, y: rect.size.width)
+            transform = transform.rotated(by: .pi * 3 / 2)
+        case .leftMirrored:
+            bnds = swapWidthAndHeight(bnds)
+            transform = transform.translatedBy(x: rect.size.height, y: rect.size.width)
+            transform = transform.scaledBy(x: -1.0, y: 1.0)
+            transform = transform.rotated(by: .pi * 3 / 2)
+        case .right:
+            bnds = swapWidthAndHeight(bnds)
+            transform = transform.translatedBy(x: rect.size.height, y: 0)
+            transform = transform.rotated(by: .pi / 2)
+        case .rightMirrored:
+            bnds = swapWidthAndHeight(bnds)
+            transform = transform.scaledBy(x: -1.0, y: 1.0)
+            transform = transform.rotated(by: .pi / 2)
+        }
+
+        let ctx = CGContext(data: nil, width: Int(bnds.size.width), height: Int(bnds.size.height), bitsPerComponent: cgImage.bitsPerComponent, bytesPerRow: 0, space: cgImage.colorSpace!, bitmapInfo: cgImage.bitmapInfo.rawValue)
+        
+        ctx?.concatenate(transform)
+        ctx?.draw(cgImage, in: rect)
+        
+        guard let newCgImage = ctx?.makeImage() else {
+            return self
+        }
+        
         ctx?.flush()
         return UIImage(cgImage: newCgImage)
     }

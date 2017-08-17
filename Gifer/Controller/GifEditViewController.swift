@@ -36,6 +36,29 @@ class GifEditViewController: BaseViewController {
     private var kGroup: DispatchGroup = DispatchGroup()
     private var isCliping: Bool = false
     private var showingRect: CGRect? = nil
+    private var ratioStatus: RatioStatus = .noLimit {
+        didSet {
+            if showingRect == nil {
+                showingRect = imageView.bounds
+            }
+            let resizeBlock: ((CGFloat) -> ()) = {(ratio) in
+                if ratio > (self.showingRect!.width / self.showingRect!.height) {
+                    let resultHeight = self.showingRect!.width / ratio
+                    self.showingRect!.origin.y = self.showingRect!.origin.y + (self.showingRect!.height - resultHeight) / 2
+                    self.showingRect!.size.height = resultHeight
+                } else {
+                    let resultWidth = self.showingRect!.height * ratio
+                    self.showingRect!.origin.x = self.showingRect!.origin.x + (self.showingRect!.width - resultWidth) / 2
+                    self.showingRect!.size.width = resultWidth
+                }
+            }
+            let ratio = ratioStatus.floatValue
+            if ratio != 0 {
+                resizeBlock(ratio)
+            }
+            resizeShowingArea()
+        }
+    }
     
     //MARK: life cycle
     override func viewDidLoad() {
@@ -118,7 +141,6 @@ class GifEditViewController: BaseViewController {
         edgeView.isUserInteractionEnabled = true
         let gesture = UIPanGestureRecognizer(target: self, action: #selector(panEdgeView(recognizer:)))
         edgeView.addGestureRecognizer(gesture)
-//        edgeView.backgroundColor = #colorLiteral(red: 0.3411764801, green: 0.6235294342, blue: 0.1686274558, alpha: 1)
         return edgeView
     }
     
@@ -204,14 +226,12 @@ class GifEditViewController: BaseViewController {
             
             let scale = targetWidth / sr.size.width
             
-            for photo in self.selectedArray {
-                if photo.fullImage != nil {
-                    let originWidth = scale * self.imageView.bounds.width
-                    let originHeight = scale * self.imageView.bounds.height
-                    
-                    let newImage = photo.fullImage?.imageCenterScalingWith(targetSize: CGSize(width: originWidth, height: originHeight))?.clipImage(in: CGRect(x: sr.origin.x * scale, y: sr.origin.y * scale, width: sr.size.width * scale, height: sr.size.height * scale))
-                    CGImageDestinationAddImage(destination!, newImage!.cgImage!, frameProperties);
-                }
+            for image in self.imageArray {
+                let originWidth = scale * self.imageView.bounds.width
+                let originHeight = scale * self.imageView.bounds.height
+                
+                let newImage = image.imageCenterScalingWith(targetSize: CGSize(width: originWidth, height: originHeight))?.clipImage(in: CGRect(x: sr.origin.x * scale, y: sr.origin.y * scale, width: sr.size.width * scale, height: sr.size.height * scale))
+                CGImageDestinationAddImage(destination!, newImage!.cgImage!, frameProperties);
             }
             
             if CGImageDestinationFinalize(destination!) {
@@ -259,6 +279,40 @@ class GifEditViewController: BaseViewController {
         let cancelAction = UIAlertAction(title: "取消", style: .cancel, handler: nil)
         alertController.addAction(cancelAction)
         self.present(alertController, animated: true, completion: nil)
+    }
+    
+    func clickRotateButton() {
+        var rotateImageArray: [UIImage] = []
+        for image in imageArray {
+            rotateImageArray.append(image.rotate(orient: .left))
+        }
+        imageArray = rotateImageArray;
+        
+        showingRect = nil
+        
+        // update imageView
+        let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - kNavigationBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
+        imageView.snp.updateConstraints { (make) in
+            make.center.equalTo(self.contentView.snp.center)
+            var imageViewRatio: CGFloat = 1.0
+            if isSameRatio() {
+                let width: CGFloat = self.selectedArray[0].photoWidth
+                let height: CGFloat = self.selectedArray[0].photoHeight
+                imageViewRatio = width / height
+            }
+            if imageViewRatio >= kScreenWidth / contentViewHeight {
+                make.width.equalTo(kScreenWidth)
+                make.height.equalTo(self.imageView.snp.width).multipliedBy(1/imageViewRatio)
+            } else {
+                make.height.equalTo(contentViewHeight)
+                make.width.equalTo(self.imageView.snp.height).multipliedBy(imageViewRatio)
+            }
+        }
+        
+        imageView.animationImages = self.imageArray
+        imageView.startAnimating()
+        
+        resizeShowingArea()
     }
     
     //MARK: gesture
@@ -413,12 +467,21 @@ class GifEditViewController: BaseViewController {
         
         let imageViewFrame = imageView.frame
         
+        let ratio = ratioStatus.floatValue
+        
         if recognizer.view! === leftUpEdgeView { // 左上
             centerX = max(imageViewFrame.origin.x, kEdgeViewWidth / 2, centerX)
             centerX = min(rightUpEdgeView.center.x - minDistant, centerX)
             centerY = max(imageViewFrame.origin.y, kEdgeViewWidth / 2, centerY)
             centerY = min(leftDownEdgeView.center.y - minDistant, centerY)
             
+            if ratio != 0 {
+                if abs(translation.x) > (translation.y) {
+                    centerY = rightDownViewCenter.y - (rightDownViewCenter.x - centerX) / ratio
+                } else {
+                    centerX = rightDownViewCenter.x - (rightDownViewCenter.y - centerY) * ratio
+                }
+            }
             leftUpViewCenter = CGPoint(x: centerX, y: centerY)
         } else if recognizer.view! === leftDownEdgeView { // 左下
             centerX = max(imageViewFrame.origin.x, kEdgeViewWidth / 2, centerX)
@@ -426,6 +489,13 @@ class GifEditViewController: BaseViewController {
             centerY = max(leftUpEdgeView.center.y + minDistant, centerY)
             centerY = min(imageViewFrame.maxY, contentViewHeight - kEdgeViewWidth / 2 ,centerY)
             
+            if ratio != 0 {
+                if abs(translation.x) > (translation.y) {
+                    centerY = leftUpViewCenter.y + (rightDownViewCenter.x - centerX) / ratio
+                } else {
+                    centerX = rightDownViewCenter.x - (centerY - leftUpViewCenter.y) * ratio
+                }
+            }
             leftUpViewCenter.x = centerX
             rightDownViewCenter.y = centerY
         } else if recognizer.view! === rightUpEdgeView { //右上
@@ -434,6 +504,13 @@ class GifEditViewController: BaseViewController {
             centerY = max(imageViewFrame.origin.y, kEdgeViewWidth / 2, centerY)
             centerY = min(self.rightDownEdgeView.center.y - minDistant ,centerY)
             
+            if ratio != 0 {
+                if abs(translation.x) > (translation.y) {
+                    centerY = rightDownViewCenter.y - (centerX - leftUpViewCenter.x) / ratio
+                } else {
+                    centerX = leftUpViewCenter.x + (rightDownViewCenter.y - centerY) * ratio
+                }
+            }
             leftUpViewCenter.y = centerY
             rightDownViewCenter.x = centerX
         } else { //rightDownEdgeView 右下
@@ -442,6 +519,13 @@ class GifEditViewController: BaseViewController {
             centerY = max(self.rightUpEdgeView.center.y + minDistant, centerY)
             centerY = min(imageViewFrame.maxY, contentViewHeight - kEdgeViewWidth / 2, centerY)
             
+            if ratio != 0 {
+                if abs(translation.x) > (translation.y) {
+                    centerY = leftUpViewCenter.y + (centerX - leftUpViewCenter.x) / ratio
+                } else {
+                    centerX = leftUpViewCenter.x + (centerY - leftUpViewCenter.y) * ratio
+                }
+            }
             rightDownViewCenter = CGPoint(x: centerX, y: centerY)
         }
         recognizer.setTranslation(CGPoint.zero, in: self.view)
@@ -671,6 +755,31 @@ class GifEditViewController: BaseViewController {
             self.imageView.animationDuration = Double(String(format: "%.2f", value))! * Double(self.selectedArray.count)
             self.imageView.startAnimating()
         }
+        bottomBar.ratioButtonHandler = {
+            let alertViewController = UIAlertController(title: "图像宽高比", message: nil, preferredStyle: .actionSheet)
+            let fourToThreeAction = UIAlertAction(title: "4:3", style: .default, handler: { (action) in
+                self.ratioStatus = .fourToThree
+                bottomBar.ratioStatus = .fourToThree
+            })
+            alertViewController.addAction(fourToThreeAction)
+            let sixteenToNineAction = UIAlertAction(title: "16:9", style: .default, handler: { (action) in
+                self.ratioStatus = .sixteenToNine
+                bottomBar.ratioStatus = .sixteenToNine
+            })
+            alertViewController.addAction(sixteenToNineAction)
+            let noLimitAction = UIAlertAction(title: "无限制", style: .default, handler: { (action) in
+                self.ratioStatus = .noLimit
+                bottomBar.ratioStatus = .noLimit
+            })
+            alertViewController.addAction(noLimitAction)
+            let cancelAction = UIAlertAction(title: "取消", style: .cancel, handler: { (action) in
+            })
+            alertViewController.addAction(cancelAction)
+            self.present(alertViewController, animated: true, completion: nil)
+        }
+        bottomBar.rotateButtonHandler = {
+            self.clickRotateButton()
+        }
         return bottomBar
     }()
     private lazy var toolBar: GifEditToolBar = {
@@ -698,7 +807,6 @@ class GifEditViewController: BaseViewController {
     private lazy var maskLayer: CAShapeLayer = {
         let maskLayer = CAShapeLayer()
         let fillColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
-        //        let fillColor = #colorLiteral(red: 0.9254902005, green: 0.2352941185, blue: 0.1019607857, alpha: 1)
         maskLayer.fillColor = fillColor.cgColor
         maskLayer.opacity = 1
         return maskLayer
