@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		032CDCBA2BE0C05175F7B7C5 /* Pods_Gifer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C92EC1B735E9E31E45A866E /* Pods_Gifer.framework */; };
+		E112B3C51F4C09EF00341E2E /* AddButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E112B3C41F4C09EF00341E2E /* AddButtonView.swift */; };
 		E11503E71ECC41D6008BB686 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11503E61ECC41D6008BB686 /* AppDelegate.swift */; };
 		E11503EC1ECC41D6008BB686 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E11503EA1ECC41D6008BB686 /* Main.storyboard */; };
 		E11503EE1ECC41D6008BB686 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E11503ED1ECC41D6008BB686 /* Assets.xcassets */; };
@@ -36,6 +37,7 @@
 		E1B456621EE00D10009555A6 /* PhotoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B456611EE00D10009555A6 /* PhotoCell.swift */; };
 		E1E37F1D1ED80B67000B4B3F /* GifImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E37F1C1ED80B67000B4B3F /* GifImageView.swift */; };
 		E1E37F1F1ED8107E000B4B3F /* ImageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E37F1E1ED8107E000B4B3F /* ImageType.swift */; };
+		E1E51BE21F4D13AD007A2EDB /* CGPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E51BE11F4D13AD007A2EDB /* CGPoint.swift */; };
 		E1F2B4711EF110F8003948EB /* GifEditToolBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2B4701EF110F8003948EB /* GifEditToolBar.swift */; };
 /* End PBXBuildFile section */
 
@@ -43,6 +45,7 @@
 		38A99A0D38EDA494E9BAFC9E /* Pods-Gifer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Gifer.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Gifer/Pods-Gifer.debug.xcconfig"; sourceTree = "<group>"; };
 		7C92EC1B735E9E31E45A866E /* Pods_Gifer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Gifer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A423FAE65CF804E43FD92D8F /* Pods-Gifer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Gifer.release.xcconfig"; path = "Pods/Target Support Files/Pods-Gifer/Pods-Gifer.release.xcconfig"; sourceTree = "<group>"; };
+		E112B3C41F4C09EF00341E2E /* AddButtonView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddButtonView.swift; sourceTree = "<group>"; };
 		E11503E31ECC41D6008BB686 /* Gifer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gifer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E11503E61ECC41D6008BB686 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E11503EB1ECC41D6008BB686 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -73,6 +76,7 @@
 		E1B456611EE00D10009555A6 /* PhotoCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCell.swift; sourceTree = "<group>"; };
 		E1E37F1C1ED80B67000B4B3F /* GifImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifImageView.swift; sourceTree = "<group>"; };
 		E1E37F1E1ED8107E000B4B3F /* ImageType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageType.swift; sourceTree = "<group>"; };
+		E1E51BE11F4D13AD007A2EDB /* CGPoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGPoint.swift; sourceTree = "<group>"; };
 		E1F2B4701EF110F8003948EB /* GifEditToolBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifEditToolBar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -165,6 +169,7 @@
 				E19D661E1EE7F547008E29F7 /* PhotoPickerCell.xib */,
 				E171BF8F1EEA7A37001F53E2 /* GifEditViewBottomBar.swift */,
 				E1F2B4701EF110F8003948EB /* GifEditToolBar.swift */,
+				E112B3C41F4C09EF00341E2E /* AddButtonView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -228,6 +233,7 @@
 			isa = PBXGroup;
 			children = (
 				E19384CF1EEE428800BE84A4 /* UIImage.swift */,
+				E1E51BE11F4D13AD007A2EDB /* CGPoint.swift */,
 			);
 			path = Category;
 			sourceTree = "<group>";
@@ -369,6 +375,7 @@
 				E12826A61ED42B4600262F63 /* GalleryCell.swift in Sources */,
 				E19D661A1EE7E0A8008E29F7 /* NoRecordView.swift in Sources */,
 				E171BF921EEAA196001F53E2 /* GifAchieveViewController.swift in Sources */,
+				E112B3C51F4C09EF00341E2E /* AddButtonView.swift in Sources */,
 				E1E37F1D1ED80B67000B4B3F /* GifImageView.swift in Sources */,
 				E1330BEF1EE1488A0053ABFD /* PhotoViewBottomBar.swift in Sources */,
 				E171BF901EEA7A37001F53E2 /* GifEditViewBottomBar.swift in Sources */,
@@ -385,6 +392,7 @@
 				E195333E1EE6A48D00C23BE2 /* PublicMethod.swift in Sources */,
 				E171BF8E1EEA45D5001F53E2 /* GifEditViewController.swift in Sources */,
 				E195333A1EE68CF000C23BE2 /* GalleryViewBottomBar.swift in Sources */,
+				E1E51BE21F4D13AD007A2EDB /* CGPoint.swift in Sources */,
 				E11503E71ECC41D6008BB686 /* AppDelegate.swift in Sources */,
 				E1B456621EE00D10009555A6 /* PhotoCell.swift in Sources */,
 				E1333D291ED564D60017C07B /* Photo.swift in Sources */,
