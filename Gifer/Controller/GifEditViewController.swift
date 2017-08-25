@@ -210,9 +210,7 @@ class GifEditViewController: BaseViewController {
             kCGImagePropertyPixelWidth as String: targetWidth
             ] as CFDictionary;
         
-        let dataFormatter = DateFormatter()
-        dataFormatter.dateFormat = "YYYYMMddHHmmss"
-        let filename = dataFormatter.string(from: Date())
+        let filename = timeStamp()
         let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(filename).gif")
         
         DispatchQueue.global().async { [unowned self] in

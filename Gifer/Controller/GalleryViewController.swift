@@ -46,6 +46,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         collectionView.register(UINib(nibName: "GalleryCell", bundle: nil), forCellWithReuseIdentifier: self.kCellId)
         collectionView.allowsMultipleSelection = true
         collectionView.allowsSelection = true
+        collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 120, right: 0)
         collectionView.mj_header = self.refreshHeader
         
         return collectionView
@@ -92,6 +93,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         addView.backgroundView.backgroundColor = #colorLiteral(red: 0.968627451, green: 0.7921568627, blue: 0.09411764706, alpha: 1)
         addView.layer.cornerRadius = 30
         addView.button.setBackgroundImage(#imageLiteral(resourceName: "add"), for: .normal)
+        addView.button.setBackgroundImage(#imageLiteral(resourceName: "add_white"), for: .selected)
         addView.button.addTarget(self, action: #selector(clickAddButton), for: .touchUpInside)
         return addView
     }()
@@ -492,16 +494,20 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     }
     
     func clickPhotoButton() {
-        if !addView.button.isSelected { return }
+        if isAnimating { return }
         clickAddButton()
         let ctrl = PhotoPickerViewController()
-        self.navigationController!.pushViewController(ctrl, animated: true)
+        navigationController!.pushViewController(ctrl, animated: true)
     }
     
     func clickVideoButton() {
     }
     
     func clickRecordButton() {
+        if isAnimating { return }
+        clickAddButton()
+        let ctrl = VideoRecordViewController()
+        navigationController!.pushViewController(ctrl, animated: true)
     }
     
     func clickSelectButton() {
@@ -571,6 +577,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         self.present(ctrl, animated: true, completion: nil)
     }
     
+    //MARK: animation
     func generateRotatePath(center: CGPoint, rotateAngle: CGFloat) -> UIBezierPath {
         let rotatePath = UIBezierPath()
         let targetDistant: CGFloat = kAddButtonDistant
@@ -646,7 +653,6 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         
         switch type {
         case .enter:
-            animationGroup.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
             posiAnimation.toValue = kScreenHeight / 2
             rotateAnimation.toValue = Double.pi * -2.25
         case .quit:

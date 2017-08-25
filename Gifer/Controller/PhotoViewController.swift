@@ -88,7 +88,7 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
     
     func configureSubviews() {
         
-        edgesForExtendedLayout = .all;
+        edgesForExtendedLayout = .all
         
         title = "\(currentIndex+1) / \(gifArray.count)"
         
