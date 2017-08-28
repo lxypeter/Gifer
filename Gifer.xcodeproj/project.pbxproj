@@ -34,6 +34,7 @@
 		E19D661C1EE7F2D5008E29F7 /* PhotoPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19D661B1EE7F2D5008E29F7 /* PhotoPickerViewController.swift */; };
 		E19D661F1EE7F547008E29F7 /* PhotoPickerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19D661D1EE7F547008E29F7 /* PhotoPickerCell.swift */; };
 		E19D66201EE7F547008E29F7 /* PhotoPickerCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E19D661E1EE7F547008E29F7 /* PhotoPickerCell.xib */; };
+		E1A90C121F53B448003EE57C /* ViewRecordTopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A90C111F53B448003EE57C /* ViewRecordTopView.swift */; };
 		E1B456621EE00D10009555A6 /* PhotoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B456611EE00D10009555A6 /* PhotoCell.swift */; };
 		E1E37F1D1ED80B67000B4B3F /* GifImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E37F1C1ED80B67000B4B3F /* GifImageView.swift */; };
 		E1E37F1F1ED8107E000B4B3F /* ImageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E37F1E1ED8107E000B4B3F /* ImageType.swift */; };
@@ -74,6 +75,7 @@
 		E19D661B1EE7F2D5008E29F7 /* PhotoPickerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoPickerViewController.swift; sourceTree = "<group>"; };
 		E19D661D1EE7F547008E29F7 /* PhotoPickerCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoPickerCell.swift; sourceTree = "<group>"; };
 		E19D661E1EE7F547008E29F7 /* PhotoPickerCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PhotoPickerCell.xib; sourceTree = "<group>"; };
+		E1A90C111F53B448003EE57C /* ViewRecordTopView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewRecordTopView.swift; sourceTree = "<group>"; };
 		E1B456611EE00D10009555A6 /* PhotoCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCell.swift; sourceTree = "<group>"; };
 		E1E37F1C1ED80B67000B4B3F /* GifImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifImageView.swift; sourceTree = "<group>"; };
 		E1E37F1E1ED8107E000B4B3F /* ImageType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageType.swift; sourceTree = "<group>"; };
@@ -173,6 +175,7 @@
 				E171BF8F1EEA7A37001F53E2 /* GifEditViewBottomBar.swift */,
 				E1F2B4701EF110F8003948EB /* GifEditToolBar.swift */,
 				E112B3C41F4C09EF00341E2E /* AddButtonView.swift */,
+				E1A90C111F53B448003EE57C /* ViewRecordTopView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -377,6 +380,7 @@
 			files = (
 				E12826A61ED42B4600262F63 /* GalleryCell.swift in Sources */,
 				E19D661A1EE7E0A8008E29F7 /* NoRecordView.swift in Sources */,
+				E1A90C121F53B448003EE57C /* ViewRecordTopView.swift in Sources */,
 				E171BF921EEAA196001F53E2 /* GifAchieveViewController.swift in Sources */,
 				E112B3C51F4C09EF00341E2E /* AddButtonView.swift in Sources */,
 				E1E37F1D1ED80B67000B4B3F /* GifImageView.swift in Sources */,

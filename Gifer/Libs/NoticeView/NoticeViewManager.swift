@@ -29,7 +29,7 @@ class NoticeViewManager : NSObject {
         if noticeView.hasStatusBar {
             noticeViewHeight = 44 + 20
         } else {
-            noticeViewHeight = 20
+            noticeViewHeight = 44
         }
         noticeView.frame = CGRect(x: 0, y: -noticeViewHeight, width: kScreenWidth, height: noticeViewHeight)
         
@@ -70,7 +70,7 @@ extension UIViewController {
     
     func showNotice(message: String) {
         let manager = NoticeViewManager.shared
-        self.showNotice(message: message, duration: manager.duration)
+        showNotice(message: message, duration: manager.duration)
     }
     
     func showNotice(message: String, duration: Double) {

@@ -17,6 +17,7 @@ enum RatioStatus {
     case noLimit
     case fourToThree
     case sixteenToNine
+    case oneToOne
     
     var floatValue: CGFloat {
         var result : CGFloat
@@ -27,6 +28,8 @@ enum RatioStatus {
             result = 4/3
         case .sixteenToNine:
             result = 16/9
+        case .oneToOne:
+            result = 1/1
         }
         return result
     }
@@ -133,6 +136,9 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate {
             case .sixteenToNine:
                 ratioButton.setImage(#imageLiteral(resourceName: "ratio_16_9"), for: .normal)
                 ratioButton.setImage(#imageLiteral(resourceName: "ratio_16_9_hl"), for: .highlighted)
+            case .oneToOne:
+                ratioButton.setImage(#imageLiteral(resourceName: "ratio_1_1"), for: .normal)
+                ratioButton.setImage(#imageLiteral(resourceName: "ratio_1_1_hl"), for: .highlighted)
             default:
                 ratioButton.setImage(#imageLiteral(resourceName: "ratio"), for: .normal)
                 ratioButton.setImage(#imageLiteral(resourceName: "ratio_hl"), for: .highlighted)

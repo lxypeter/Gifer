@@ -752,6 +752,11 @@ class GifEditViewController: BaseViewController {
         }
         bottomBar.ratioButtonHandler = {
             let alertViewController = UIAlertController(title: "图像宽高比", message: nil, preferredStyle: .actionSheet)
+            let oneToOneAction = UIAlertAction(title: "1:1", style: .default, handler: { (action) in
+                self.ratioStatus = .oneToOne
+                bottomBar.ratioStatus = .oneToOne
+            })
+            alertViewController.addAction(oneToOneAction)
             let fourToThreeAction = UIAlertAction(title: "4:3", style: .default, handler: { (action) in
                 self.ratioStatus = .fourToThree
                 bottomBar.ratioStatus = .fourToThree

@@ -26,16 +26,16 @@ class NoticeView: UIView {
     convenience init(frame: CGRect, text: String, hasStatusBar: Bool) {
         self.init(frame: frame)
         self.hasStatusBar = hasStatusBar
-        self.configureSubviews(with: text)
+        configureSubviews(with: text)
     }
     
     private func configureSubviews(with text: String) {
         let manager = NoticeViewManager.shared
-        self.backgroundColor = manager.backgroundColor
+        backgroundColor = manager.backgroundColor
         
-        self.label.text = text
-        self.addSubview(self.label)
-        self.label.snp.makeConstraints { (make) in
+        label.text = text
+        addSubview(self.label)
+        label.snp.makeConstraints { (make) in
             if hasStatusBar {
                 make.top.equalTo(25)
             } else {

@@ -151,7 +151,11 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         coverView.isHidden = true
         return coverView
     }()
-    private var isSelecting = false
+    private var isSelecting = false {
+        didSet {
+            addView.isHidden = isSelecting
+        }
+    }
     private var isAnimating = false
     private var kGroup: DispatchGroup = DispatchGroup()
 
@@ -167,17 +171,11 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         addView.isHidden = false
-        photoAddView.isHidden = false
-        videoAddView.isHidden = false
-        recordAddView.isHidden = false
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         addView.isHidden = true
-        photoAddView.isHidden = true
-        videoAddView.isHidden = true
-        recordAddView.isHidden = true
     }
     
     func configureSubviews() {
@@ -210,7 +208,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         coverView.addSubview(videoAddLabel)
         coverView.addSubview(recordAddLabel)
         
-        UIApplication.shared.keyWindow!.addSubview(photoAddView)
+        coverView.addSubview(photoAddView)
         photoAddView.snp.makeConstraints { (make) in
             make.width.equalTo(60)
             make.height.equalTo(60)
@@ -218,7 +216,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
             make.centerX.equalTo(kScreenWidth / 2)
         }
         
-        UIApplication.shared.keyWindow!.addSubview(videoAddView)
+        coverView.addSubview(videoAddView)
         videoAddView.snp.makeConstraints { (make) in
             make.width.equalTo(60)
             make.height.equalTo(60)
@@ -226,7 +224,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
             make.centerX.equalTo(kScreenWidth / 2)
         }
         
-        UIApplication.shared.keyWindow!.addSubview(recordAddView)
+        coverView.addSubview(recordAddView)
         recordAddView.snp.makeConstraints { (make) in
             make.width.equalTo(60)
             make.height.equalTo(60)
@@ -461,15 +459,15 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
             
             // photo button view
             photoAddView.layer.add(animationOfDetailAddButton(type: .quit, angle: 0), forKey: kPhotoViewQuitAnimation)
-            photoAddView.backgroundView.layer.add(animationOfButtonBackground(type: .quit), forKey: nil)
+//            photoAddView.backgroundView.layer.add(animationOfButtonBackground(type: .quit), forKey: nil)
             
             // video button view
             videoAddView.layer.add(animationOfDetailAddButton(type: .quit, angle: .pi * 2 / 3), forKey: kVideoViewQuitAnimation)
-            videoAddView.backgroundView.layer.add(animationOfButtonBackground(type: .quit), forKey: nil)
+//            videoAddView.backgroundView.layer.add(animationOfButtonBackground(type: .quit), forKey: nil)
             
             // record button view
             recordAddView.layer.add(animationOfDetailAddButton(type: .quit, angle: .pi * 2 * 2 / 3), forKey: kRecordViewQuitAnimation)
-            recordAddView.backgroundView.layer.add(animationOfButtonBackground(type: .quit), forKey: nil)
+//            recordAddView.backgroundView.layer.add(animationOfButtonBackground(type: .quit), forKey: nil)
         } else { //enter
             // cover view
             coverView.isHidden = false
@@ -481,15 +479,15 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
             
             // photo button view
             photoAddView.layer.add(animationOfDetailAddButton(type: .enter, angle: 0), forKey: kPhotoViewEnterAnimation)
-            photoAddView.backgroundView.layer.add(animationOfButtonBackground(type: .enter), forKey: nil)
+//            photoAddView.backgroundView.layer.add(animationOfButtonBackground(type: .enter), forKey: nil)
             
             // video button view
             videoAddView.layer.add(animationOfDetailAddButton(type: .enter, angle: .pi * 2 / 3), forKey: kVideoViewEnterAnimation)
-            videoAddView.backgroundView.layer.add(animationOfButtonBackground(type: .enter), forKey: nil)
+//            videoAddView.backgroundView.layer.add(animationOfButtonBackground(type: .enter), forKey: nil)
             
             // record button view
             recordAddView.layer.add(animationOfDetailAddButton(type: .enter, angle: .pi * 2 * 2 / 3), forKey: kRecordViewEnterAnimation)
-            recordAddView.backgroundView.layer.add(animationOfButtonBackground(type: .enter), forKey: nil)
+//            recordAddView.backgroundView.layer.add(animationOfButtonBackground(type: .enter), forKey: nil)
         }
     }
     
@@ -511,24 +509,23 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     }
     
     func clickSelectButton() {
-        self.isSelecting = !self.isSelecting
-        addView.isHidden = isSelecting
+        isSelecting = !isSelecting
         
         let animation: CABasicAnimation = CABasicAnimation(keyPath: "position")
         animation.delegate = self
-        if self.isSelecting {
-            self.selectItem.title = "取消"
+        if isSelecting {
+            selectItem.title = "取消"
             animation.byValue = CGPoint(x: 0, y: -GalleryViewBottomBar.height)
-            self.collectionView.mj_header = nil
+            collectionView.mj_header = nil
         } else {
-            self.selectItem.title = "选择"
+            selectItem.title = "选择"
             animation.byValue = CGPoint(x: 0, y: GalleryViewBottomBar.height)
-            self.collectionView.mj_header = self.refreshHeader
+            collectionView.mj_header = refreshHeader
         }
         animation.isRemovedOnCompletion = false
         animation.fillMode = kCAFillModeForwards;
-        self.bottomBar.layer.add(animation, forKey: nil)
-        self.collectionView.reloadData()
+        bottomBar.layer.add(animation, forKey: nil)
+        collectionView.reloadData()
     }
     
     func clickDeleteButton() {
