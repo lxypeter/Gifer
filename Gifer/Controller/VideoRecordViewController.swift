@@ -14,6 +14,7 @@ enum VideoCaptureError: Error {
     case FailToInitSession
     case FailToInitInput
     case FailToSwitchFlashMode
+    case FailToFocus
 }
 
 class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
@@ -48,12 +49,59 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         ratioButton.addTarget(self, action: #selector(clickRatioButton), for: .touchUpInside)
         return ratioButton
     }()
+    private lazy var focusLayer: CAShapeLayer = {
+        let focusLayer = CAShapeLayer()
+        focusLayer.fillColor = UIColor.clear.cgColor
+        let strokeColor = #colorLiteral(red: 0.9686274529, green: 0.78039217, blue: 0.3450980484, alpha: 1)
+        focusLayer.strokeColor = strokeColor.cgColor
+        focusLayer.lineWidth = 1.0
+        focusLayer.frame = CGRect(x: 0, y: 0, width: 50, height: 50)
+        let borderPath = UIBezierPath(rect: focusLayer.frame)
+        let branchLength: CGFloat = 5
+        borderPath.move(to: CGPoint(x: focusLayer.frame.width / 2, y: 0))
+        borderPath.addLine(to: CGPoint(x: focusLayer.frame.width / 2, y: branchLength))
+        borderPath.move(to: CGPoint(x: focusLayer.frame.width, y: focusLayer.frame.height / 2))
+        borderPath.addLine(to: CGPoint(x: focusLayer.frame.width - branchLength, y: focusLayer.frame.height / 2))
+        borderPath.move(to: CGPoint(x: focusLayer.frame.width / 2, y: focusLayer.frame.height))
+        borderPath.addLine(to: CGPoint(x: focusLayer.frame.width / 2, y: focusLayer.frame.height - branchLength))
+        borderPath.move(to: CGPoint(x: 0, y: focusLayer.frame.height / 2))
+        borderPath.addLine(to: CGPoint(x: branchLength, y: focusLayer.frame.height / 2))
+        
+        focusLayer.path = borderPath.cgPath
+        focusLayer.opacity = 0
+        return focusLayer
+    }()
     
     private lazy var captureQueue: DispatchQueue = {
         return DispatchQueue(label: "com.lxy.videoCapture")
     }()
-    private var isWriting: Bool = false
+    private var isWriting: Bool = false {
+        didSet {
+            DispatchQueue.main.async { [unowned self] in
+                self.topView.isHidden = self.isWriting
+                self.ratioButton.isHidden = self.isWriting
+                self.camaraButton.isHidden = self.isWriting
+            }
+        }
+    }
     private var firstSample: Bool = false
+    private var currentVideoRatio: RatioStatus = .fourToThree {
+        didSet {
+            let layerHeight: CGFloat
+            switch self.currentVideoRatio {
+            case .fourToThree:
+                ratioButton.setBackgroundImage(#imageLiteral(resourceName: "ratio_4_3_white"), for: .normal)
+                layerHeight = kScreenWidth / RatioStatus.fourToThree.floatValue
+            case .sixteenToNine:
+                ratioButton.setBackgroundImage(#imageLiteral(resourceName: "ratio_16_9_white"), for: .normal)
+                layerHeight = kScreenWidth / RatioStatus.sixteenToNine.floatValue
+            default:
+                ratioButton.setBackgroundImage(#imageLiteral(resourceName: "ratio_1_1_white"), for: .normal)
+                layerHeight = kScreenWidth / RatioStatus.oneToOne.floatValue
+            }
+            captureVideoPreviewLayer!.frame = CGRect(x: 0, y: (kScreenHeight - layerHeight) / 2, width: kScreenWidth, height: layerHeight)
+        }
+    }
     private let captureSession: AVCaptureSession = AVCaptureSession()
     private var currentVideoInput: AVCaptureDeviceInput?
     private var assetWriter: AVAssetWriter?
@@ -129,6 +177,8 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             make.left.equalTo(30)
             make.centerY.equalTo(shotButton.snp.centerY)
         }
+        
+        view.layer.addSublayer(focusLayer)
     }
     
     func configureCaptureSession() {
@@ -154,6 +204,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
                     throw VideoCaptureError.FailToInitSession
                 }
                 captureVideoPreviewLayer = previewLayer
+                
             } else {
                 throw VideoCaptureError.FailToInitSession
             }
@@ -167,6 +218,10 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         captureVideoPreviewLayer!.frame = CGRect(x: 0, y: (kScreenHeight - layerHeight) / 2, width: kScreenWidth, height: layerHeight)
         captureVideoPreviewLayer!.videoGravity = AVLayerVideoGravityResizeAspectFill
         view.layer.addSublayer(captureVideoPreviewLayer!)
+        
+        // 对焦手势
+        let focusGest = UITapGestureRecognizer(target: self, action: #selector(tapToFocus(_:)))
+        view.addGestureRecognizer(focusGest)
         
         captureQueue.async {[unowned self] in
             self.captureSession.startRunning()
@@ -215,25 +270,71 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     
     func clickRatioButton() {
         let alertViewController = UIAlertController(title: "视频宽高比", message: nil, preferredStyle: .actionSheet)
-        let oneToOneAction = UIAlertAction(title: "1:1", style: .default, handler: { (action) in
-//            self.ratioStatus = .oneToOne
-//            bottomBar.ratioStatus = .oneToOne
+        let oneToOneAction = UIAlertAction(title: "1:1", style: .default, handler: { [unowned self](action) in
+            self.currentVideoRatio = .oneToOne
         })
         alertViewController.addAction(oneToOneAction)
-        let fourToThreeAction = UIAlertAction(title: "4:3", style: .default, handler: { (action) in
-//            self.ratioStatus = .fourToThree
-//            bottomBar.ratioStatus = .fourToThree
+        let fourToThreeAction = UIAlertAction(title: "4:3", style: .default, handler: { [unowned self](action) in
+            self.currentVideoRatio = .fourToThree
         })
         alertViewController.addAction(fourToThreeAction)
-        let sixteenToNineAction = UIAlertAction(title: "16:9", style: .default, handler: { (action) in
-//            self.ratioStatus = .sixteenToNine
-//            bottomBar.ratioStatus = .sixteenToNine
+        let sixteenToNineAction = UIAlertAction(title: "16:9", style: .default, handler: { [unowned self](action) in
+            self.currentVideoRatio = .sixteenToNine
         })
         alertViewController.addAction(sixteenToNineAction)
         let cancelAction = UIAlertAction(title: "取消", style: .cancel, handler: { (action) in
         })
         alertViewController.addAction(cancelAction)
         self.present(alertViewController, animated: true, completion: nil)
+    }
+    
+    func tapToFocus(_ recognizer: UIGestureRecognizer) {
+        var touchPoint = recognizer.location(in: view)
+        
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        focusLayer.position = touchPoint
+        CATransaction.commit()
+        
+        let focusAnimationGroup: CAAnimationGroup = CAAnimationGroup()
+        focusAnimationGroup.isRemovedOnCompletion = false
+        focusAnimationGroup.fillMode = kCAFillModeForwards;
+        focusAnimationGroup.duration = 3
+        
+        let opacityAmt = CAKeyframeAnimation(keyPath: "opacity")
+        opacityAmt.values = [1, 0]
+        opacityAmt.keyTimes = [0.9, 1]
+        
+        let transformAmt = CAKeyframeAnimation(keyPath: "transform.scale")
+        transformAmt.values = [1.5, 1, 1]
+        transformAmt.keyTimes = [0, 0.05, 1]
+        
+        focusAnimationGroup.animations = [opacityAmt, transformAmt]
+        focusLayer.add(focusAnimationGroup, forKey: nil)
+        
+        touchPoint.y = touchPoint.y - captureVideoPreviewLayer!.frame.minY
+        let capturePoint = captureVideoPreviewLayer!.captureDevicePointOfInterest(for: touchPoint)
+        
+        do {
+            guard let currentDevice = currentVideoInput?.device else {
+                throw VideoCaptureError.FailToFocus
+            }
+            try currentDevice.lockForConfiguration()
+            
+            if currentDevice.isFocusPointOfInterestSupported && currentDevice.isFocusModeSupported(.continuousAutoFocus) {
+                currentDevice.focusMode = .continuousAutoFocus
+                currentDevice.focusPointOfInterest = capturePoint
+            }
+            
+            if currentDevice.isExposurePointOfInterestSupported && currentDevice.isExposureModeSupported(.continuousAutoExposure) {
+                currentDevice.exposureMode = .continuousAutoExposure
+                currentDevice.exposurePointOfInterest = capturePoint
+            }
+            
+            currentDevice.unlockForConfiguration()
+        } catch {
+            showNotice(message: "相机对焦失败")
+        }
     }
     
     // MARK: delegate
@@ -281,13 +382,24 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             }
             self.assetWriter = aw
             
+            let videoWidth: CGFloat = 1000
+            let videoHeight: CGFloat
+            switch self.currentVideoRatio {
+            case .fourToThree:
+                videoHeight = videoWidth / RatioStatus.fourToThree.floatValue
+            case .sixteenToNine:
+                videoHeight = videoWidth / RatioStatus.sixteenToNine.floatValue
+            default:
+                videoHeight = videoWidth / RatioStatus.oneToOne.floatValue
+            }
+            
             let outputSettings: [String: Any] = [
                 AVVideoCodecKey: AVVideoCodecH264,
                 AVVideoScalingModeKey: AVVideoScalingModeResizeAspectFill,
-                AVVideoWidthKey: 240,
-                AVVideoHeightKey: 320,
+                AVVideoWidthKey: videoHeight,
+                AVVideoHeightKey: videoWidth,
                 AVVideoCompressionPropertiesKey: [
-                    AVVideoAverageBitRateKey: 240 * 320 * 10,
+                    AVVideoAverageBitRateKey: videoHeight * videoWidth * 10,
                     AVVideoMaxKeyFrameIntervalKey: 10,
                     AVVideoProfileLevelKey: AVVideoProfileLevelH264BaselineAutoLevel
                 ]

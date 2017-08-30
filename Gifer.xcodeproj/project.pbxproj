@@ -18,6 +18,7 @@
 		E12826A71ED42B4600262F63 /* GalleryCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E12826A51ED42B4600262F63 /* GalleryCell.xib */; };
 		E12DFDC51ED6CBE5009608E8 /* PhotoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12DFDC41ED6CBE5009608E8 /* PhotoViewController.swift */; };
 		E12DFDCB1ED6D8F1009608E8 /* GifAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12DFDCA1ED6D8F1009608E8 /* GifAnimator.swift */; };
+		E12E2BDA1F56649F00B08FB5 /* VideoClipViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12E2BD91F56649F00B08FB5 /* VideoClipViewController.swift */; };
 		E1330BED1EE13A7C0053ABFD /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1330BEC1EE13A7C0053ABFD /* BaseViewController.swift */; };
 		E1330BEF1EE1488A0053ABFD /* PhotoViewBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1330BEE1EE1488A0053ABFD /* PhotoViewBottomBar.swift */; };
 		E1333D291ED564D60017C07B /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1333D281ED564D60017C07B /* Photo.swift */; };
@@ -59,6 +60,7 @@
 		E12826A51ED42B4600262F63 /* GalleryCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = GalleryCell.xib; sourceTree = "<group>"; };
 		E12DFDC41ED6CBE5009608E8 /* PhotoViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoViewController.swift; sourceTree = "<group>"; };
 		E12DFDCA1ED6D8F1009608E8 /* GifAnimator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifAnimator.swift; sourceTree = "<group>"; };
+		E12E2BD91F56649F00B08FB5 /* VideoClipViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoClipViewController.swift; sourceTree = "<group>"; };
 		E1330BEC1EE13A7C0053ABFD /* BaseViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
 		E1330BEE1EE1488A0053ABFD /* PhotoViewBottomBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoViewBottomBar.swift; sourceTree = "<group>"; };
 		E1333D281ED564D60017C07B /* Photo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
@@ -157,6 +159,7 @@
 				E171BF8D1EEA45D5001F53E2 /* GifEditViewController.swift */,
 				E171BF911EEAA196001F53E2 /* GifAchieveViewController.swift */,
 				E1E51E991F4E6A9C00981D23 /* VideoRecordViewController.swift */,
+				E12E2BD91F56649F00B08FB5 /* VideoClipViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -381,6 +384,7 @@
 				E12826A61ED42B4600262F63 /* GalleryCell.swift in Sources */,
 				E19D661A1EE7E0A8008E29F7 /* NoRecordView.swift in Sources */,
 				E1A90C121F53B448003EE57C /* ViewRecordTopView.swift in Sources */,
+				E12E2BDA1F56649F00B08FB5 /* VideoClipViewController.swift in Sources */,
 				E171BF921EEAA196001F53E2 /* GifAchieveViewController.swift in Sources */,
 				E112B3C51F4C09EF00341E2E /* AddButtonView.swift in Sources */,
 				E1E37F1D1ED80B67000B4B3F /* GifImageView.swift in Sources */,

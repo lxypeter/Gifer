@@ -752,22 +752,22 @@ class GifEditViewController: BaseViewController {
         }
         bottomBar.ratioButtonHandler = {
             let alertViewController = UIAlertController(title: "图像宽高比", message: nil, preferredStyle: .actionSheet)
-            let oneToOneAction = UIAlertAction(title: "1:1", style: .default, handler: { (action) in
+            let oneToOneAction = UIAlertAction(title: "1:1", style: .default, handler: { [unowned self](action) in
                 self.ratioStatus = .oneToOne
                 bottomBar.ratioStatus = .oneToOne
             })
             alertViewController.addAction(oneToOneAction)
-            let fourToThreeAction = UIAlertAction(title: "4:3", style: .default, handler: { (action) in
+            let fourToThreeAction = UIAlertAction(title: "4:3", style: .default, handler: { [unowned self](action) in
                 self.ratioStatus = .fourToThree
                 bottomBar.ratioStatus = .fourToThree
             })
             alertViewController.addAction(fourToThreeAction)
-            let sixteenToNineAction = UIAlertAction(title: "16:9", style: .default, handler: { (action) in
+            let sixteenToNineAction = UIAlertAction(title: "16:9", style: .default, handler: { [unowned self](action) in
                 self.ratioStatus = .sixteenToNine
                 bottomBar.ratioStatus = .sixteenToNine
             })
             alertViewController.addAction(sixteenToNineAction)
-            let noLimitAction = UIAlertAction(title: "无限制", style: .default, handler: { (action) in
+            let noLimitAction = UIAlertAction(title: "无限制", style: .default, handler: { [unowned self](action) in
                 self.ratioStatus = .noLimit
                 bottomBar.ratioStatus = .noLimit
             })
