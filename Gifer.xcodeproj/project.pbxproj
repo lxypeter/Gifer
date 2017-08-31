@@ -536,7 +536,7 @@
 				DEVELOPMENT_TEAM = NU947442EY;
 				INFOPLIST_FILE = Gifer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.ztesoft.Gifer;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ztesoft.gifer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
@@ -550,7 +550,7 @@
 				DEVELOPMENT_TEAM = NU947442EY;
 				INFOPLIST_FILE = Gifer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.ztesoft.Gifer;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ztesoft.gifer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};

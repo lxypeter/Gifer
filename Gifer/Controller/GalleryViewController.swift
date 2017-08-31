@@ -147,7 +147,13 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     }()
     private lazy var coverView: UIView = {
         let coverView = UIView()
-        coverView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.7969536493)
+//        coverView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.5)
+        
+        let veView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
+        coverView.addSubview(veView)
+        veView.snp.makeConstraints({ (make) in
+            make.edges.equalTo(coverView)
+        })
         coverView.isHidden = true
         return coverView
     }()
@@ -162,8 +168,9 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     //MARK: Life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.configureSubviews()
-        self.collectionView.mj_header.beginRefreshing()
+        configureSubviews()
+        checkLibAuth()
+        collectionView.mj_header.beginRefreshing()
         NotificationCenter.default.addObserver(self, selector: #selector(fetchGIFFromLibrary), name: NSNotification.Name(rawValue: kNotiKeyGalleryUpdate), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(gifGenerated(_:)), name: NSNotification.Name(rawValue: kNotiKeyGifGenerated), object: nil)
     }
@@ -242,6 +249,16 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         
     }
     
+    func checkLibAuth(){
+        let photoStatus = PHPhotoLibrary.authorizationStatus()
+        if photoStatus == .denied {
+            let alertViewController = UIAlertController(title: nil, message: "请在\"设置\"中允许访问相册", preferredStyle: .alert)
+            let confrimAction = UIAlertAction(title: "确定", style: .default, handler: nil)
+            alertViewController.addAction(confrimAction)
+            present(alertViewController, animated: true, completion: nil)
+        }
+    }
+    
     func fetchGIFFromLibrary() {
         
         noRecordView.isHidden = true
@@ -286,8 +303,6 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         kGroup.notify(queue: DispatchQueue.main, execute: { [unowned self] in
             self.collectionView.mj_header.endRefreshing()
             if self.gifArray.count < 1 {
-                self.noRecordView.isHidden = false
-                self.selectItem.isEnabled = false
                 self.showNotice(message: "未找到GIF图片")
             } else {
                 self.gifArray.sort(by: { (photo1, photo2) -> Bool in
@@ -308,13 +323,17 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     
     //MARK: Delegate Method
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.gifArray.count
+        if gifArray.count < 1 {
+            noRecordView.isHidden = false
+            selectItem.isEnabled = false
+        }
+        return gifArray.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell: GalleryCell = collectionView.dequeueReusableCell(withReuseIdentifier: self.kCellId, for: indexPath) as! GalleryCell
-        let photo = self.gifArray[indexPath.row]
-        cell.isEditing = self.isSelecting
+        let photo = gifArray[indexPath.row]
+        cell.isEditing = isSelecting
         cell.photo = photo;
         return cell
     }
@@ -325,7 +344,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
             return
         }
         
-        let photoController = PhotoViewController(gifArray: self.gifArray, currentIndex: indexPath.row)
+        let photoController = PhotoViewController(gifArray: gifArray, currentIndex: indexPath.row)
         self.navigationController?.pushViewController(photoController, animated: true)
     }
     
@@ -578,7 +597,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     func generateRotatePath(center: CGPoint, rotateAngle: CGFloat) -> UIBezierPath {
         let rotatePath = UIBezierPath()
         let targetDistant: CGFloat = kAddButtonDistant
-        let distantUnit: CGFloat = targetDistant / 13
+        let distantUnit: CGFloat = targetDistant / 10
         rotatePath.move(to: center)
         
         let firstRadius = distantUnit * 3

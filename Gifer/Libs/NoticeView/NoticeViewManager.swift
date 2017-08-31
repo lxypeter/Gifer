@@ -55,10 +55,10 @@ class NoticeViewManager : NSObject {
         if noticeView.hasStatusBar {
             noticeViewHeight = 44 + 20
         } else {
-            noticeViewHeight = 20
+            noticeViewHeight = 44
         }
         
-        UIView.animate(withDuration: 0.2, animations: {
+        UIView.animate(withDuration: 0.1, animations: {
             noticeView.frame = CGRect(x: 0, y: -noticeViewHeight, width: kScreenWidth, height: noticeViewHeight)
         }) { (success) in
             noticeView.removeFromSuperview()

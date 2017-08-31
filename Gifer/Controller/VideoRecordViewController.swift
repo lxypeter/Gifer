@@ -17,10 +17,12 @@ enum VideoCaptureError: Error {
     case FailToFocus
 }
 
-class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
+class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSampleBufferDelegate, CAAnimationDelegate {
 
     // MARK: property
     private let kVideoDirPath = "Video/"
+    private let kMaxVideoLength: CFTimeInterval = 10
+    private let kRecordingAnimation = "kRecordingAnimation"
     
     private lazy var topView: ViewRecordTopView = {
         let topView = ViewRecordTopView()
@@ -71,6 +73,15 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         focusLayer.opacity = 0
         return focusLayer
     }()
+    private lazy var recordingLayer: CAShapeLayer = {
+        let center = CGPoint(x: self.shotButton.bounds.width / 2, y: self.shotButton.bounds.height / 2)
+        let recordingLayer = CAShapeLayer()
+        recordingLayer.path = UIBezierPath(arcCenter: center, radius: self.shotButton.bounds.width / 2, startAngle: -.pi / 2, endAngle: .pi / 2 * 3, clockwise: true).cgPath
+        recordingLayer.strokeColor = UIColor.black.cgColor
+        recordingLayer.lineWidth = 8
+        recordingLayer.fillColor = UIColor.clear.cgColor
+        return recordingLayer
+    }()
     
     private lazy var captureQueue: DispatchQueue = {
         return DispatchQueue(label: "com.lxy.videoCapture")
@@ -119,13 +130,20 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     // MARK: life cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureCaptureSession()
+        if checkCamaraAuth() {
+            configureCaptureSession()
+        }
         configureSubviews()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: false)
+        if !captureSession.isRunning {
+            captureQueue.async {[unowned self] in
+                self.captureSession.startRunning()
+            }
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -139,6 +157,20 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     }
     
     override var prefersStatusBarHidden: Bool{
+        return true
+    }
+    
+    func checkCamaraAuth() -> Bool {
+        let status = AVCaptureDevice.authorizationStatus(forMediaType: AVMediaTypeVideo)
+        if status == .denied {
+            let alertViewController = UIAlertController(title: nil, message: "请在\"设置\"中允许访问相机", preferredStyle: .alert)
+            let confrimAction = UIAlertAction(title: "确定", style: .default, handler: { [unowned self](action) in
+                self.navigationController!.popViewController(animated: true)
+            })
+            alertViewController.addAction(confrimAction)
+            present(alertViewController, animated: true, completion: nil)
+            return false
+        }
         return true
     }
     
@@ -178,7 +210,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             make.centerY.equalTo(shotButton.snp.centerY)
         }
         
-        view.layer.addSublayer(focusLayer)
+        captureVideoPreviewLayer?.addSublayer(focusLayer)
     }
     
     func configureCaptureSession() {
@@ -255,9 +287,17 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         shotButton.isSelected = !shotButton.isSelected
         
         if shotButton.isSelected { // begin to record
+            let recordingAnimation: CABasicAnimation = CABasicAnimation(keyPath: "strokeEnd")
+            recordingAnimation.delegate = self
+            recordingAnimation.fromValue = 0
+            recordingAnimation.toValue = 1
+            recordingAnimation.duration = kMaxVideoLength
+            shotButton.layer.addSublayer(recordingLayer)
+            recordingLayer.add(recordingAnimation, forKey: kRecordingAnimation)
+            
             startRecording()
         } else {
-            stopRecording()
+            recordingLayer.removeAllAnimations()
         }
     }
     
@@ -285,11 +325,12 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         let cancelAction = UIAlertAction(title: "取消", style: .cancel, handler: { (action) in
         })
         alertViewController.addAction(cancelAction)
-        self.present(alertViewController, animated: true, completion: nil)
+        present(alertViewController, animated: true, completion: nil)
     }
     
     func tapToFocus(_ recognizer: UIGestureRecognizer) {
         var touchPoint = recognizer.location(in: view)
+        touchPoint.y = touchPoint.y - captureVideoPreviewLayer!.frame.minY
         
         CATransaction.begin()
         CATransaction.setDisableActions(true)
@@ -312,29 +353,9 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         focusAnimationGroup.animations = [opacityAmt, transformAmt]
         focusLayer.add(focusAnimationGroup, forKey: nil)
         
-        touchPoint.y = touchPoint.y - captureVideoPreviewLayer!.frame.minY
         let capturePoint = captureVideoPreviewLayer!.captureDevicePointOfInterest(for: touchPoint)
         
-        do {
-            guard let currentDevice = currentVideoInput?.device else {
-                throw VideoCaptureError.FailToFocus
-            }
-            try currentDevice.lockForConfiguration()
-            
-            if currentDevice.isFocusPointOfInterestSupported && currentDevice.isFocusModeSupported(.continuousAutoFocus) {
-                currentDevice.focusMode = .continuousAutoFocus
-                currentDevice.focusPointOfInterest = capturePoint
-            }
-            
-            if currentDevice.isExposurePointOfInterestSupported && currentDevice.isExposureModeSupported(.continuousAutoExposure) {
-                currentDevice.exposureMode = .continuousAutoExposure
-                currentDevice.exposurePointOfInterest = capturePoint
-            }
-            
-            currentDevice.unlockForConfiguration()
-        } catch {
-            showNotice(message: "相机对焦失败")
-        }
+        focusAtPoint(capturePoint)
     }
     
     // MARK: delegate
@@ -359,6 +380,12 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         if assetWriterVideoInput!.isReadyForMoreMediaData {
             assetWriterInputPixelBufferAdaptor?.append(imageBuffer, withPresentationTime: timestamp)
         }
+    }
+    
+    func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
+        shotButton.isSelected = false
+        recordingLayer.removeFromSuperlayer()
+        stopRecording()
     }
     
     // MARK: video method
@@ -442,12 +469,17 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     }
     
     func stopRecording() {
+        if !isWriting { return }
         isWriting = false;
         
         captureQueue.async {[unowned self] in
             self.assetWriter?.finishWriting {
                 printLog("finish")
                 self.assetWriter = nil
+                DispatchQueue.main.async {
+                    let ctrl = VideoClipViewController()
+                    self.navigationController!.pushViewController(ctrl, animated: true)
+                }
             }
         }
     }
@@ -503,5 +535,28 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             showNotice(message: "闪光灯切换失败")
         }
         return result
+    }
+    
+    func focusAtPoint(_ capturePoint: CGPoint) {
+        do {
+            guard let currentDevice = currentVideoInput?.device else {
+                throw VideoCaptureError.FailToFocus
+            }
+            try currentDevice.lockForConfiguration()
+            
+            if currentDevice.isFocusPointOfInterestSupported && currentDevice.isFocusModeSupported(.continuousAutoFocus) {
+                currentDevice.focusMode = .continuousAutoFocus
+                currentDevice.focusPointOfInterest = capturePoint
+            }
+            
+            if currentDevice.isExposurePointOfInterestSupported && currentDevice.isExposureModeSupported(.continuousAutoExposure) {
+                currentDevice.exposureMode = .continuousAutoExposure
+                currentDevice.exposurePointOfInterest = capturePoint
+            }
+            
+            currentDevice.unlockForConfiguration()
+        } catch {
+            showNotice(message: "相机对焦失败")
+        }
     }
 }
