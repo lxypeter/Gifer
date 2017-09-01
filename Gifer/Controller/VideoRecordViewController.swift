@@ -21,8 +21,9 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
 
     // MARK: property
     private let kVideoDirPath = "Video/"
-    private let kMaxVideoLength: CFTimeInterval = 10
+    private let kMaxVideoLength: CFTimeInterval = 30
     private let kRecordingAnimation = "kRecordingAnimation"
+    private let previewLayerOffsetRatio: CGFloat = -0.05
     
     private lazy var topView: ViewRecordTopView = {
         let topView = ViewRecordTopView()
@@ -110,7 +111,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
                 ratioButton.setBackgroundImage(#imageLiteral(resourceName: "ratio_1_1_white"), for: .normal)
                 layerHeight = kScreenWidth / RatioStatus.oneToOne.floatValue
             }
-            captureVideoPreviewLayer!.frame = CGRect(x: 0, y: (kScreenHeight - layerHeight) / 2, width: kScreenWidth, height: layerHeight)
+            captureVideoPreviewLayer!.frame = CGRect(x: 0, y: kScreenHeight * (0.5 + previewLayerOffsetRatio) - layerHeight / 2, width: kScreenWidth, height: layerHeight)
         }
     }
     private let captureSession: AVCaptureSession = AVCaptureSession()
@@ -246,8 +247,8 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             return
         }
         
-        let layerHeight = kScreenWidth * 3 / 4
-        captureVideoPreviewLayer!.frame = CGRect(x: 0, y: (kScreenHeight - layerHeight) / 2, width: kScreenWidth, height: layerHeight)
+        let layerHeight = kScreenWidth / RatioStatus.fourToThree.floatValue
+        captureVideoPreviewLayer!.frame = CGRect(x: 0, y: kScreenHeight * (0.5 + previewLayerOffsetRatio) - layerHeight / 2, width: kScreenWidth, height: layerHeight)
         captureVideoPreviewLayer!.videoGravity = AVLayerVideoGravityResizeAspectFill
         view.layer.addSublayer(captureVideoPreviewLayer!)
         
@@ -475,10 +476,18 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         captureQueue.async {[unowned self] in
             self.assetWriter?.finishWriting {
                 printLog("finish")
-                self.assetWriter = nil
-                DispatchQueue.main.async {
-                    let ctrl = VideoClipViewController()
-                    self.navigationController!.pushViewController(ctrl, animated: true)
+                let outputURL = self.assetWriter!.outputURL
+                let asset = AVURLAsset(url: outputURL)
+                let time = asset.duration
+                
+                if CMTimeGetSeconds(time) < 1 {
+                    self.showNotice(message: "视频时间太短")
+                } else {
+                    DispatchQueue.main.async {
+                        let ctrl = VideoClipViewController(videoUrl: self.assetWriter!.outputURL)
+                        self.assetWriter = nil
+                        self.navigationController!.pushViewController(ctrl, animated: true)
+                    }
                 }
             }
         }

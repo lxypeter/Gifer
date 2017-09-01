@@ -83,7 +83,7 @@ class ViewRecordTopView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.configureSubviews()
+        configureSubviews()
     }
     
     required init?(coder aDecoder: NSCoder) {
