@@ -8,20 +8,66 @@
 
 import UIKit
 import SnapKit
+import AVFoundation
 
-class VideoProgressView: UIView {
+enum VideoProgressViewEdgeType {
+    case start
+    case end
+}
+
+class VideoProgressView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     
     public static let height: CGFloat = 48
-    public static let width: CGFloat = kScreenWidth - 16
+    public static let width: CGFloat = kScreenWidth - 24
+    public static let edgeViewWidth: CGFloat = 12
+    public static let paddingVertical: CGFloat = 4
+    public static let cellPerPage = (VideoProgressView.width - VideoProgressView.edgeViewWidth * 2) / (VideoProgressView.height - VideoProgressView.paddingVertical)
     
     // MARK: property
-    private let kEdgeViewWidth: CGFloat = 12
-    private let minEdgeDistant: CGFloat = 5
+    public var thumbnails: [VideoThumbnail] = [] {
+        didSet {
+            DispatchQueue.main.async {[unowned self] in
+                self.collectionView.reloadData()
+            }
+        }
+    }
+    public let totalTime: CMTime
+    public let visibleDuration: CGFloat
+    public var currentTime: CMTime = CMTime(value: 0, timescale: 1) {
+        didSet {
+            let showingStartTime = secPerPx * collectionView.contentOffset.x
+            var cursorCenterX = (CGFloat(CMTimeGetSeconds(currentTime)) - showingStartTime) / secPerPx + VideoProgressView.edgeViewWidth
+            if cursorCenterX > VideoProgressView.width - VideoProgressView.edgeViewWidth {
+                cursorCenterX = VideoProgressView.width - VideoProgressView.edgeViewWidth
+            }
+            timeCursor.center = CGPoint(x: cursorCenterX, y: VideoProgressView.height / 2)
+        }
+    }
+    public var edgeChangeHandler: ((VideoProgressViewEdgeType, UIGestureRecognizerState, CMTime?) -> ())?
     
-    private lazy var scrollView: UIScrollView = {
-        let scrollView = UIScrollView()
-        scrollView.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
-        return scrollView
+    private let minEdgeDistant: CGFloat = 5
+    private let timeCursorWidth: CGFloat = 8
+    private let cellId = "VideoThumbnailCellId"
+    private let secPerPx: CGFloat
+    
+    private lazy var collectionView: UICollectionView = {
+        let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
+        layout.minimumLineSpacing = 0
+        layout.minimumInteritemSpacing = 0
+        layout.sectionInset = UIEdgeInsets.zero
+        layout.scrollDirection = .horizontal
+        
+        let collectionView: UICollectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = UIColor.white
+        collectionView.isPagingEnabled = true
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.showsVerticalScrollIndicator = false
+        collectionView.register(UINib(nibName: "VideoThumbnailCell", bundle: nil), forCellWithReuseIdentifier: self.cellId)
+        collectionView.isScrollEnabled = self.visibleDuration < CGFloat(CMTimeGetSeconds(self.totalTime))
+        collectionView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
+        return collectionView
     }()
     private lazy var leftEdgeView: UIImageView = {
         let leftEdgeView = self.configureEdgeView()
@@ -36,12 +82,24 @@ class VideoProgressView: UIView {
     private lazy var gapLayer: CAShapeLayer = {
         let gapLayer = CAShapeLayer()
         let fillColor = #colorLiteral(red: 0.9686274529, green: 0.78039217, blue: 0.3450980484, alpha: 1)
-        gapLayer.fillColor = fillColor.cgColor
+        gapLayer.strokeColor = fillColor.cgColor
+        gapLayer.lineWidth = 2
+        gapLayer.path = self.gapPath()
         return gapLayer
     }()
+    private lazy var timeCursor: UIView = {
+        let timeCursor = UIView()
+        timeCursor.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        timeCursor.frame = CGRect(x: VideoProgressView.edgeViewWidth - self.timeCursorWidth / 2, y: 0, width: self.timeCursorWidth, height: VideoProgressView.height)
+        timeCursor.layer.cornerRadius = self.timeCursorWidth / 2
+        return timeCursor
+    }()
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    init(totalTime: CMTime, visibleDuration: CGFloat) {
+        self.totalTime = totalTime
+        self.visibleDuration = visibleDuration
+        self.secPerPx = visibleDuration / (VideoProgressView.width - VideoProgressView.edgeViewWidth * 2)
+        super.init(frame: CGRect.zero)
         configureSubviews()
     }
     
@@ -52,26 +110,28 @@ class VideoProgressView: UIView {
     private func configureSubviews() {
         self.backgroundColor = UIColor.clear
         
-        addSubview(scrollView)
-        scrollView.snp.makeConstraints { (make) in
+        addSubview(collectionView)
+        collectionView.snp.makeConstraints { (make) in
             make.centerY.equalTo(self.snp.centerY)
-            make.height.equalTo(VideoProgressView.height - 4)
-            make.right.equalTo(0)
-            make.left.equalTo(0)
+            make.height.equalTo(VideoProgressView.height - VideoProgressView.paddingVertical)
+            make.right.equalTo(-VideoProgressView.edgeViewWidth)
+            make.left.equalTo(VideoProgressView.edgeViewWidth)
         }
-        
-        layer.addSublayer(gapLayer)
-        gapLayer.frame = CGRect(x: 0, y: 0, width: VideoProgressView.width, height: VideoProgressView.height)
         
         addSubview(leftEdgeView)
         leftEdgeView.frame.origin = CGPoint(x: 0, y: 0)
         
         addSubview(rightEdgeView)
-        rightEdgeView.frame.origin = CGPoint(x: VideoProgressView.width - kEdgeViewWidth, y: 0)
+        rightEdgeView.frame.origin = CGPoint(x: VideoProgressView.width - VideoProgressView.edgeViewWidth, y: 0)
+        
+        layer.addSublayer(gapLayer)
+        gapLayer.frame = CGRect(x: 0, y: 0, width: VideoProgressView.width, height: VideoProgressView.height)
+        
+        addSubview(timeCursor)
     }
     
     private func configureEdgeView() -> UIImageView {
-        let edgeView = UIImageView(frame: CGRect(x: 0, y: 0, width: kEdgeViewWidth, height: VideoProgressView.height))
+        let edgeView = UIImageView(frame: CGRect(x: 0, y: 0, width: VideoProgressView.edgeViewWidth, height: VideoProgressView.height))
         edgeView.backgroundColor = #colorLiteral(red: 0.9686274529, green: 0.78039217, blue: 0.3450980484, alpha: 1)
         edgeView.isUserInteractionEnabled = true
         let gesture = UIPanGestureRecognizer(target: self, action: #selector(panEdgeView(recognizer:)))
@@ -79,22 +139,89 @@ class VideoProgressView: UIView {
         return edgeView
     }
     
+    func gapPath() -> CGPath {
+        let path = UIBezierPath()
+        
+        let startX = leftEdgeView.frame.origin.x
+        let endX = rightEdgeView.frame.maxX
+        let verticalOffset = VideoProgressView.paddingVertical / 4
+        
+        path.move(to: CGPoint(x: startX, y: verticalOffset))
+        path.addLine(to: CGPoint(x: endX, y: verticalOffset))
+        
+        path.move(to: CGPoint(x: startX, y: VideoProgressView.height - verticalOffset))
+        path.addLine(to: CGPoint(x: endX, y: VideoProgressView.height - verticalOffset))
+        
+        return path.cgPath
+    }
+    
     // MARK: events
     func panEdgeView(recognizer: UIPanGestureRecognizer) {
-        let translation = recognizer.translation(in: self)
-        var newX = recognizer.view!.frame.origin.x + translation.x
+        let edgeType: VideoProgressViewEdgeType
+        var time: CMTime? = nil
         
         if recognizer.view! === leftEdgeView {
-            newX = newX < 0 ? 0 : newX
-            let rightEdgeViewX = rightEdgeView.frame.origin.x
-            newX = newX > rightEdgeViewX - (kEdgeViewWidth + minEdgeDistant) ? rightEdgeViewX - (kEdgeViewWidth + minEdgeDistant) : newX
+            edgeType = .start
         } else {
-            newX = newX > VideoProgressView.width - kEdgeViewWidth ? VideoProgressView.width - kEdgeViewWidth : newX
-            let leftEdgeViewX = leftEdgeView.frame.origin.x
-            newX = newX < leftEdgeViewX + minEdgeDistant + minEdgeDistant ? leftEdgeViewX + minEdgeDistant + minEdgeDistant : newX
+            edgeType = .end
         }
         
-        recognizer.view!.frame = CGRect(x: newX, y: 0, width: kEdgeViewWidth, height: VideoProgressView.height)
-        recognizer.setTranslation(CGPoint.zero, in: self)
+        switch recognizer.state {
+        case .began:
+            timeCursor.isHidden = true
+        case .ended, .failed:
+            timeCursor.isHidden = false
+            let edgeViewX = recognizer.view!.frame.origin.x
+            switch edgeType {
+            case .start:
+                time = CMTime(seconds: Double(secPerPx * (collectionView.contentOffset.x + edgeViewX)), preferredTimescale: 10)
+            case .end:
+                time = CMTime(seconds: Double(secPerPx * (collectionView.contentOffset.x + edgeViewX - VideoProgressView.edgeViewWidth)), preferredTimescale: 10)
+            }
+            
+        default:
+            let translation = recognizer.translation(in: self)
+            var newX = recognizer.view!.frame.origin.x + translation.x
+            
+            switch edgeType {
+            case .start:
+                newX = newX < 0 ? 0 : newX
+                let rightEdgeViewX = rightEdgeView.frame.origin.x
+                newX = newX > rightEdgeViewX - (VideoProgressView.edgeViewWidth + minEdgeDistant) ? rightEdgeViewX - (VideoProgressView.edgeViewWidth + minEdgeDistant) : newX
+            case .end:
+                newX = newX > VideoProgressView.width - VideoProgressView.edgeViewWidth ? VideoProgressView.width - VideoProgressView.edgeViewWidth : newX
+                let leftEdgeViewX = leftEdgeView.frame.origin.x
+                newX = newX < leftEdgeViewX + minEdgeDistant + minEdgeDistant ? leftEdgeViewX + minEdgeDistant + minEdgeDistant : newX
+            }
+            
+            recognizer.view!.frame = CGRect(x: newX, y: 0, width: VideoProgressView.edgeViewWidth, height: VideoProgressView.height)
+            gapLayer.path = gapPath()
+            recognizer.setTranslation(CGPoint.zero, in: self)
+        }
+        if edgeChangeHandler != nil {
+            edgeChangeHandler!(edgeType, recognizer.state, time)
+        }
+    }
+    
+    // MARK: delegate
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return thumbnails.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! VideoThumbnailCell
+        cell.thumbnail = thumbnails[indexPath.row]
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let length = VideoProgressView.height - VideoProgressView.paddingVertical
+        if indexPath.row == thumbnails.count - 1 {
+            let lastCellWidth = CGFloat(thumbnails.count) * length - CGFloat(CMTimeGetSeconds(totalTime)) / secPerPx
+            if lastCellWidth > 0 {
+                return CGSize(width: lastCellWidth, height: length)
+            }
+        }
+        return CGSize(width: length, height: length)
     }
 }

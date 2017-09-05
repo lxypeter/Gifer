@@ -9,7 +9,7 @@
 import UIKit
 import AVFoundation
 
-class ViewRecordTopView: UIView {
+class VideoRecordTopView: UIView {
     
     public static let height: CGFloat = 64
     private lazy var normalBackgroundView: UIView = {

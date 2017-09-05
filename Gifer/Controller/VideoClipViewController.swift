@@ -10,17 +10,22 @@ import UIKit
 import AVFoundation
 
 class VideoClipViewController: BaseViewController {
+    
     // MARK: property
     private let playerLayerOffsetRatio: CGFloat = -0.05
+    private let maxVideoLength: CGFloat = 15 // second
     
-    var videoUrl: URL?
-    var player: AVPlayer?
+    private var videoAsset: AVURLAsset?
+    private var player: AVPlayer?
+    private var timer: Timer?
+    private var startTime: CMTime = CMTime(value: 0, timescale: 1)
+    private var endTime: CMTime = CMTime(value: 0, timescale: 1)
     
-    private lazy var backButton: UIButton = {
-        let backButton = UIButton()
-        backButton.setBackgroundImage(#imageLiteral(resourceName: "back_white"), for: .normal)
-        backButton.addTarget(self, action: #selector(backToLastController), for: .touchUpInside)
-        return backButton
+    private lazy var topView: VideoClipTopView = {
+        let topView = VideoClipTopView()
+        topView.backButtonHandler = { [unowned self] in self.backToLastController() }
+        topView.nextButtonHandler = { [unowned self] in self.clickNextButton() }
+        return topView
     }()
     private lazy var playButton: UIButton = {
         let playButton = UIButton()
@@ -31,13 +36,39 @@ class VideoClipViewController: BaseViewController {
         return playButton
     }()
     private lazy var progressView: VideoProgressView = {
-        let progressView = VideoProgressView()
+        let duration = self.videoAsset!.duration
+        let totalSecond = CGFloat(CMTimeGetSeconds(duration))
+        let visibleDuration = totalSecond > self.maxVideoLength ? self.maxVideoLength : totalSecond
+        
+        let progressView = VideoProgressView(totalTime: duration, visibleDuration: visibleDuration)
+        progressView.edgeChangeHandler = {[unowned self] (type, state, time) in
+            switch state {
+            case .began:
+                self.playButton.isEnabled = false
+                if self.player?.timeControlStatus == .playing {
+                    self.player?.pause()
+                }
+            case .ended, .failed:
+                self.playButton.isEnabled = true
+                switch type {
+                case .start:
+                    self.startTime = time!
+                case .end:
+                    self.endTime = time!
+                }
+                
+                self.topView.currentLength = CMTimeGetSeconds(self.endTime) - CMTimeGetSeconds(self.startTime)
+                
+                self.playAt(self.startTime)
+            default: break
+            }
+        }
         return progressView;
     }()
     
-    convenience init(videoUrl: URL) {
+    convenience init(videoAsset: AVURLAsset) {
         self.init()
-        self.videoUrl = videoUrl
+        self.videoAsset = videoAsset
     }
     
     // MARK: life cycle
@@ -45,6 +76,9 @@ class VideoClipViewController: BaseViewController {
         super.viewDidLoad()
         configureSubviews()
         configurePlayer()
+        thumbnailsOfVideo(){ [unowned self] thumbnails in
+            self.progressView.thumbnails = thumbnails
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -53,8 +87,7 @@ class VideoClipViewController: BaseViewController {
         navigationController?.setNavigationBarHidden(true, animated: false)
         
         NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player?.currentItem, queue: OperationQueue.main) { [unowned self] (notification) in
-            self.player?.seek(to: CMTime(value: 0, timescale: 1))
-            self.player?.play()
+            self.playAt(self.startTime)
         }
     }
     
@@ -64,6 +97,9 @@ class VideoClipViewController: BaseViewController {
         navigationController?.setNavigationBarHidden(false, animated: false)
         
         NotificationCenter.default.removeObserver(self)
+        if player?.timeControlStatus == .playing {
+            player?.pause()
+        }
     }
     
     override var prefersStatusBarHidden: Bool{
@@ -73,12 +109,12 @@ class VideoClipViewController: BaseViewController {
     private func configureSubviews() {
         self.view.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
         
-        view.addSubview(backButton)
-        backButton.snp.makeConstraints { (make) in
-            make.width.equalTo(24)
-            make.height.equalTo(24)
-            make.left.equalTo(15)
-            make.top.equalTo(30)
+        view.addSubview(topView)
+        topView.snp.makeConstraints { (make) in
+            make.top.equalTo(0)
+            make.left.equalTo(0)
+            make.right.equalTo(0)
+            make.height.equalTo(VideoClipTopView.height)
         }
         
         view.addSubview(playButton)
@@ -99,11 +135,30 @@ class VideoClipViewController: BaseViewController {
     }
     
     func configurePlayer() {
-        guard let url = videoUrl else {
+        guard let url = videoAsset?.url else {
+            navigationController!.popViewController(animated: true)
             return
         }
-        player = AVPlayer(url: url)
         
+        // configure endtime
+        let validEndSecond = CMTimeGetSeconds(videoAsset!.duration) > Double(maxVideoLength) ? Double(maxVideoLength) : CMTimeGetSeconds(videoAsset!.duration)
+        endTime = CMTime(seconds: validEndSecond, preferredTimescale: 10)
+        
+        // update topView
+        topView.totalLength = CMTimeGetSeconds(videoAsset!.duration)
+        topView.currentLength = validEndSecond
+        
+        // configure player
+        player = AVPlayer(url: url)
+        player?.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 10), queue: DispatchQueue.main, using: { [unowned self](time) in
+            self.progressView.currentTime = time
+            
+            if time >= self.endTime {
+                self.playAt(self.startTime)
+            }
+        })
+        
+        // preview layer
         let playerLayer = AVPlayerLayer(player: player)
         playerLayer.frame = CGRect(x: 0, y: kScreenHeight * (0.5 + playerLayerOffsetRatio) - kScreenHeight / 2, width: kScreenWidth, height: kScreenHeight)
         view.layer.addSublayer(playerLayer)
@@ -119,6 +174,61 @@ class VideoClipViewController: BaseViewController {
             player!.pause()
         } else {
             player!.play()
+        }
+    }
+    
+    func clickNextButton() {
+//        let ctrl = GifEditViewController()
+//        ctrl.selectedArray = selectedArray
+//        navigationController?.pushViewController(ctrl, animated: true)
+    }
+    
+    // MARK: video method
+    func playAt(_ time: CMTime) {
+        player?.seek(to: time)
+        player?.play()
+        playButton.isSelected = true
+    }
+    
+    func thumbnailsOfVideo(completionHandler handler: @escaping ([VideoThumbnail])->()) {
+        guard let videoAsset = videoAsset else {
+            return
+        }
+        
+        let imageGenerator = AVAssetImageGenerator(asset: videoAsset)
+        imageGenerator.appliesPreferredTrackTransform = true
+        imageGenerator.maximumSize = CGSize(width: 0, height: VideoProgressView.height * 3)
+        
+        let totalSecond = CGFloat(CMTimeGetSeconds(videoAsset.duration))
+        let interval = progressView.visibleDuration / VideoProgressView.cellPerPage
+        
+        var totalCount = (totalSecond / interval) > (CGFloat(Int(totalSecond / interval))) ? Int(totalSecond / interval) + 1 : Int(totalSecond / interval)
+        
+        var times: [NSValue] = []
+        for count in 0 ... totalCount {
+            times.append(CMTime(value: CMTimeValue(interval * CGFloat(count)), timescale: 1) as NSValue)
+        }
+        
+        showHudWithMsg(msg: "正在加载...")
+        var thumbnails: [VideoThumbnail] = []
+        imageGenerator.generateCGImagesAsynchronously(forTimes: times) {[unowned self](requestedTime, cgImage, actualTime, result, error) in
+            if result == .succeeded {
+                totalCount -= 1
+                guard let thumbnailCgImage = cgImage else {
+                    return
+                }
+                let image = UIImage(cgImage: thumbnailCgImage)
+                let thumbnail = VideoThumbnail(thumbnail: image, requestedTime: requestedTime, actualTime: actualTime)
+                thumbnails.append(thumbnail)
+                
+                if totalCount == 0 {
+                    self.hideHud()
+                    thumbnails.sort(by: { (firstThumbnail, secThumbnail) -> Bool in
+                        return CMTimeGetSeconds(firstThumbnail.actualTime) > CMTimeGetSeconds(secThumbnail.actualTime)
+                    })
+                    handler(thumbnails)
+                }
+            }
         }
     }
 }

@@ -21,12 +21,12 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
 
     // MARK: property
     private let kVideoDirPath = "Video/"
-    private let kMaxVideoLength: CFTimeInterval = 30
+    private let kMaxVideoLength: CFTimeInterval = 15
     private let kRecordingAnimation = "kRecordingAnimation"
     private let previewLayerOffsetRatio: CGFloat = -0.05
     
-    private lazy var topView: ViewRecordTopView = {
-        let topView = ViewRecordTopView()
+    private lazy var topView: VideoRecordTopView = {
+        let topView = VideoRecordTopView()
         topView.backButtonHandler = { [unowned self] in self.backToLastController() }
         topView.flashSwitchHandler = { [unowned self] flashMode in
             return self.switchFlashMode(flashMode)
@@ -184,7 +184,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             make.top.equalTo(0)
             make.left.equalTo(0)
             make.right.equalTo(0)
-            make.height.equalTo(ViewRecordTopView.height)
+            make.height.equalTo(VideoRecordTopView.height)
         }
         
         view.addSubview(shotButton)
@@ -484,7 +484,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
                     self.showNotice(message: "视频时间太短")
                 } else {
                     DispatchQueue.main.async {
-                        let ctrl = VideoClipViewController(videoUrl: self.assetWriter!.outputURL)
+                        let ctrl = VideoClipViewController(videoAsset: asset)
                         self.assetWriter = nil
                         self.navigationController!.pushViewController(ctrl, animated: true)
                     }
