@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="VideoPickerCell" customModule="Gifer" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="90" height="90"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="90" height="90"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Cns-kn-L2R">
+                        <rect key="frame" x="0.0" y="0.0" width="90" height="90"/>
+                    </imageView>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="label_background" translatesAutoresizingMaskIntoConstraints="NO" id="Wd4-a2-wFe">
+                        <rect key="frame" x="0.0" y="66" width="90" height="24"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="24" id="ahJ-5X-gEL"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="peo-WO-Bvq">
+                        <rect key="frame" x="53" y="69.5" width="31" height="14.5"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                        <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+            </view>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="peo-WO-Bvq" secondAttribute="trailing" constant="6" id="HRs-54-avS"/>
+                <constraint firstAttribute="bottom" secondItem="peo-WO-Bvq" secondAttribute="bottom" constant="6" id="L7t-jg-aXK"/>
+                <constraint firstItem="Wd4-a2-wFe" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="WhX-nJ-ttf"/>
+                <constraint firstAttribute="bottom" secondItem="Cns-kn-L2R" secondAttribute="bottom" id="XD7-CB-cj2"/>
+                <constraint firstAttribute="trailing" secondItem="Wd4-a2-wFe" secondAttribute="trailing" id="XMR-SL-pqa"/>
+                <constraint firstItem="Cns-kn-L2R" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="Y6s-hQ-HnV"/>
+                <constraint firstAttribute="bottom" secondItem="Wd4-a2-wFe" secondAttribute="bottom" id="vnF-b3-RGm"/>
+                <constraint firstAttribute="trailing" secondItem="Cns-kn-L2R" secondAttribute="trailing" id="w2E-cb-hpF"/>
+                <constraint firstItem="Cns-kn-L2R" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="wAo-ii-aho"/>
+            </constraints>
+            <size key="customSize" width="99" height="85"/>
+            <connections>
+                <outlet property="contentImageView" destination="Cns-kn-L2R" id="q86-Kb-KbC"/>
+                <outlet property="durationLable" destination="peo-WO-Bvq" id="EaT-GG-57r"/>
+            </connections>
+            <point key="canvasLocation" x="97" y="42"/>
+        </collectionViewCell>
+    </objects>
+    <resources>
+        <image name="label_background" width="180" height="60"/>
+    </resources>
+</document>

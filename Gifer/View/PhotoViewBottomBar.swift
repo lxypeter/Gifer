@@ -52,7 +52,7 @@ class PhotoViewBottomBar: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.configureSubviews()
+        configureSubviews()
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -60,11 +60,11 @@ class PhotoViewBottomBar: UIView {
     }
     
     private func configureSubviews() {
-        self.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         
         let seperateLine = UIView(frame: CGRect.zero)
         seperateLine.backgroundColor = #colorLiteral(red: 0.862745098, green: 0.862745098, blue: 0.862745098, alpha: 1)
-        self.addSubview(seperateLine)
+        addSubview(seperateLine)
         seperateLine.snp.makeConstraints { (make) in
             make.top.equalTo(0)
             make.right.equalTo(0)
@@ -72,31 +72,31 @@ class PhotoViewBottomBar: UIView {
             make.height.equalTo(0.5)
         }
         
-        self.addSubview(self.deleteButton)
-        self.deleteButton.snp.makeConstraints { (make) in
+        addSubview(deleteButton)
+        deleteButton.snp.makeConstraints { (make) in
             make.centerY.equalTo(self.snp.centerY)
             make.height.equalTo(24)
             make.width.equalTo(24)
             make.left.equalTo(15)
         }
         
-        self.addSubview(self.resetButton)
-        self.resetButton.snp.makeConstraints { (make) in
+        addSubview(resetButton)
+        resetButton.snp.makeConstraints { (make) in
             make.centerY.equalTo(self.snp.centerY)
             make.height.equalTo(24)
             make.width.equalTo(24)
             make.right.equalTo(-15)
         }
         
-        self.addSubview(self.slider)
-        self.slider.snp.makeConstraints { (make) in
+        addSubview(slider)
+        slider.snp.makeConstraints { (make) in
             make.left.equalTo(self.deleteButton.snp.right).offset(15)
             make.right.equalTo(self.resetButton.snp.left).offset(-15)
             make.bottom.equalTo(-5)
         }
         
-        self.addSubview(self.speedTimesLabel)
-        self.speedTimesLabel.snp.makeConstraints { (make) in
+        addSubview(speedTimesLabel)
+        speedTimesLabel.snp.makeConstraints { (make) in
             make.left.equalTo(self.deleteButton.snp.right).offset(15)
             make.right.equalTo(self.resetButton.snp.left).offset(-15)
             make.centerX.equalTo(self.snp.centerX)
@@ -106,20 +106,20 @@ class PhotoViewBottomBar: UIView {
     }
     
     func clickResetButton() {
-        self.slider.setValue(1.0, animated: true)
-        self.sliderChange(self.slider)
+        slider.setValue(1.0, animated: true)
+        sliderChange(slider)
     }
     
     func clickDeleteButton() {
-        if self.deleteButtonHandler != nil {
-            self.deleteButtonHandler!()
+        if deleteButtonHandler != nil {
+            deleteButtonHandler!()
         }
     }
 
     func sliderChange(_ slider: UISlider) {
-        self.speedTimesLabel.text = "速度: X\(String(format: "%.2f", slider.value))"
-        if self.sliderValueChangeHandler != nil {
-            self.sliderValueChangeHandler!(slider.value)
+        speedTimesLabel.text = "速度: X\(String(format: "%.2f", slider.value))"
+        if sliderValueChangeHandler != nil {
+            sliderValueChangeHandler!(slider.value)
         }
     }
 }

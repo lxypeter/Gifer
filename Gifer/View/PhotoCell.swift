@@ -12,12 +12,12 @@ import SnapKit
 class PhotoCell: UICollectionViewCell, UIScrollViewDelegate {
     var photo: Photo? {
         didSet{
-            if self.photo != nil && self.photo!.photoWidth < self.imageView.frame.size.width && self.photo!.photoHeight < self.imageView.frame.size.height {
+            if photo != nil && photo!.photoWidth < self.imageView.frame.size.width && photo!.photoHeight < imageView.frame.size.height {
                 imageView.contentMode = .center
             } else {
                 imageView.contentMode = .scaleAspectFit
             }
-            self.imageView.gifData = self.photo?.fullImageData
+            self.imageView.gifData = photo?.fullImageData
         }
     }
     
@@ -41,12 +41,12 @@ class PhotoCell: UICollectionViewCell, UIScrollViewDelegate {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.contentView.addSubview(self.scrollView)
-        self.scrollView.snp.makeConstraints { (make) in
-            make.edges.edges.equalTo(self.contentView)
+        contentView.addSubview(scrollView)
+        scrollView.snp.makeConstraints { (make) in
+            make.edges.edges.equalTo(contentView)
         }
-        self.imageView.frame.size = frame.size
-        self.scrollView.addSubview(self.imageView)
+        imageView.frame.size = frame.size
+        scrollView.addSubview(imageView)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -54,16 +54,16 @@ class PhotoCell: UICollectionViewCell, UIScrollViewDelegate {
     }
     
     func setGifSpeedTimes(_ speedTimes: Double) {
-        self.imageView.speedTimes = speedTimes
+        imageView.speedTimes = speedTimes
     }
     
     func resetZoomScale(animated: Bool) {
-        self.scrollView.setZoomScale(1.0, animated: animated)
+        scrollView.setZoomScale(1.0, animated: animated)
     }
     
     //MARK: delegate method
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        return self.imageView
+        return imageView
     }
 
 }

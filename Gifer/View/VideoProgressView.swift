@@ -174,9 +174,9 @@ class VideoProgressView: UIView, UICollectionViewDelegateFlowLayout, UICollectio
             let edgeViewX = recognizer.view!.frame.origin.x
             switch edgeType {
             case .start:
-                time = CMTime(seconds: Double(secPerPx * (collectionView.contentOffset.x + edgeViewX)), preferredTimescale: 10)
+                time = CMTime(seconds: Double(secPerPx * (collectionView.contentOffset.x + edgeViewX)), preferredTimescale: 600)
             case .end:
-                time = CMTime(seconds: Double(secPerPx * (collectionView.contentOffset.x + edgeViewX - VideoProgressView.edgeViewWidth)), preferredTimescale: 10)
+                time = CMTime(seconds: Double(secPerPx * (collectionView.contentOffset.x + edgeViewX - VideoProgressView.edgeViewWidth)), preferredTimescale: 600)
             }
             
         default:
@@ -188,10 +188,12 @@ class VideoProgressView: UIView, UICollectionViewDelegateFlowLayout, UICollectio
                 newX = newX < 0 ? 0 : newX
                 let rightEdgeViewX = rightEdgeView.frame.origin.x
                 newX = newX > rightEdgeViewX - (VideoProgressView.edgeViewWidth + minEdgeDistant) ? rightEdgeViewX - (VideoProgressView.edgeViewWidth + minEdgeDistant) : newX
+                time = CMTime(seconds: Double(secPerPx * (collectionView.contentOffset.x + newX)), preferredTimescale: 600)
             case .end:
                 newX = newX > VideoProgressView.width - VideoProgressView.edgeViewWidth ? VideoProgressView.width - VideoProgressView.edgeViewWidth : newX
                 let leftEdgeViewX = leftEdgeView.frame.origin.x
                 newX = newX < leftEdgeViewX + minEdgeDistant + minEdgeDistant ? leftEdgeViewX + minEdgeDistant + minEdgeDistant : newX
+                time = CMTime(seconds: Double(secPerPx * (collectionView.contentOffset.x + newX - VideoProgressView.edgeViewWidth)), preferredTimescale: 600)
             }
             
             recognizer.view!.frame = CGRect(x: newX, y: 0, width: VideoProgressView.edgeViewWidth, height: VideoProgressView.height)

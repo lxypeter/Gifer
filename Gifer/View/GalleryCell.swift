@@ -12,12 +12,12 @@ class GalleryCell: UICollectionViewCell {
     
     var photo: Photo? {
         didSet{
-            self.contentImageView.image = self.photo?.thumbnail
+            self.contentImageView.image = photo?.thumbnail
         }
     }
     var isEditing: Bool = false {
         didSet{
-            self.selectImageView.isHidden = !self.isEditing
+            selectImageView.isHidden = !isEditing
         }
     }
     @IBOutlet weak var contentImageView: UIImageView!
@@ -29,10 +29,10 @@ class GalleryCell: UICollectionViewCell {
     
     override var isSelected: Bool {
         didSet {
-            if self.isSelected {
-                self.selectImageView.image = #imageLiteral(resourceName: "select")
+            if isSelected {
+                selectImageView.image = #imageLiteral(resourceName: "select")
             } else {
-                self.selectImageView.image = #imageLiteral(resourceName: "unselcet")
+                selectImageView.image = #imageLiteral(resourceName: "unselcet")
             }
         }
     }

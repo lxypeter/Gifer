@@ -27,22 +27,6 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Gifer/Libs/GifImageView/GifAnimator.swift"
-            timestampString = "518953229.750545"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "111"
-            endingLineNumber = "111"
-            landmarkName = "prepareFrame(index:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
             filePath = "Gifer/Libs/Category/CGPoint.swift"
             timestampString = "525148482.223487"
             startingColumnNumber = "9223372036854775807"
@@ -98,6 +82,22 @@
             startingLineNumber = "18"
             endingLineNumber = "18"
             landmarkName = "rotate(around:with:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Gifer/Libs/GifImageView/GifAnimator.swift"
+            timestampString = "526379078.846281"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "83"
+            endingLineNumber = "83"
+            landmarkName = "prepareFrames()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

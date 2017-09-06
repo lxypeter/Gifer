@@ -32,7 +32,7 @@ class GalleryViewBottomBar: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.configureSubviews()
+        configureSubviews()
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -40,11 +40,11 @@ class GalleryViewBottomBar: UIView {
     }
     
     private func configureSubviews() {
-        self.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         
         let seperateLine = UIView(frame: CGRect.zero)
         seperateLine.backgroundColor = #colorLiteral(red: 0.862745098, green: 0.862745098, blue: 0.862745098, alpha: 1)
-        self.addSubview(seperateLine)
+        addSubview(seperateLine)
         seperateLine.snp.makeConstraints { (make) in
             make.top.equalTo(0)
             make.right.equalTo(0)
@@ -52,16 +52,16 @@ class GalleryViewBottomBar: UIView {
             make.height.equalTo(0.5)
         }
         
-        self.addSubview(self.deleteButton)
-        self.deleteButton.snp.makeConstraints { (make) in
+        addSubview(deleteButton)
+        deleteButton.snp.makeConstraints { (make) in
             make.centerY.equalTo(self.snp.centerY)
             make.height.equalTo(24)
             make.width.equalTo(24)
             make.right.equalTo(-15)
         }
         
-        self.addSubview(self.shareButton)
-        self.shareButton.snp.makeConstraints { (make) in
+        addSubview(shareButton)
+        shareButton.snp.makeConstraints { (make) in
             make.centerY.equalTo(self.snp.centerY)
             make.height.equalTo(24)
             make.width.equalTo(24)
@@ -71,14 +71,14 @@ class GalleryViewBottomBar: UIView {
     }
     
     func clickShareButton() {
-        if self.shareButtonHandler != nil {
-            self.shareButtonHandler!()
+        if shareButtonHandler != nil {
+            shareButtonHandler!()
         }
     }
     
     func clickDeleteButton() {
-        if self.deleteButtonHandler != nil {
-            self.deleteButtonHandler!()
+        if deleteButtonHandler != nil {
+            deleteButtonHandler!()
         }
     }
     

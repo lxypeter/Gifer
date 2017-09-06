@@ -15,24 +15,24 @@ class PhotoPickerCell: UICollectionViewCell {
     @IBOutlet weak var selectedRankLabel: UILabel!
     var isChoose: Bool = false{
         didSet {
-            if self.isChoose {
-                self.selectedView.isHidden = false
+            if isChoose {
+                selectedView.isHidden = false
             } else {
-                self.selectedView.isHidden = true
+                selectedView.isHidden = true
             }
         }
     }
     
     var photo: Photo? {
         didSet{
-            self.contentImageView.image = self.photo?.thumbnail
+            contentImageView.image = photo?.thumbnail
         }
     }
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        self.selectedView.backgroundColor = UIColor(colorLiteralRed: 0.25, green: 0.8, blue: 0.8, alpha: 0.5)
-        self.selectedView.isHidden = true
+        selectedView.backgroundColor = UIColor(colorLiteralRed: 0.25, green: 0.8, blue: 0.8, alpha: 0.5)
+        selectedView.isHidden = true
     }
     
 }

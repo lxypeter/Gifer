@@ -38,6 +38,7 @@ enum RatioStatus {
 class GifEditViewBottomBar: UIView, CAAnimationDelegate {
     
     public static let height: CGFloat = 54
+    public static let originInterval: Float = 0.25
     
     public var status: GifEditViewBottomBarStatus = .normal {
         didSet {
@@ -45,10 +46,9 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate {
             self.animationOfClipSwitch(status: self.status)
         }
     }
-    public let originDuration: Double = 0.5
-    public let minDuration: Float = 0.01
-    public let maxDuration: Float = 1.00
-    public var currentDuration: Float {
+    public let minInterval: Float = 0.01
+    public let maxInterval: Float = 0.50
+    public var currentInterval: Float {
         get {
             return self.slider.value
         }
@@ -65,7 +65,7 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate {
     }()
     private lazy var minDurationLabel: UILabel = {
         let minDurationLabel = UILabel(frame: CGRect.zero)
-        minDurationLabel.text = "\(String(format: "%.2f", self.minDuration))s"
+        minDurationLabel.text = "\(String(format: "%.2f", self.minInterval))s"
         minDurationLabel.font = UIFont.systemFont(ofSize: 12)
         minDurationLabel.textAlignment = .center
         minDurationLabel.textColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
@@ -74,7 +74,7 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate {
     
     private lazy var maxDurationLabel: UILabel = {
         let maxDurationLabel = UILabel(frame: CGRect.zero)
-        maxDurationLabel.text = "\(String(format: "%.2f", self.maxDuration))s"
+        maxDurationLabel.text = "\(String(format: "%.2f", self.maxInterval))s"
         maxDurationLabel.font = UIFont.systemFont(ofSize: 12)
         maxDurationLabel.textAlignment = .center
         maxDurationLabel.textColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
@@ -83,9 +83,9 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate {
     
     private lazy var slider: UISlider = {
         let slider = UISlider(frame: CGRect.zero)
-        slider.minimumValue = self.minDuration
-        slider.maximumValue = self.maxDuration
-        slider.value = Float(self.originDuration)
+        slider.minimumValue = self.minInterval
+        slider.maximumValue = self.maxInterval
+        slider.value = Float(GifEditViewBottomBar.originInterval)
         slider.addTarget(self, action: #selector(sliderChange(_:)), for: .valueChanged)
         return slider
     }()
@@ -237,7 +237,7 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate {
     
     //MARK: events
     func sliderChange(_ slider: UISlider) {
-        self.speedTimesLabel.text = "间隔: \(String(format: "%.2f", self.slider.value))秒，共\(Float(String(format: "%.2f", self.slider.value))! * Float(self.totalCount))秒"
+        updateTimesLabel()
         if self.sliderValueChangeHandler != nil {
             self.sliderValueChangeHandler!(slider.value)
         }
@@ -265,6 +265,15 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate {
             return
         }
         resetButtonHandler()
+    }
+    
+    func setInterval(_ interval: Float) {
+        slider.value = interval
+        updateTimesLabel()
+    }
+    
+    private func updateTimesLabel() {
+        speedTimesLabel.text = "间隔: \(String(format: "%.2f", slider.value))秒，共\(Float(String(format: "%.2f", slider.value))! * Float(totalCount))秒"
     }
     
     //MARK: delegate method

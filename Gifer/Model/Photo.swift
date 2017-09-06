@@ -8,6 +8,7 @@
 
 import UIKit
 import Photos
+import AVFoundation
 
 class Photo: NSObject {
     let asset: PHAsset
@@ -23,10 +24,18 @@ class Photo: NSObject {
         }
     }
     var fullImage: UIImage?
+    var videoFrameTime: CMTime?
     
     init(asset: PHAsset) {
         self.asset = asset
         self.photoWidth = CGFloat(asset.pixelWidth)
         self.photoHeight = CGFloat(asset.pixelHeight)
+    }
+    
+    init(fullImage: UIImage) {
+        self.asset = PHAsset()
+        self.fullImage = fullImage
+        self.photoWidth = CGFloat(fullImage.cgImage!.width)
+        self.photoHeight = CGFloat(fullImage.cgImage!.height)
     }
 }

@@ -304,6 +304,8 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
             self.collectionView.mj_header.endRefreshing()
             if self.gifArray.count < 1 {
                 self.showNotice(message: "未找到GIF图片")
+                self.noRecordView.isHidden = false
+                self.selectItem.isEnabled = false
             } else {
                 self.gifArray.sort(by: { (photo1, photo2) -> Bool in
                     guard let date1 = photo1.asset.creationDate else {
@@ -323,10 +325,6 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     
     //MARK: Delegate Method
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if gifArray.count < 1 {
-            noRecordView.isHidden = false
-            selectItem.isEnabled = false
-        }
         return gifArray.count
     }
     
@@ -518,6 +516,10 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     }
     
     func clickVideoButton() {
+        if isAnimating { return }
+        clickAddButton()
+        let ctrl = VideoPickerViewController()
+        navigationController!.pushViewController(ctrl, animated: true)
     }
     
     func clickRecordButton() {

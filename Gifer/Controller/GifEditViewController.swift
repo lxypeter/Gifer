@@ -31,7 +31,14 @@ class GifEditViewController: BaseViewController {
     private let mediumQualityLength: CGFloat = 667
     private let highQualityLength: CGFloat = 1000
     
-    var selectedArray: [Photo] = []
+    public var selectedArray: [Photo] = []
+    public var frameInterval: Float = GifEditViewBottomBar.originInterval {
+        didSet {
+            bottomBar.setInterval(frameInterval)
+            imageView.animationDuration = Double(String(format: "%.2f", frameInterval))! * Double(selectedArray.count)
+            imageView.startAnimating()
+        }
+    }
     private var imageArray: [UIImage] = []
     private var kGroup: DispatchGroup = DispatchGroup()
     private var isCliping: Bool = false
@@ -150,7 +157,7 @@ class GifEditViewController: BaseViewController {
         kGroup = DispatchGroup()
         for photo in selectedArray {
             kGroup.enter()
-            if photo.fullImage === nil {
+            if photo.fullImage == nil {
                 let requestOptions = PHImageRequestOptions()
                 requestOptions.isSynchronous = false
                 requestOptions.deliveryMode = .opportunistic
@@ -204,8 +211,9 @@ class GifEditViewController: BaseViewController {
         
         let fileProperties: CFDictionary = [kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFLoopCount as String: 0]] as CFDictionary;
         
+        let frameInterval = Float(lroundf(bottomBar.currentInterval * 100)) / 100
         let frameProperties: CFDictionary = [
-            kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFDelayTime as String: self.bottomBar.currentDuration],
+            kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFUnclampedDelayTime as String: frameInterval],
             kCGImagePropertyPixelHeight as String: targetHeight,
             kCGImagePropertyPixelWidth as String: targetWidth
             ] as CFDictionary;
@@ -225,14 +233,17 @@ class GifEditViewController: BaseViewController {
             let scale = targetWidth / sr.size.width
             
             for image in self.imageArray {
-                let originWidth = scale * self.imageView.bounds.width
-                let originHeight = scale * self.imageView.bounds.height
-                
-                let newImage = image.imageCenterScalingWith(targetSize: CGSize(width: originWidth, height: originHeight))?.clipImage(in: CGRect(x: sr.origin.x * scale, y: sr.origin.y * scale, width: sr.size.width * scale, height: sr.size.height * scale))
-                CGImageDestinationAddImage(destination!, newImage!.cgImage!, frameProperties);
+                autoreleasepool {
+                    let originWidth = scale * self.imageView.bounds.width
+                    let originHeight = scale * self.imageView.bounds.height
+                    
+                    let newImage = image.imageCenterScalingWith(targetSize: CGSize(width: originWidth, height: originHeight))?.clipImage(in: CGRect(x: sr.origin.x * scale, y: sr.origin.y * scale, width: sr.size.width * scale, height: sr.size.height * scale))
+                    CGImageDestinationAddImage(destination!, newImage!.cgImage!, frameProperties);
+                }
             }
             
             if CGImageDestinationFinalize(destination!) {
+                
                 PHPhotoLibrary.shared().performChanges({
                     PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: url)
                 }) { (success, error) in
@@ -733,7 +744,7 @@ class GifEditViewController: BaseViewController {
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = true
         imageView.backgroundColor = UIColor.white
-        imageView.animationDuration = self.bottomBar.originDuration * Double(self.selectedArray.count)
+        imageView.animationDuration = Double(GifEditViewBottomBar.originInterval) * Double(self.selectedArray.count)
         let pinchGes = UIPinchGestureRecognizer(target: self, action: #selector(pinchImageView(recognizer:)))
         imageView.addGestureRecognizer(pinchGes)
         return imageView
@@ -746,9 +757,8 @@ class GifEditViewController: BaseViewController {
             self.showingRect = nil
             self.resizeShowingArea()
         }
-        bottomBar.sliderValueChangeHandler = { [unowned self] value in
-            self.imageView.animationDuration = Double(String(format: "%.2f", value))! * Double(self.selectedArray.count)
-            self.imageView.startAnimating()
+        bottomBar.sliderValueChangeHandler = {[unowned self] value in
+            self.frameInterval = value
         }
         bottomBar.ratioButtonHandler = {
             let alertViewController = UIAlertController(title: "图像宽高比", message: nil, preferredStyle: .actionSheet)

@@ -28,13 +28,6 @@ class NoRecordView: UIView {
         reloadButton.addTarget(self, action: #selector(clickReloadButton), for: .touchUpInside)
         return reloadButton
     }()
-//    lazy var resultLabel: UILabel = {
-//        let resultLabel = UILabel()
-//        resultLabel.font = UIFont.systemFont(ofSize: 17)
-//        resultLabel.textColor = #colorLiteral(red: 0.5333333333, green: 0.5333333333, blue: 0.5333333333, alpha: 1)
-//        resultLabel.text = "未找到GIF图片"
-//        return resultLabel
-//    }()
     var reloadHandler: (() -> ())?
 
     override init(frame: CGRect) {
@@ -47,24 +40,18 @@ class NoRecordView: UIView {
     }
     
     func configureSubviews() {
-        self.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         
-        self.addSubview(self.iconImageView)
-        self.iconImageView.snp.makeConstraints { (make) in
-            make.centerX.equalTo(self.snp.centerX)
-            make.centerY.equalTo(self.snp.centerY).multipliedBy(0.8)
+        addSubview(iconImageView)
+        iconImageView.snp.makeConstraints { (make) in
+            make.centerX.equalTo(snp.centerX)
+            make.centerY.equalTo(snp.centerY).multipliedBy(0.8)
             make.width.equalTo(150)
             make.height.equalTo(150)
         }
         
-//        self.addSubview(self.resultLabel)
-//        self.resultLabel.snp.makeConstraints { (make) in
-//            make.top.equalTo(self.iconImageView.snp.bottom).offset(30)
-//            make.centerX.equalTo(self.snp.centerX)
-//        }
-        
-        self.addSubview(self.reloadButton)
-        self.reloadButton.snp.makeConstraints { (make) in
+        addSubview(reloadButton)
+        reloadButton.snp.makeConstraints { (make) in
             make.top.equalTo(self.iconImageView.snp.bottom).offset(12)
             make.width.equalTo(80)
             make.height.equalTo(30)
@@ -73,8 +60,8 @@ class NoRecordView: UIView {
     }
     
     func clickReloadButton() {
-        if self.reloadHandler != nil {
-            self.reloadHandler!()
+        if reloadHandler != nil {
+            reloadHandler!()
         }
     }
 }

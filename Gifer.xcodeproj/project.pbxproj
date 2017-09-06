@@ -37,6 +37,10 @@
 		E19D661C1EE7F2D5008E29F7 /* PhotoPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19D661B1EE7F2D5008E29F7 /* PhotoPickerViewController.swift */; };
 		E19D661F1EE7F547008E29F7 /* PhotoPickerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19D661D1EE7F547008E29F7 /* PhotoPickerCell.swift */; };
 		E19D66201EE7F547008E29F7 /* PhotoPickerCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E19D661E1EE7F547008E29F7 /* PhotoPickerCell.xib */; };
+		E1A40D5F1F5FCBFC002D58AF /* VideoPickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A40D5E1F5FCBFC002D58AF /* VideoPickerViewController.swift */; };
+		E1A40D611F5FD1B3002D58AF /* Video.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A40D601F5FD1B3002D58AF /* Video.swift */; };
+		E1A40D681F5FD553002D58AF /* VideoPickerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A40D661F5FD553002D58AF /* VideoPickerCell.swift */; };
+		E1A40D691F5FD553002D58AF /* VideoPickerCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E1A40D671F5FD553002D58AF /* VideoPickerCell.xib */; };
 		E1A87EE31F5CFAD30024E01F /* VideoThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A87EE21F5CFAD30024E01F /* VideoThumbnail.swift */; };
 		E1A87EE61F5CFE740024E01F /* VideoThumbnailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A87EE41F5CFE740024E01F /* VideoThumbnailCell.swift */; };
 		E1A87EE71F5CFE740024E01F /* VideoThumbnailCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E1A87EE51F5CFE740024E01F /* VideoThumbnailCell.xib */; };
@@ -84,6 +88,10 @@
 		E19D661B1EE7F2D5008E29F7 /* PhotoPickerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoPickerViewController.swift; sourceTree = "<group>"; };
 		E19D661D1EE7F547008E29F7 /* PhotoPickerCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoPickerCell.swift; sourceTree = "<group>"; };
 		E19D661E1EE7F547008E29F7 /* PhotoPickerCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PhotoPickerCell.xib; sourceTree = "<group>"; };
+		E1A40D5E1F5FCBFC002D58AF /* VideoPickerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPickerViewController.swift; sourceTree = "<group>"; };
+		E1A40D601F5FD1B3002D58AF /* Video.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Video.swift; sourceTree = "<group>"; };
+		E1A40D661F5FD553002D58AF /* VideoPickerCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPickerCell.swift; sourceTree = "<group>"; };
+		E1A40D671F5FD553002D58AF /* VideoPickerCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = VideoPickerCell.xib; sourceTree = "<group>"; };
 		E1A87EE21F5CFAD30024E01F /* VideoThumbnail.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoThumbnail.swift; sourceTree = "<group>"; };
 		E1A87EE41F5CFE740024E01F /* VideoThumbnailCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoThumbnailCell.swift; sourceTree = "<group>"; };
 		E1A87EE51F5CFE740024E01F /* VideoThumbnailCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = VideoThumbnailCell.xib; sourceTree = "<group>"; };
@@ -170,6 +178,7 @@
 				E171BF911EEAA196001F53E2 /* GifAchieveViewController.swift */,
 				E1E51E991F4E6A9C00981D23 /* VideoRecordViewController.swift */,
 				E12E2BD91F56649F00B08FB5 /* VideoClipViewController.swift */,
+				E1A40D5E1F5FCBFC002D58AF /* VideoPickerViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -193,6 +202,8 @@
 				E1A87EE51F5CFE740024E01F /* VideoThumbnailCell.xib */,
 				E15212561F5E99BD001C2E5A /* VideoRecordTopView.swift */,
 				E15212581F5E99F8001C2E5A /* VideoClipTopView.swift */,
+				E1A40D661F5FD553002D58AF /* VideoPickerCell.swift */,
+				E1A40D671F5FD553002D58AF /* VideoPickerCell.xib */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -232,6 +243,7 @@
 			children = (
 				E1333D281ED564D60017C07B /* Photo.swift */,
 				E1A87EE21F5CFAD30024E01F /* VideoThumbnail.swift */,
+				E1A40D601F5FD1B3002D58AF /* Video.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -333,6 +345,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1A40D691F5FD553002D58AF /* VideoPickerCell.xib in Resources */,
 				E1A87EE71F5CFE740024E01F /* VideoThumbnailCell.xib in Resources */,
 				E12826A71ED42B4600262F63 /* GalleryCell.xib in Resources */,
 				E11503F11ECC41D6008BB686 /* LaunchScreen.storyboard in Resources */,
@@ -416,6 +429,7 @@
 				E13CAD041EE550CA004D9CAA /* NoticeViewManager.swift in Sources */,
 				E13CAD021EE5481A004D9CAA /* NoticeView.swift in Sources */,
 				E12826A21ED4116700262F63 /* GalleryViewController.swift in Sources */,
+				E1A40D611F5FD1B3002D58AF /* Video.swift in Sources */,
 				E19D661C1EE7F2D5008E29F7 /* PhotoPickerViewController.swift in Sources */,
 				E1F2B4711EF110F8003948EB /* GifEditToolBar.swift in Sources */,
 				E13CACFF1EE50775004D9CAA /* Constants.swift in Sources */,
@@ -427,7 +441,9 @@
 				E1A87EE31F5CFAD30024E01F /* VideoThumbnail.swift in Sources */,
 				E11503E71ECC41D6008BB686 /* AppDelegate.swift in Sources */,
 				E1B456621EE00D10009555A6 /* PhotoCell.swift in Sources */,
+				E1A40D5F1F5FCBFC002D58AF /* VideoPickerViewController.swift in Sources */,
 				E1333D291ED564D60017C07B /* Photo.swift in Sources */,
+				E1A40D681F5FD553002D58AF /* VideoPickerCell.swift in Sources */,
 				E1E37F1F1ED8107E000B4B3F /* ImageType.swift in Sources */,
 				E12DFDC51ED6CBE5009608E8 /* PhotoViewController.swift in Sources */,
 			);

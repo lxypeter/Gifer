@@ -69,41 +69,41 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
     }
     
     private func configureSubviews() {
-        self.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
-        self.clipsToBounds = true
+        backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        clipsToBounds = true
         
-        self.addSubview(self.baseView)
-        self.baseView.snp.makeConstraints { (make) in
+        addSubview(baseView)
+        baseView.snp.makeConstraints { (make) in
             make.top.equalTo(0)
             make.height.equalTo(GifEditToolBar.height)
             make.left.equalTo(0)
             make.right.equalTo(0)
         }
-        self.baseView.addSubview(self.clipButton)
-        self.clipButton.snp.makeConstraints { (make) in
-            make.centerY.equalTo(self.baseView.snp.centerY)
+        baseView.addSubview(clipButton)
+        clipButton.snp.makeConstraints { (make) in
+            make.centerY.equalTo(baseView.snp.centerY)
             make.height.equalTo(24)
             make.width.equalTo(24)
             make.right.equalTo(-15)
         }
         
-        self.addSubview(self.clipView)
-        self.clipView.snp.makeConstraints { (make) in
+        addSubview(clipView)
+        clipView.snp.makeConstraints { (make) in
             make.top.equalTo(GifEditToolBar.height)
             make.height.equalTo(GifEditToolBar.height)
             make.left.equalTo(0)
             make.right.equalTo(0)
         }
-        self.clipView.addSubview(self.clipConfirmButton)
-        self.clipConfirmButton.snp.makeConstraints { (make) in
-            make.centerY.equalTo(self.clipView.snp.centerY)
+        clipView.addSubview(clipConfirmButton)
+        clipConfirmButton.snp.makeConstraints { (make) in
+            make.centerY.equalTo(clipView.snp.centerY)
             make.height.equalTo(40)
             make.width.equalTo(60)
             make.right.equalTo(-15)
         }
-        self.clipView.addSubview(self.clipCancelButton)
-        self.clipCancelButton.snp.makeConstraints { (make) in
-            make.centerY.equalTo(self.clipView.snp.centerY)
+        clipView.addSubview(clipCancelButton)
+        clipCancelButton.snp.makeConstraints { (make) in
+            make.centerY.equalTo(clipView.snp.centerY)
             make.height.equalTo(40)
             make.width.equalTo(60)
             make.left.equalTo(15)
@@ -111,7 +111,7 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
         
         let seperateLine = UIView(frame: CGRect.zero)
         seperateLine.backgroundColor = #colorLiteral(red: 0.862745098, green: 0.862745098, blue: 0.862745098, alpha: 1)
-        self.addSubview(seperateLine)
+        addSubview(seperateLine)
         seperateLine.snp.makeConstraints { (make) in
             make.bottom.equalTo(0)
             make.right.equalTo(0)
@@ -122,8 +122,8 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
     
     //MARK: events
     func clickClipButton() {
-        if self.status == .cliping { return }
-        self.status = .cliping
+        if status == .cliping { return }
+        status = .cliping
         
         self.animationOfClipSwitch(status: .enterCliping)
         
@@ -135,10 +135,10 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
     }
     
     func clickClipConfirmButton() {
-        if self.status == .normal { return }
-        self.status = .normal
+        if status == .normal { return }
+        status = .normal
         
-        self.animationOfClipSwitch(status: .leaveCliping)
+        animationOfClipSwitch(status: .leaveCliping)
         
         guard let clipConfirmButtonHandler = self.clipConfirmButtonHandler else {
             return
@@ -147,10 +147,10 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
     }
     
     func clickClipCancelButton() {
-        if self.status == .normal { return }
-        self.status = .normal
+        if status == .normal { return }
+        status = .normal
         
-        self.animationOfClipSwitch(status: .leaveCliping)
+        animationOfClipSwitch(status: .leaveCliping)
         
         guard let clipCancelButtonHandler = self.clipCancelButtonHandler else {
             return
@@ -160,24 +160,24 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
     
     //MARK: delegate method
     func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
-        switch self.status {
+        switch status {
         case .cliping:
-            self.baseView.snp.updateConstraints({ (make) in
+            baseView.snp.updateConstraints({ (make) in
                 make.top.equalTo(-GifEditToolBar.height)
             })
-            self.clipView.snp.updateConstraints({ (make) in
+            clipView.snp.updateConstraints({ (make) in
                 make.top.equalTo(0)
             })
         default:
-            self.baseView.snp.updateConstraints({ (make) in
+            baseView.snp.updateConstraints({ (make) in
                 make.top.equalTo(0)
             })
-            self.clipView.snp.updateConstraints({ (make) in
+            clipView.snp.updateConstraints({ (make) in
                 make.top.equalTo(GifEditToolBar.height)
             })
         }
-        self.baseView.layer.removeAllAnimations()
-        self.clipView.layer.removeAllAnimations()
+        baseView.layer.removeAllAnimations()
+        clipView.layer.removeAllAnimations()
     }
     
     //MARK: animate
@@ -193,7 +193,7 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
         animation.isRemovedOnCompletion = false
         animation.fillMode = kCAFillModeForwards;
         animation.duration = 0.25
-        self.baseView.layer.add(animation, forKey: nil)
-        self.clipView.layer.add(animation, forKey: nil)
+        baseView.layer.add(animation, forKey: nil)
+        clipView.layer.add(animation, forKey: nil)
     }
 }

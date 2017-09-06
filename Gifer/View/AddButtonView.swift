@@ -16,9 +16,9 @@ class AddButtonView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.layer.masksToBounds = true
+        layer.masksToBounds = true
         
-        self.addSubview(backgroundView)
+        addSubview(backgroundView)
         backgroundView.layer.cornerRadius = 31
         backgroundView.snp.makeConstraints({ (make) in
             make.top.equalTo(0)
@@ -27,7 +27,7 @@ class AddButtonView: UIView {
             make.bottom.equalTo(0)
         })
         
-        self.addSubview(button)
+        addSubview(button)
         button.snp.makeConstraints({ (make) in
             make.top.equalTo(0)
             make.right.equalTo(0)

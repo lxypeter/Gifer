@@ -21,7 +21,7 @@ struct GifFrame {
 }
 
 class GifAnimator {
-    private let maxFrameCount: Int = 100 // 最大帧数
+    private let maxFrameCount: Int = 200 // 最大帧数
     private var imageSource: CGImageSource! // imageSource 处理帧相关操作
     private var animatedFrames: [GifFrame] = []
     private var frameCount = 0 // 帧的数量
@@ -100,9 +100,13 @@ class GifAnimator {
         // 获取到 gif每帧时间间隔
         guard let properties = CGImageSourceCopyPropertiesAtIndex(imageSource, index , nil),
             let gifInfo = (properties as NSDictionary)[kCGImagePropertyGIFDictionary as String] as? NSDictionary,
-            let frameDuration = (gifInfo[kCGImagePropertyGIFDelayTime as String] as? NSNumber) else {
+            let delayTime = (gifInfo[kCGImagePropertyGIFDelayTime as String] as? NSNumber) else {
             return GifFrame(image: nil, duration: 0)
         }
+        
+        let unclampedDelayTime = (gifInfo[kCGImagePropertyGIFUnclampedDelayTime as String] as? NSNumber)
+        
+        let frameDuration = unclampedDelayTime != nil && unclampedDelayTime!.floatValue > 0 ? unclampedDelayTime! : delayTime
         
         var image: UIImage? = UIImage(cgImage: imageRef , scale: UIScreen.main.scale, orientation: .up)
         if self.isBigImage {
