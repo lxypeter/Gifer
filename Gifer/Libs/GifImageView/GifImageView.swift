@@ -12,13 +12,15 @@ class GifImageView: UIImageView {
     
     // 是否自动播放
     public var autoPlayAnimatedImage = true
-    
     // `Animator` 对象 将帧和指定图片存储内存中
     private var animator: GifAnimator?
-    
+    private var loadingAnimator: GifAnimator? {
+        didSet {
+            oldValue?.removeObserver(self, forKeyPath: "isFinishLoading")
+        }
+    }
     // displayLink 为懒加载 避免还没有加载好的时候使用了 造成异常
     private var displayLinkInitialized: Bool = false
-    
     private lazy var displayLink: CADisplayLink = {
         self.displayLinkInitialized = true
         let displayLink = CADisplayLink(target: TargetProxy(target: self), selector: #selector(TargetProxy.onScreenUpdate))
@@ -26,6 +28,7 @@ class GifImageView: UIImageView {
         displayLink.isPaused = true
         return displayLink
     }()
+    private var tempContentMode: UIViewContentMode = .scaleToFill
     
     public var speedTimes: Double = 1 {
         didSet {
@@ -34,32 +37,48 @@ class GifImageView: UIImageView {
             }
         }
     }
-    
     public var runLoopMode: RunLoopMode = .commonModes {
         willSet {
             if runLoopMode == newValue {
                 return
             } else {
-                self.stopAnimating()
+                stopAnimating()
                 displayLink.remove(from: RunLoop.main, forMode: runLoopMode)
                 displayLink.add(to: RunLoop.main, forMode: newValue)
-                self.startAnimating()
+                startAnimating()
             }
         }
     }
-    
-    public var gifData: NSData?{
-        didSet{
-            if let gifData = gifData {
-                animator = nil
-                animator = GifAnimator(data: gifData)
-                animator?.speedTimes = self.speedTimes
-                self.didMove()
-                self.setNeedsDisplay()
-                self.layer.setNeedsDisplay()
+    public var gifData: NSData? {
+        didSet {
+            animator = nil
+            
+            guard let gifData = gifData else {
+                return
             }
+            
+            let newAnimator = GifAnimator(data: gifData)
+            newAnimator.speedTimes = speedTimes
+            
+            if gifPlaceholder != nil && !newAnimator.isFinishLoading {
+                newAnimator.addObserver(self, forKeyPath: "isFinishLoading", options: [.new], context: nil)
+                let placeholderAnimator = GifAnimator(data: gifPlaceholder!)
+                placeholderAnimator.speedTimes = 1
+                animator = placeholderAnimator
+                tempContentMode = contentMode
+                contentMode = placeholderContentMode
+                loadingAnimator = newAnimator
+            } else {
+                animator = newAnimator
+            }
+            
+            didMove()
+            setNeedsDisplay()
+            layer.setNeedsDisplay()
         }
     }
+    public var gifPlaceholder: NSData?
+    public var placeholderContentMode: UIViewContentMode = .center
 
     func updateFrame() {
         if animator?.updateCurrentFrame(duration: displayLink.duration) == true {
@@ -123,10 +142,22 @@ class GifImageView: UIImageView {
         }
     }
     
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if object as? GifAnimator === loadingAnimator {
+            let isFinishLoading = change?[NSKeyValueChangeKey.newKey] as! Bool
+            if isFinishLoading {
+                animator = loadingAnimator
+                contentMode = tempContentMode
+                loadingAnimator = nil
+            }
+        }
+    }
+    
     deinit {
         if displayLinkInitialized {
             displayLink.invalidate()
         }
+        loadingAnimator = nil
     }
     
 }

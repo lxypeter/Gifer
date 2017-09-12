@@ -11,13 +11,24 @@ import SnapKit
 
 class PhotoCell: UICollectionViewCell, UIScrollViewDelegate {
     var photo: Photo? {
-        didSet{
-            if photo != nil && photo!.photoWidth < self.imageView.frame.size.width && photo!.photoHeight < imageView.frame.size.height {
-                imageView.contentMode = .center
-            } else {
-                imageView.contentMode = .scaleAspectFit
+        didSet {
+            guard let photo = photo else {
+                return
             }
-            self.imageView.gifData = photo?.fullImageData
+            
+            if photo.fullImageData != nil {
+                if photo.photoWidth < self.imageView.frame.size.width && photo.photoHeight < imageView.frame.size.height {
+                    imageView.contentMode = .center
+                } else {
+                    imageView.contentMode = .scaleAspectFit
+                }
+                imageView.gifData = photo.fullImageData
+            }
+            
+            if oldValue != nil {
+                oldValue!.removeObserver(self, forKeyPath: "fullImageData")
+            }
+            photo.addObserver(self, forKeyPath: "fullImageData", options: .new, context: nil)
         }
     }
     
@@ -33,9 +44,10 @@ class PhotoCell: UICollectionViewCell, UIScrollViewDelegate {
     
     private lazy var imageView: GifImageView = {
         var imageView = GifImageView()
-        imageView.contentMode = .scaleAspectFit
+        imageView.contentMode = .center
         imageView.isUserInteractionEnabled = true
         imageView.backgroundColor = UIColor.clear
+        imageView.gifPlaceholder = NSData(contentsOf: Bundle.main.url(forResource: "loading", withExtension: "gif")!)
         return imageView
     }()
     
@@ -51,6 +63,25 @@ class PhotoCell: UICollectionViewCell, UIScrollViewDelegate {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        guard let photo = photo else {
+            return
+        }
+        photo.removeObserver(self, forKeyPath: "fullImageData")
+    }
+    
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        
+        let newImageData = change?[NSKeyValueChangeKey.newKey] as? NSData
+        
+        if photo!.photoWidth < self.imageView.frame.size.width && photo!.photoHeight < imageView.frame.size.height {
+            imageView.contentMode = .center
+        } else {
+            imageView.contentMode = .scaleAspectFit
+        }
+        imageView.gifData = newImageData
     }
     
     func setGifSpeedTimes(_ speedTimes: Double) {

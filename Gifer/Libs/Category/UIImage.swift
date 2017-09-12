@@ -10,6 +10,22 @@ import UIKit
 
 extension UIImage {
     
+    /// 生成纯色图片
+    ///
+    /// - Parameters:
+    ///   - color: 颜色
+    ///   - size: 大小
+    /// - Returns: 目标图片
+    static func imageWith(color: UIColor, size: CGSize) -> UIImage {
+        UIGraphicsBeginImageContext(size)
+        let context = UIGraphicsGetCurrentContext()
+        context?.setFillColor(color.cgColor)
+        context?.fill(CGRect(x: 0, y: 0, width: size.width, height: size.height))
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return image!;
+    }
+    
     /// 按比例缩放
     ///
     /// - Parameter targetSize: 目标大小
@@ -42,7 +58,7 @@ extension UIImage {
         self.draw(in: thumbnailRect)
         let resultImage = UIGraphicsGetImageFromCurrentImageContext()
         
-        UIGraphicsEndImageContext();
+        UIGraphicsEndImageContext()
         
         return resultImage
     }

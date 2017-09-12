@@ -123,9 +123,9 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
         let cell: PhotoCell = collectionView.dequeueReusableCell(withReuseIdentifier: self.photoCellId, for: indexPath) as! PhotoCell
         
         let photo = gifArray[indexPath.row]
+        cell.photo = photo
         
         if photo.fullImageData === nil {
-            
             let requestOptions = PHImageRequestOptions()
             requestOptions.isSynchronous = true
             requestOptions.deliveryMode = .highQualityFormat
@@ -133,11 +133,9 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
             
             PHImageManager.default().requestImageData(for: photo.asset, options: requestOptions, resultHandler: { (data, type, orientation, info) in
                 photo.fullImageData = data as NSData?
-                cell.photo = photo
             })
-        } else {
-            cell.photo = photo
         }
+        
         return cell
     }
     
@@ -145,7 +143,7 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
         let photoCell: PhotoCell = cell as! PhotoCell
         photoCell.resetZoomScale(animated: false)
         if isCollectionViewInit {
-            self.title = "\(indexPath.row+1) / \(self.gifArray.count)"
+            title = "\(indexPath.row+1) / \(self.gifArray.count)"
         } else {
             isCollectionViewInit = true
         }

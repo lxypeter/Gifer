@@ -213,7 +213,10 @@ class GifEditViewController: BaseViewController {
         
         let frameInterval = Float(lroundf(bottomBar.currentInterval * 100)) / 100
         let frameProperties: CFDictionary = [
-            kCGImagePropertyGIFDictionary as String: [kCGImagePropertyGIFUnclampedDelayTime as String: frameInterval],
+            kCGImagePropertyGIFDictionary as String: [
+                kCGImagePropertyGIFDelayTime as String: frameInterval,
+                kCGImagePropertyGIFUnclampedDelayTime as String: frameInterval
+            ],
             kCGImagePropertyPixelHeight as String: targetHeight,
             kCGImagePropertyPixelWidth as String: targetWidth
             ] as CFDictionary;
@@ -238,7 +241,7 @@ class GifEditViewController: BaseViewController {
                     let originHeight = scale * self.imageView.bounds.height
                     
                     let newImage = image.imageCenterScalingWith(targetSize: CGSize(width: originWidth, height: originHeight))?.clipImage(in: CGRect(x: sr.origin.x * scale, y: sr.origin.y * scale, width: sr.size.width * scale, height: sr.size.height * scale))
-                    CGImageDestinationAddImage(destination!, newImage!.cgImage!, frameProperties);
+                    CGImageDestinationAddImage(destination!, newImage!.cgImage!, frameProperties)
                 }
             }
             
@@ -250,7 +253,6 @@ class GifEditViewController: BaseViewController {
                     DispatchQueue.main.async { [unowned self] in
                         self.hideHud()
                         if success {
-                            
                             NotificationCenter.default.post(name: NSNotification.Name(rawValue: kNotiKeyGalleryUpdate), object: nil)
                             NotificationCenter.default.post(name: NSNotification.Name(rawValue: kNotiKeyGifGenerated), object: url)
                             self.navigationController?.popToRootViewController(animated: true)

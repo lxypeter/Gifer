@@ -59,7 +59,6 @@ class VideoProgressView: UIView, UICollectionViewDelegateFlowLayout, UICollectio
         
         let collectionView: UICollectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: layout)
         collectionView.backgroundColor = UIColor.white
-        collectionView.isPagingEnabled = true
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.showsHorizontalScrollIndicator = false
@@ -225,5 +224,28 @@ class VideoProgressView: UIView, UICollectionViewDelegateFlowLayout, UICollectio
             }
         }
         return CGSize(width: length, height: length)
+    }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        timeCursor.isHidden = true
+        if edgeChangeHandler != nil {
+            edgeChangeHandler!(.start, .began, nil)
+            edgeChangeHandler!(.end, .began, nil)
+        }
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        timeCursor.isHidden = false
+        if edgeChangeHandler != nil {
+            
+            let leftViewX = leftEdgeView.frame.origin.x
+            let startTime = CMTime(seconds: Double(secPerPx * (collectionView.contentOffset.x + leftViewX)), preferredTimescale: 600)
+            
+            let rightViewX = rightEdgeView.frame.origin.x
+            let endTime = CMTime(seconds: Double(secPerPx * (collectionView.contentOffset.x + rightViewX - VideoProgressView.edgeViewWidth)), preferredTimescale: 600)
+            
+            edgeChangeHandler!(.start, .ended, startTime)
+            edgeChangeHandler!(.end, .ended, endTime)
+        }
     }
 }

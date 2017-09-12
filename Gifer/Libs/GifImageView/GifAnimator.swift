@@ -20,7 +20,7 @@ struct GifFrame {
     }
 }
 
-class GifAnimator {
+class GifAnimator: NSObject {
     private let maxFrameCount: Int = 200 // 最大帧数
     private var imageSource: CGImageSource! // imageSource 处理帧相关操作
     private var animatedFrames: [GifFrame] = []
@@ -44,11 +44,13 @@ class GifAnimator {
         if self.animatedFrames.count <= 0 { return nil }
         return self.animatedFrames[self.currentFrameIndex].image
     }
+    dynamic public var isFinishLoading: Bool = false
     
     init(data: NSData) {
-        self.isBigImage = data.length/1024/1024 > 10
-        self.createImageSource(data: data)
-        self.prepareFrames()
+        isBigImage = data.length / 1024 / 1024 > 10
+        super.init()
+        createImageSource(data: data)
+        prepareFrames()
     }
     
     /**
@@ -61,33 +63,35 @@ class GifAnimator {
             kCGImageSourceShouldCache as String: NSNumber(value: false),
             kCGImageSourceTypeIdentifierHint as String: kUTTypeGIF
         ]
-        self.imageSource = CGImageSourceCreateWithData(data, options)
+        imageSource = CGImageSourceCreateWithData(data, options)
     }
     
     /**
      预备所有frames
      */
     private func prepareFrames() {
-        DispatchQueue.global().async { [unowned self] in 
-            self.frameCount = CGImageSourceGetCount(self.imageSource)
+        DispatchQueue.global().async {[weak self] in
+            guard let strongSelf = self else { return }
+            strongSelf.frameCount = CGImageSourceGetCount(strongSelf.imageSource)
             
-            if let properties = CGImageSourceCopyProperties(self.imageSource, nil),
+            if let properties = CGImageSourceCopyProperties(strongSelf.imageSource, nil),
                 let gifInfo = (properties as NSDictionary)[kCGImagePropertyGIFDictionary as String] as? NSDictionary,
                 let loopCount = gifInfo[kCGImagePropertyGIFLoopCount as String] as? Int {
-                self.loopCount = loopCount
+                strongSelf.loopCount = loopCount
             }
             
             // 总共帧数
-            let frameToProcess = min(self.frameCount, self.maxFrameCount)
+            let frameToProcess = min(strongSelf.frameCount, strongSelf.maxFrameCount)
             
             var animatedFrames: [GifFrame] = []
             animatedFrames.reserveCapacity(frameToProcess)
             
             for i in 0 ..< frameToProcess {
-                animatedFrames.append(self.prepareFrame(index: i))
+                animatedFrames.append(strongSelf.prepareFrame(index: i))
             }
             
-            self.animatedFrames = animatedFrames
+            strongSelf.animatedFrames = animatedFrames
+            strongSelf.isFinishLoading = true
         }
     }
     
@@ -110,7 +114,7 @@ class GifAnimator {
         
         var image: UIImage? = UIImage(cgImage: imageRef , scale: UIScreen.main.scale, orientation: .up)
         if self.isBigImage {
-            image = image?.imageKeepRatioScalingWith(targetSize: CGSize(width: 1000, height: 1000))
+            image = image?.imageKeepRatioScalingWith(targetSize: CGSize(width: 500, height: 500))
         }
         return GifFrame(image: image, duration: Double(frameDuration))
         

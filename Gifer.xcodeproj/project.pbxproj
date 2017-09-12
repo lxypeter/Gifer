@@ -50,6 +50,7 @@
 		E1E37F1F1ED8107E000B4B3F /* ImageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E37F1E1ED8107E000B4B3F /* ImageType.swift */; };
 		E1E51BE21F4D13AD007A2EDB /* CGPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E51BE11F4D13AD007A2EDB /* CGPoint.swift */; };
 		E1E51E9A1F4E6A9C00981D23 /* VideoRecordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E51E991F4E6A9C00981D23 /* VideoRecordViewController.swift */; };
+		E1E6AF5C1F66825B00163228 /* loading.gif in Resources */ = {isa = PBXBuildFile; fileRef = E1E6AF5B1F66825B00163228 /* loading.gif */; };
 		E1F2B4711EF110F8003948EB /* GifEditToolBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2B4701EF110F8003948EB /* GifEditToolBar.swift */; };
 /* End PBXBuildFile section */
 
@@ -101,6 +102,7 @@
 		E1E37F1E1ED8107E000B4B3F /* ImageType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageType.swift; sourceTree = "<group>"; };
 		E1E51BE11F4D13AD007A2EDB /* CGPoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGPoint.swift; sourceTree = "<group>"; };
 		E1E51E991F4E6A9C00981D23 /* VideoRecordViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoRecordViewController.swift; sourceTree = "<group>"; };
+		E1E6AF5B1F66825B00163228 /* loading.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = loading.gif; sourceTree = "<group>"; };
 		E1F2B4701EF110F8003948EB /* GifEditToolBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifEditToolBar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -251,6 +253,7 @@
 		E13CACFD1EE50763004D9CAA /* Resource */ = {
 			isa = PBXGroup;
 			children = (
+				E1E6AF5A1F66825B00163228 /* gif */,
 				E13CACFE1EE50775004D9CAA /* Constants.swift */,
 			);
 			path = Resource;
@@ -280,6 +283,14 @@
 				E195333D1EE6A48D00C23BE2 /* PublicMethod.swift */,
 			);
 			path = Public;
+			sourceTree = "<group>";
+		};
+		E1E6AF5A1F66825B00163228 /* gif */ = {
+			isa = PBXGroup;
+			children = (
+				E1E6AF5B1F66825B00163228 /* loading.gif */,
+			);
+			path = gif;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -350,6 +361,7 @@
 				E12826A71ED42B4600262F63 /* GalleryCell.xib in Resources */,
 				E11503F11ECC41D6008BB686 /* LaunchScreen.storyboard in Resources */,
 				E11503EE1ECC41D6008BB686 /* Assets.xcassets in Resources */,
+				E1E6AF5C1F66825B00163228 /* loading.gif in Resources */,
 				E19D66201EE7F547008E29F7 /* PhotoPickerCell.xib in Resources */,
 				E11503EC1ECC41D6008BB686 /* Main.storyboard in Resources */,
 			);
@@ -572,7 +584,7 @@
 				DEVELOPMENT_TEAM = NU947442EY;
 				INFOPLIST_FILE = Gifer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.ztesoft.gifer;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lxypeter.gifer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
@@ -586,7 +598,7 @@
 				DEVELOPMENT_TEAM = NU947442EY;
 				INFOPLIST_FILE = Gifer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.ztesoft.gifer;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lxypeter.gifer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};

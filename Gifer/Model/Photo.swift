@@ -15,12 +15,12 @@ class Photo: NSObject {
     let photoWidth: CGFloat
     let photoHeight: CGFloat
     var thumbnail: UIImage?
-    var fullImageData: NSData?{
+    dynamic var fullImageData: NSData?{
         didSet{
             guard let fullImageData = self.fullImageData, fullImageData.imageFormat != .GIF  else {
                 return
             }
-            self.fullImage = UIImage(data: fullImageData as Data)?.fixRotation()
+            fullImage = UIImage(data: fullImageData as Data)?.fixRotation()
         }
     }
     var fullImage: UIImage?

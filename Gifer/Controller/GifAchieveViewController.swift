@@ -19,6 +19,7 @@ class GifAchieveViewController: BaseViewController {
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = true
         imageView.backgroundColor = .clear
+        imageView.gifPlaceholder = NSData(contentsOf: Bundle.main.url(forResource: "loading", withExtension: "gif")!)
         imageView.gifData = NSData(contentsOf: self.imageUrl!)
         return imageView
     }()
