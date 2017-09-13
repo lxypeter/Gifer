@@ -119,10 +119,10 @@ class VideoPickerViewController: BaseViewController, UICollectionViewDataSource,
                 self.showNotice(message: "未找到视频")
             } else {
                 self.videoArray.sort(by: { (video1, video2) -> Bool in
-                    guard let date1 = video1.asset.creationDate?.time else {
+                    guard let date1 = video1.asset.creationDate?.value as? Date else {
                         return false
                     }
-                    guard let date2 = video2.asset.creationDate?.time else {
+                    guard let date2 = video2.asset.creationDate?.value as? Date else {
                         return true
                     }
                     return date1 > date2

@@ -110,7 +110,7 @@ extension UIImage {
     /// - Returns: 缩放结果
     func imageCenterScalingWith(targetSize: CGSize, backgroundColor: UIColor = UIColor
         .white) -> UIImage? {
-        let imageSize = self.size
+        let imageSize = size
         var scaleFactor: CGFloat = 0.0
         let scaledWidth = targetSize.width
         let scaledHeight = targetSize.height
@@ -141,7 +141,7 @@ extension UIImage {
         thumbnailRect.size.height = imageSize.height * scaleFactor;
         thumbnailRect.origin = thumbnailPoint
         
-        self.draw(in: thumbnailRect)
+        draw(in: thumbnailRect)
         let resultImage = UIGraphicsGetImageFromCurrentImageContext()
         
         UIGraphicsEndImageContext();

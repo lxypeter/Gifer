@@ -187,7 +187,6 @@ class GifEditViewController: BaseViewController {
     
     private func generateGif(by quality: ImageQuality) {
         self.showHudWithMsg(msg: "正在生成...")
-        
         let sr: CGRect = showingRect == nil ? imageView.bounds : showingRect!
         let targetHeight: CGFloat
         let targetWidth: CGFloat
@@ -241,6 +240,7 @@ class GifEditViewController: BaseViewController {
                     let originHeight = scale * self.imageView.bounds.height
                     
                     let newImage = image.imageCenterScalingWith(targetSize: CGSize(width: originWidth, height: originHeight))?.clipImage(in: CGRect(x: sr.origin.x * scale, y: sr.origin.y * scale, width: sr.size.width * scale, height: sr.size.height * scale))
+                
                     CGImageDestinationAddImage(destination!, newImage!.cgImage!, frameProperties)
                 }
             }

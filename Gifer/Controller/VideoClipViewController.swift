@@ -205,45 +205,47 @@ class VideoClipViewController: BaseViewController {
         
         let imageGenerator = AVAssetImageGenerator(asset: videoAsset)
         imageGenerator.appliesPreferredTrackTransform = true
-        imageGenerator.maximumSize = CGSize(width: 1000, height: 0)
+        imageGenerator.maximumSize = CGSize(width: 500, height: 500)
+        let tolerance = CMTime(seconds: 0.01, preferredTimescale: 600)
+        imageGenerator.requestedTimeToleranceAfter = tolerance
+        imageGenerator.requestedTimeToleranceBefore = tolerance
         
         let duration = CMTimeGetSeconds(self.endTime) - CMTimeGetSeconds(self.startTime)
         let framePerSec: Double = 10
+
         var totalCount = Int(duration * framePerSec)
+        
+        showHudWithMsg(msg: "正在处理...")
+        var photos: [Photo] = []
         
         var times: [NSValue] = []
         for count in 0 ..< totalCount {
             times.append(CMTime(seconds: 1 / framePerSec * Double(count) + CMTimeGetSeconds(self.startTime), preferredTimescale: 600) as NSValue)
         }
         
-        let tolerance = CMTime(seconds: 0.01, preferredTimescale: 600)
-        imageGenerator.requestedTimeToleranceAfter = tolerance
-        imageGenerator.requestedTimeToleranceBefore = tolerance
-        
-        showHudWithMsg(msg: "正在处理...")
-        var photos: [Photo] = []
-        
         imageGenerator.generateCGImagesAsynchronously(forTimes: times) {[unowned self](requestedTime, cgImage, actualTime, result, error) in
-            if result == .succeeded {
-                totalCount -= 1
-                guard let videoFrame = cgImage else {
-                    return
-                }
-                let image = UIImage(cgImage: videoFrame)
-                let photo = Photo(fullImage: image)
-                photo.videoFrameTime = actualTime
-                photos.append(photo)
-                
-                if totalCount == 0 {
-                    photos.sort(by: { (firstThumbnail, secThumbnail) -> Bool in
-                        return CMTimeGetSeconds(firstThumbnail.videoFrameTime!) < CMTimeGetSeconds(secThumbnail.videoFrameTime!)
-                    })
-                    DispatchQueue.main.async {[unowned self] in
-                        self.hideHud()
-                        let ctrl = GifEditViewController()
-                        ctrl.selectedArray = photos
-                        ctrl.frameInterval = Float(1 / framePerSec)
-                        self.navigationController?.pushViewController(ctrl, animated: true)
+            autoreleasepool {
+                if result == .succeeded {
+                    totalCount -= 1
+                    guard let videoFrame = cgImage else {
+                        return
+                    }
+                    let image = UIImage(cgImage: videoFrame)
+                    let photo = Photo(fullImage: image)
+                    photo.videoFrameTime = actualTime
+                    photos.append(photo)
+                    
+                    if totalCount == 0 {
+                        photos.sort(by: { (firstThumbnail, secThumbnail) -> Bool in
+                            return CMTimeGetSeconds(firstThumbnail.videoFrameTime!) < CMTimeGetSeconds(secThumbnail.videoFrameTime!)
+                        })
+                        DispatchQueue.main.async {[unowned self] in
+                            self.hideHud()
+                            let ctrl = GifEditViewController()
+                            ctrl.selectedArray = photos
+                            ctrl.frameInterval = Float(1 / framePerSec)
+                            self.navigationController?.pushViewController(ctrl, animated: true)
+                        }
                     }
                 }
             }

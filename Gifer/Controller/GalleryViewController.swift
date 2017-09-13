@@ -592,7 +592,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     func gifGenerated(_ notification: NSNotification) {
         let ctrl = GifAchieveViewController()
         ctrl.imageUrl = notification.object as? URL
-        self.present(ctrl, animated: true, completion: nil)
+        UIApplication.shared.delegate?.window??.rootViewController?.present(ctrl, animated: true, completion: nil)
     }
     
     //MARK: animation
