@@ -78,9 +78,7 @@ class VideoClipViewController: BaseViewController {
         super.viewDidLoad()
         configureSubviews()
         configurePlayer()
-        thumbnailsOfVideo(){ [unowned self] thumbnails in
-            self.progressView.thumbnails = thumbnails
-        }
+        self.progressView.thumbnails = thumbnailsOfVideo()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -259,57 +257,22 @@ class VideoClipViewController: BaseViewController {
         playButton.isSelected = true
     }
     
-    func thumbnailsOfVideo(completionHandler handler: @escaping ([VideoThumbnail])->()) {
+    func thumbnailsOfVideo() -> [VideoThumbnail] {
         guard let videoAsset = videoAsset else {
-            return
+            return []
         }
-        
-        let imageGenerator = AVAssetImageGenerator(asset: videoAsset)
-        imageGenerator.appliesPreferredTrackTransform = true
-        imageGenerator.maximumSize = CGSize(width: 0, height: VideoProgressView.height * 3)
-        let tolerance = CMTime(seconds: 0.01, preferredTimescale: 600)
-        imageGenerator.requestedTimeToleranceAfter = tolerance
-        imageGenerator.requestedTimeToleranceBefore = tolerance
-        
         let totalSecond = CGFloat(CMTimeGetSeconds(videoAsset.duration))
         let interval = progressView.visibleDuration / VideoProgressView.cellPerPage
         
-        printLog("\(totalSecond)")
-        
         let totalCount = (totalSecond / interval) > (CGFloat(Int(totalSecond / interval))) ? Int(totalSecond / interval) + 1 : Int(totalSecond / interval)
         
-        var times: [CMTime] = []
+        var thumbnails: [VideoThumbnail] = []
         for count in 0 ..< totalCount {
-            times.append(CMTime(seconds: Double(interval * CGFloat(count)), preferredTimescale: 600))
+            let time = CMTime(seconds: Double(interval * CGFloat(count)), preferredTimescale: 600)
+            let thumbnail = VideoThumbnail(asset: videoAsset, requestedTime: time, actualTime: time)
+            thumbnails.append(thumbnail)
         }
         
-        var thumbnails: [VideoThumbnail] = []
-        showHudWithMsg(msg: "正在加载...")
-        DispatchQueue.global().async {
-            for time in times {
-                do {
-                    var actualTime: CMTime = CMTime()
-                    let thumbnailCgImage = try imageGenerator.copyCGImage(at: time, actualTime: &actualTime)
-                    let image = UIImage(cgImage: thumbnailCgImage)
-                    let thumbnail = VideoThumbnail(thumbnail: image, requestedTime: time, actualTime: actualTime)
-                    thumbnails.append(thumbnail)
-                } catch {
-                    let thumbnail: VideoThumbnail
-                    if thumbnails.count > 0 {
-                        thumbnail = thumbnails.last!
-                    } else {
-                        thumbnail = VideoThumbnail(thumbnail: UIImage.imageWith(color: UIColor.black, size: CGSize(width: 1, height: 1)), requestedTime: time, actualTime: time)
-                    }
-                    thumbnails.append(thumbnail)
-                }
-            }
-            thumbnails.sort(by: { (firstThumbnail, secThumbnail) -> Bool in
-                return CMTimeGetSeconds(firstThumbnail.actualTime) < CMTimeGetSeconds(secThumbnail.actualTime)
-            })
-            DispatchQueue.main.async {[unowned self] in
-                self.hideHud()
-                handler(thumbnails)
-            }
-        }
+        return thumbnails
     }
 }

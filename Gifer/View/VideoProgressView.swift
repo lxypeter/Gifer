@@ -226,6 +226,27 @@ class VideoProgressView: UIView, UICollectionViewDelegateFlowLayout, UICollectio
         return CGSize(width: length, height: length)
     }
     
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        let thumbnail = thumbnails[indexPath.row]
+        switch thumbnail.state {
+        case .pendding:
+            thumbnail.generateThumbnail(){[unowned self] image in
+                if indexPath.row < self.thumbnails.count - 1 && self.thumbnails[indexPath.row + 1].state == .fail {
+                    self.thumbnails[indexPath.row + 1].state = .loaded
+                    self.thumbnails[indexPath.row + 1].thumbnail = image
+                }
+            }
+        case .fail:
+            if thumbnail.thumbnail == nil {
+                if indexPath.row > 0 && self.thumbnails[indexPath.row - 1].state == .loaded && self.thumbnails[indexPath.row - 1].thumbnail != nil {
+                    thumbnail.state = .loaded
+                    thumbnail.thumbnail = self.thumbnails[indexPath.row - 1].thumbnail
+                }
+            }
+        default: break
+        }
+    }
+    
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         timeCursor.isHidden = true
         if edgeChangeHandler != nil {

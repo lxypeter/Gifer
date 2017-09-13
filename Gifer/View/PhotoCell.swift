@@ -76,12 +76,14 @@ class PhotoCell: UICollectionViewCell, UIScrollViewDelegate {
         
         let newImageData = change?[NSKeyValueChangeKey.newKey] as? NSData
         
-        if photo!.photoWidth < self.imageView.frame.size.width && photo!.photoHeight < imageView.frame.size.height {
-            imageView.contentMode = .center
-        } else {
-            imageView.contentMode = .scaleAspectFit
+        DispatchQueue.main.async {[unowned self] in
+            if self.photo!.photoWidth < self.imageView.frame.size.width && self.photo!.photoHeight < self.imageView.frame.size.height {
+                self.imageView.contentMode = .center
+            } else {
+                self.imageView.contentMode = .scaleAspectFit
+            }
+            self.imageView.gifData = newImageData
         }
-        imageView.gifData = newImageData
     }
     
     func setGifSpeedTimes(_ speedTimes: Double) {
