@@ -12,14 +12,18 @@ import Photos
 import ImageIO
 import MobileCoreServices
 
+enum PlaySequence {
+    case normal
+    case reverse
+    case toAndFor
+}
+
 class GifEditViewController: BaseViewController {
-    
-    enum MaskFadeType {
+    private enum MaskFadeType {
         case fadeIn
         case fadeOut
     }
-    
-    enum ImageQuality {
+    private enum ImageQuality {
         case low
         case medium
         case high
@@ -32,17 +36,51 @@ class GifEditViewController: BaseViewController {
     private let highQualityLength: CGFloat = 1000
     
     public var selectedArray: [Photo] = []
+    private var imageArray: [UIImage] = []
     public var frameInterval: Float = GifEditViewBottomBar.originInterval {
         didSet {
             bottomBar.setInterval(frameInterval)
-            imageView.animationDuration = Double(String(format: "%.2f", frameInterval))! * Double(selectedArray.count)
+            let imageCount = sequence == .toAndFor ? Double(selectedArray.count * 2) : Double(selectedArray.count)
+            imageView.animationDuration = Double(String(format: "%.2f", frameInterval))! * imageCount
             imageView.startAnimating()
         }
     }
-    private var imageArray: [UIImage] = []
     private var kGroup: DispatchGroup = DispatchGroup()
     private var isCliping: Bool = false
     private var showingRect: CGRect? = nil
+    private var sequence: PlaySequence = .normal {
+        didSet {
+            imageArray.removeAll()
+            switch sequence {
+            case .normal:
+                for photo in selectedArray {
+                    if photo.fullImage != nil {
+                        imageArray.append(photo.fullImage!)
+                    }
+                }
+            case .reverse:
+                for photo in selectedArray.reversed() {
+                    if photo.fullImage != nil {
+                        imageArray.append(photo.fullImage!)
+                    }
+                }
+            case .toAndFor:
+                for photo in selectedArray {
+                    if photo.fullImage != nil {
+                        imageArray.append(photo.fullImage!)
+                    }
+                }
+                for photo in selectedArray.reversed() {
+                    if photo.fullImage != nil {
+                        imageArray.append(photo.fullImage!)
+                    }
+                }
+            }
+            imageView.animationDuration = Double(String(format: "%.2f", frameInterval))! * Double(imageArray.count)
+            imageView.animationImages = imageArray
+            imageView.startAnimating()
+        }
+    }
     private var ratioStatus: RatioStatus = .noLimit {
         didSet {
             if showingRect == nil {
@@ -224,7 +262,7 @@ class GifEditViewController: BaseViewController {
         let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(filename).gif")
         
         DispatchQueue.global().async { [unowned self] in
-            let destination: CGImageDestination? = CGImageDestinationCreateWithURL(url as CFURL, kUTTypeGIF, self.selectedArray.count, nil);
+            let destination: CGImageDestination? = CGImageDestinationCreateWithURL(url as CFURL, kUTTypeGIF, self.imageArray.count, nil);
             if destination == nil {
                 DispatchQueue.main.async {
                     self.showNotice(message: "生成Gif失败...")
@@ -703,7 +741,7 @@ class GifEditViewController: BaseViewController {
     }
     
     //MARK: Assist Method
-    func isSameRatio() -> Bool {
+    private func isSameRatio() -> Bool {
         let height: CGFloat = selectedArray[0].photoHeight
         let width: CGFloat = selectedArray[0].photoWidth
         let fistRatio = height / width
@@ -716,7 +754,7 @@ class GifEditViewController: BaseViewController {
         return true
     }
     
-    func maskFade(_ fadeType: MaskFadeType) {
+    private func maskFade(_ fadeType: MaskFadeType) {
         let maskAnimation: CABasicAnimation = CABasicAnimation(keyPath: "opacity")
         maskAnimation.isRemovedOnCompletion = false
         maskAnimation.fillMode = kCAFillModeForwards;
@@ -804,6 +842,9 @@ class GifEditViewController: BaseViewController {
         }
         toolBar.clipCancelButtonHandler = {[unowned self] in
             self.clipingStateChange(to:false)
+        }
+        toolBar.seqButtonHandler = {[unowned self](sequence) in
+            self.sequence = sequence
         }
         return toolBar
     }()

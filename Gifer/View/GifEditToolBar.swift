@@ -20,6 +20,21 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
     
     public static let height: CGFloat = 44
     private var status: EditToolBarStatus = .normal
+    private var sequence: PlaySequence = .normal {
+        didSet {
+            switch sequence {
+            case .normal:
+                seqButton.setImage(#imageLiteral(resourceName: "seq_normal"), for: .normal)
+                seqButton.setImage(#imageLiteral(resourceName: "seq_normal_hl"), for: .highlighted)
+            case .reverse:
+                seqButton.setImage(#imageLiteral(resourceName: "seq_reverse"), for: .normal)
+                seqButton.setImage(#imageLiteral(resourceName: "seq_reverse_hl"), for: .highlighted)
+            case .toAndFor:
+                seqButton.setImage(#imageLiteral(resourceName: "seq_toandfor"), for: .normal)
+                seqButton.setImage(#imageLiteral(resourceName: "seq_toandfor_hl"), for: .highlighted)
+            }
+        }
+    }
     
     private lazy var baseView: UIView = {
         let baseView = UIView(frame: CGRect.zero)
@@ -32,6 +47,13 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
         clipButton.setImage(#imageLiteral(resourceName: "clip_hl"), for: .highlighted)
         clipButton.addTarget(self, action: #selector(clickClipButton), for: .touchUpInside)
         return clipButton
+    }()
+    private lazy var seqButton: UIButton = {
+        let seqButton = UIButton(frame: CGRect.zero)
+        seqButton.setImage(#imageLiteral(resourceName: "seq_normal"), for: .normal)
+        seqButton.setImage(#imageLiteral(resourceName: "seq_normal_hl"), for: .highlighted)
+        seqButton.addTarget(self, action: #selector(clickSeqButton), for: .touchUpInside)
+        return seqButton
     }()
     // 剪切 子目录
     private lazy var clipView: UIView = {
@@ -58,6 +80,7 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
     var clipButtonHandler: (() -> ())?
     var clipConfirmButtonHandler: (() -> ())?
     var clipCancelButtonHandler: (() -> ())?
+    var seqButtonHandler: ((PlaySequence) -> ())?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -85,6 +108,13 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
             make.height.equalTo(24)
             make.width.equalTo(24)
             make.right.equalTo(-15)
+        }
+        baseView.addSubview(seqButton)
+        seqButton.snp.makeConstraints { (make) in
+            make.centerY.equalTo(baseView.snp.centerY)
+            make.height.equalTo(24)
+            make.width.equalTo(24)
+            make.left.equalTo(15)
         }
         
         addSubview(clipView)
@@ -156,6 +186,24 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
             return
         }
         clipCancelButtonHandler()
+    }
+    
+    func clickSeqButton() {
+        if status == .cliping { return }
+        
+        switch sequence {
+        case .normal:
+            sequence = .reverse
+        case .reverse:
+            sequence = .toAndFor
+        case .toAndFor:
+            sequence = .normal
+        }
+        
+        guard let seqButtonHandler = seqButtonHandler else {
+            return
+        }
+        seqButtonHandler(sequence)
     }
     
     //MARK: delegate method
