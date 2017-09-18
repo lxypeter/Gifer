@@ -174,6 +174,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         addView.isHidden = false
+        isAnimating = false
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -182,7 +183,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     }
     
     func configureSubviews() {
-        self.title = "Gifer"
+        title = "GiForce"
         
         navigationItem.rightBarButtonItem = selectItem;
         
@@ -332,21 +333,17 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         return cell
     }
     
-    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if self.isSelecting {
-            return
-        }
-        
+        if isSelecting || isAnimating { return }
+        isAnimating = true
         let photoController = PhotoViewController(gifArray: gifArray, currentIndex: indexPath.row)
-        self.navigationController?.pushViewController(photoController, animated: true)
+        navigationController?.pushViewController(photoController, animated: true)
     }
     
     func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
         if anim.isEqual(addView.layer.animation(forKey: kAddViewEnterAnimation)) {
             
             addView.button.isSelected = true
-            isAnimating = false
             addView.snp.updateConstraints({ (make) in
                 make.centerY.equalTo(kScreenHeight / 2)
             })
@@ -354,7 +351,6 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         } else if anim.isEqual(addView.layer.animation(forKey: kAddViewQuitAnimation)) {
             
             addView.button.isSelected = false
-            isAnimating = false
             addView.snp.updateConstraints({ (make) in
                 make.centerY.equalTo(kAddButtonY)
             })
@@ -454,6 +450,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
             }
             bottomBar.layer.removeAllAnimations()
         }
+        isAnimating = false
     }
     
     //MARK: events
@@ -520,6 +517,8 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     }
     
     func clickSelectButton() {
+        if isAnimating { return }
+        isAnimating = true
         isSelecting = !isSelecting
         
         let animation: CABasicAnimation = CABasicAnimation(keyPath: "position")
