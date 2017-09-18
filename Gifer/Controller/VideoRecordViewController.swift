@@ -20,7 +20,6 @@ enum VideoCaptureError: Error {
 class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate, CAAnimationDelegate {
 
     // MARK: property
-    private let kVideoDirPath = "Video/"
     private let kMaxVideoLength: CFTimeInterval = 15
     private let kRecordingAnimation = "kRecordingAnimation"
     private let previewLayerOffsetRatio: CGFloat = -0.05
@@ -419,7 +418,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     }
     
     func startRecording() {
-        let videoDirPath = NSTemporaryDirectory().appending(kVideoDirPath)
+        let videoDirPath = kVideoDirPath
         let isDirExist = createFolderIfNotExist(path: videoDirPath)
         if !isDirExist {
             showNotice(message: "创建视频失败！")

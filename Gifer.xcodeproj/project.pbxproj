@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		032CDCBA2BE0C05175F7B7C5 /* Pods_Gifer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C92EC1B735E9E31E45A866E /* Pods_Gifer.framework */; };
+		E10F3B9B1F6A2AB600C2323D /* WeChatActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10F3B9A1F6A2AB600C2323D /* WeChatActivity.swift */; };
+		E10F3B9D1F6A301500C2323D /* MomentsActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10F3B9C1F6A301500C2323D /* MomentsActivity.swift */; };
+		E10F3B9F1F6A688000C2323D /* UIActivityType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10F3B9E1F6A688000C2323D /* UIActivityType.swift */; };
+		E10F3BA21F6A709500C2323D /* VideoUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10F3BA11F6A709500C2323D /* VideoUtil.swift */; };
 		E112B3C51F4C09EF00341E2E /* AddButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E112B3C41F4C09EF00341E2E /* AddButtonView.swift */; };
 		E11503E71ECC41D6008BB686 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11503E61ECC41D6008BB686 /* AppDelegate.swift */; };
 		E11503EC1ECC41D6008BB686 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E11503EA1ECC41D6008BB686 /* Main.storyboard */; };
@@ -54,10 +58,27 @@
 		E1F2B4711EF110F8003948EB /* GifEditToolBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2B4701EF110F8003948EB /* GifEditToolBar.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		E110C8681F692FAC0024B9C1 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		38A99A0D38EDA494E9BAFC9E /* Pods-Gifer.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Gifer.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Gifer/Pods-Gifer.debug.xcconfig"; sourceTree = "<group>"; };
 		7C92EC1B735E9E31E45A866E /* Pods_Gifer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Gifer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A423FAE65CF804E43FD92D8F /* Pods-Gifer.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Gifer.release.xcconfig"; path = "Pods/Target Support Files/Pods-Gifer/Pods-Gifer.release.xcconfig"; sourceTree = "<group>"; };
+		E10F3B9A1F6A2AB600C2323D /* WeChatActivity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WeChatActivity.swift; sourceTree = "<group>"; };
+		E10F3B9C1F6A301500C2323D /* MomentsActivity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MomentsActivity.swift; sourceTree = "<group>"; };
+		E10F3B9E1F6A688000C2323D /* UIActivityType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIActivityType.swift; sourceTree = "<group>"; };
+		E10F3BA11F6A709500C2323D /* VideoUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoUtil.swift; sourceTree = "<group>"; };
 		E112B3C41F4C09EF00341E2E /* AddButtonView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddButtonView.swift; sourceTree = "<group>"; };
 		E11503E31ECC41D6008BB686 /* Gifer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gifer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E11503E61ECC41D6008BB686 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -135,6 +156,23 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		E10F3B991F6A2A9500C2323D /* ShareActivity */ = {
+			isa = PBXGroup;
+			children = (
+				E10F3B9A1F6A2AB600C2323D /* WeChatActivity.swift */,
+				E10F3B9C1F6A301500C2323D /* MomentsActivity.swift */,
+			);
+			path = ShareActivity;
+			sourceTree = "<group>";
+		};
+		E10F3BA01F6A706900C2323D /* Media */ = {
+			isa = PBXGroup;
+			children = (
+				E10F3BA11F6A709500C2323D /* VideoUtil.swift */,
+			);
+			path = Media;
+			sourceTree = "<group>";
+		};
 		E11503DA1ECC41D6008BB686 = {
 			isa = PBXGroup;
 			children = (
@@ -156,6 +194,7 @@
 		E11503E51ECC41D6008BB686 /* Gifer */ = {
 			isa = PBXGroup;
 			children = (
+				E10F3B991F6A2A9500C2323D /* ShareActivity */,
 				E13CACFD1EE50763004D9CAA /* Resource */,
 				E12DFDC81ED6D860009608E8 /* Libs */,
 				E1333D271ED5649A0017C07B /* Model */,
@@ -213,6 +252,7 @@
 		E12DFDC81ED6D860009608E8 /* Libs */ = {
 			isa = PBXGroup;
 			children = (
+				E10F3BA01F6A706900C2323D /* Media */,
 				E19384CE1EEE420100BE84A4 /* Category */,
 				E195333C1EE6A48D00C23BE2 /* Public */,
 				E13CAD001EE547D5004D9CAA /* NoticeView */,
@@ -273,6 +313,7 @@
 			children = (
 				E19384CF1EEE428800BE84A4 /* UIImage.swift */,
 				E1E51BE11F4D13AD007A2EDB /* CGPoint.swift */,
+				E10F3B9E1F6A688000C2323D /* UIActivityType.swift */,
 			);
 			path = Category;
 			sourceTree = "<group>";
@@ -306,6 +347,7 @@
 				E11503E11ECC41D6008BB686 /* Resources */,
 				B1DF724B0197E6D6CC503ABC /* [CP] Embed Pods Frameworks */,
 				2D4B073AD3442A524661CD88 /* [CP] Copy Pods Resources */,
+				E110C8681F692FAC0024B9C1 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
@@ -431,14 +473,18 @@
 				E1E37F1D1ED80B67000B4B3F /* GifImageView.swift in Sources */,
 				E1E51E9A1F4E6A9C00981D23 /* VideoRecordViewController.swift in Sources */,
 				E1330BEF1EE1488A0053ABFD /* PhotoViewBottomBar.swift in Sources */,
+				E10F3B9B1F6A2AB600C2323D /* WeChatActivity.swift in Sources */,
 				E171BF901EEA7A37001F53E2 /* GifEditViewBottomBar.swift in Sources */,
 				E15212591F5E99F8001C2E5A /* VideoClipTopView.swift in Sources */,
 				E19D661F1EE7F547008E29F7 /* PhotoPickerCell.swift in Sources */,
 				E1330BED1EE13A7C0053ABFD /* BaseViewController.swift in Sources */,
 				E12DFDCB1ED6D8F1009608E8 /* GifAnimator.swift in Sources */,
+				E10F3BA21F6A709500C2323D /* VideoUtil.swift in Sources */,
 				E1A87EE61F5CFE740024E01F /* VideoThumbnailCell.swift in Sources */,
 				E19384D01EEE428800BE84A4 /* UIImage.swift in Sources */,
+				E10F3B9F1F6A688000C2323D /* UIActivityType.swift in Sources */,
 				E13CAD041EE550CA004D9CAA /* NoticeViewManager.swift in Sources */,
+				E10F3B9D1F6A301500C2323D /* MomentsActivity.swift in Sources */,
 				E13CAD021EE5481A004D9CAA /* NoticeView.swift in Sources */,
 				E12826A21ED4116700262F63 /* GalleryViewController.swift in Sources */,
 				E1A40D611F5FD1B3002D58AF /* Video.swift in Sources */,

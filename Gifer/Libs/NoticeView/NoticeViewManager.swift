@@ -26,8 +26,9 @@ class NoticeViewManager : NSObject {
         UIApplication.shared.keyWindow!.addSubview(noticeView)
         
         var noticeViewHeight: CGFloat
+        
         if noticeView.hasStatusBar {
-            noticeViewHeight = 44 + 20
+            noticeViewHeight = 44 + kStatusBarHeight
         } else {
             noticeViewHeight = 44
         }

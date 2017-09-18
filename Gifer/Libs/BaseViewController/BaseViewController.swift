@@ -15,6 +15,12 @@ class BaseViewController: UIViewController {
         let hud = JGProgressHUD(style: .dark)
         return hud
     }()
+
+    var isHudVisible: Bool {
+        get {
+            return hud.isVisible
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()

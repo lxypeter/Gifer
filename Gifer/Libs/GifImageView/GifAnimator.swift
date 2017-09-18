@@ -98,7 +98,7 @@ class GifAnimator: NSObject {
     // 准备某帧 的 frame
     private func prepareFrame(index: Int) -> GifFrame {
         // 获取对应帧的 CGImage
-        guard let imageRef = CGImageSourceCreateImageAtIndex(self.imageSource, index , nil) else {
+        guard let imageRef = CGImageSourceCreateImageAtIndex(imageSource, index , nil) else {
             return GifFrame(image: nil, duration: 0)
         }
         // 获取到 gif每帧时间间隔

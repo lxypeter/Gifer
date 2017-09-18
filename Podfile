@@ -11,4 +11,5 @@ target 'Gifer' do
   pod 'SwiftyJSON'
   pod 'ObjectMapper'
   pod 'Kingfisher'
+  pod 'MonkeyKing'
 end

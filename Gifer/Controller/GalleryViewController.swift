@@ -13,12 +13,10 @@ import MobileCoreServices
 import MJRefresh
 
 class GalleryViewController: BaseViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, CAAnimationDelegate {
-    
     enum AddButtonAnimateType {
         case enter
         case quit
     }
-    
     private let kCellId = "GalleryCell"
     private let kAddViewEnterAnimation = "kAddViewEnterAnimation"
     private let kAddViewQuitAnimation = "kAddViewQuitAnimation"
@@ -65,8 +63,8 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         bottomBar.deleteButtonHandler = { [unowned self] in
             self.clickDeleteButton()
         }
-        bottomBar.shareButtonHandler = {
-            printLog("click share")
+        bottomBar.shareButtonHandler = { [unowned self] in
+            self.clickShareButton()
         }
         return bottomBar;
     }()
@@ -147,8 +145,6 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     }()
     private lazy var coverView: UIView = {
         let coverView = UIView()
-//        coverView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.5)
-        
         let veView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
         coverView.addSubview(veView)
         veView.snp.makeConstraints({ (make) in
@@ -476,15 +472,12 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
             
             // photo button view
             photoAddView.layer.add(animationOfDetailAddButton(type: .quit, angle: 0), forKey: kPhotoViewQuitAnimation)
-//            photoAddView.backgroundView.layer.add(animationOfButtonBackground(type: .quit), forKey: nil)
             
             // video button view
             videoAddView.layer.add(animationOfDetailAddButton(type: .quit, angle: .pi * 2 / 3), forKey: kVideoViewQuitAnimation)
-//            videoAddView.backgroundView.layer.add(animationOfButtonBackground(type: .quit), forKey: nil)
             
             // record button view
             recordAddView.layer.add(animationOfDetailAddButton(type: .quit, angle: .pi * 2 * 2 / 3), forKey: kRecordViewQuitAnimation)
-//            recordAddView.backgroundView.layer.add(animationOfButtonBackground(type: .quit), forKey: nil)
         } else { //enter
             // cover view
             coverView.isHidden = false
@@ -496,15 +489,12 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
             
             // photo button view
             photoAddView.layer.add(animationOfDetailAddButton(type: .enter, angle: 0), forKey: kPhotoViewEnterAnimation)
-//            photoAddView.backgroundView.layer.add(animationOfButtonBackground(type: .enter), forKey: nil)
             
             // video button view
             videoAddView.layer.add(animationOfDetailAddButton(type: .enter, angle: .pi * 2 / 3), forKey: kVideoViewEnterAnimation)
-//            videoAddView.backgroundView.layer.add(animationOfButtonBackground(type: .enter), forKey: nil)
             
             // record button view
             recordAddView.layer.add(animationOfDetailAddButton(type: .enter, angle: .pi * 2 * 2 / 3), forKey: kRecordViewEnterAnimation)
-//            recordAddView.backgroundView.layer.add(animationOfButtonBackground(type: .enter), forKey: nil)
         }
     }
     
@@ -587,6 +577,89 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
                 }
             }
         })
+    }
+    
+    func clickShareButton() {
+        guard let selectedIndexPaths = collectionView.indexPathsForSelectedItems, selectedIndexPaths.count > 0 else {
+            showNotice(message: "请至少选择一张照片")
+            return
+        }
+        clickSelectButton()
+        
+        kGroup = DispatchGroup()
+        var preShareImage: [Any] = []
+        var cache = UserDefaults.standard.object(forKey: kUserDefalutShareCacheKey) as? [String: String]
+        if cache == nil {
+            cache = [:]
+        }
+        
+        let generateVideoHandler: (NSData, String) -> () = {(data, localIdentifier) in
+            VideoUtil.video(with: data, completeHandler: { (result, url) in
+                if result, let url = url {
+                    cache![localIdentifier] = url.absoluteString
+                    preShareImage.append(url)
+                }
+                self.kGroup.leave()
+            })
+        }
+        for indexPath in selectedIndexPaths {
+            kGroup.enter()
+            let photo = gifArray[indexPath.row]
+            if let cache = cache, let cachePath = cache[photo.asset.localIdentifier] { // 有缓存
+                preShareImage.append(URL(fileURLWithPath: cachePath))
+                kGroup.leave()
+            } else { // 无缓存
+                if let fullImageData = photo.fullImageData {
+                    generateVideoHandler(fullImageData, photo.asset.localIdentifier)
+                } else {
+                    if !isHudVisible {
+                        showHudWithMsg(msg: "请稍候")
+                    }
+                    let requestOptions = PHImageRequestOptions()
+                    requestOptions.isSynchronous = false
+                    requestOptions.deliveryMode = .highQualityFormat
+                    requestOptions.resizeMode = .fast
+                    PHImageManager.default().requestImageData(for: photo.asset, options: requestOptions, resultHandler: {[unowned self](data, type, orientation, info) in
+                        if let fullImageData = data as NSData? {
+                            photo.fullImageData = fullImageData
+                            generateVideoHandler(fullImageData, photo.asset.localIdentifier)
+                        } else {
+                            self.kGroup.leave()
+                        }
+                    })
+                }
+            }
+        }
+        
+        kGroup.notify(queue: DispatchQueue.main) {[unowned self] in
+            self.hideHud()
+            self.addView.isHidden = true
+            let ctrl = UIActivityViewController(activityItems: preShareImage, applicationActivities: [WeChatActivity(), MomentsActivity()])
+            ctrl.excludedActivityTypes = [
+                .postToFacebook,
+                .postToTwitter,
+                .postToWeibo,
+                .message,
+                .mail,
+                .print,
+                .copyToPasteboard,
+                .assignToContact,
+                .saveToCameraRoll,
+                .addToReadingList,
+                .postToFlickr,
+                .postToVimeo,
+                .postToTencentWeibo,
+                .openInIBooks,
+                .remindersEditorExtension,
+                .googleDriveShareExtension,
+                .streamShareService,
+                .appleNote,
+            ]
+            ctrl.completionWithItemsHandler = {[unowned self] (activityType, result, info, error) in
+                self.addView.isHidden = false
+            }
+            self.present(ctrl, animated: true, completion: nil)
+        }
     }
     
     func gifGenerated(_ notification: NSNotification) {

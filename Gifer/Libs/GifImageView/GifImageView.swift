@@ -157,7 +157,10 @@ class GifImageView: UIImageView {
         if displayLinkInitialized {
             displayLink.invalidate()
         }
-        loadingAnimator = nil
+        if loadingAnimator != nil {
+            loadingAnimator?.removeObserver(self, forKeyPath: "isFinishLoading")
+            loadingAnimator = nil
+        }
     }
     
 }
