@@ -29,8 +29,12 @@
 		E13CACFF1EE50775004D9CAA /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13CACFE1EE50775004D9CAA /* Constants.swift */; };
 		E13CAD021EE5481A004D9CAA /* NoticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13CAD011EE5481A004D9CAA /* NoticeView.swift */; };
 		E13CAD041EE550CA004D9CAA /* NoticeViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13CAD031EE550CA004D9CAA /* NoticeViewManager.swift */; };
+		E1493AD01F6FC5BA00185E4C /* GPUImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1493ACB1F6FC53A00185E4C /* GPUImage.framework */; };
+		E14D27C61F7118EC006EDE13 /* FilterCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E14D27C41F7118EC006EDE13 /* FilterCell.swift */; };
+		E14D27C71F7118EC006EDE13 /* FilterCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E14D27C51F7118EC006EDE13 /* FilterCell.xib */; };
 		E15212571F5E99BD001C2E5A /* VideoRecordTopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15212561F5E99BD001C2E5A /* VideoRecordTopView.swift */; };
 		E15212591F5E99F8001C2E5A /* VideoClipTopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15212581F5E99F8001C2E5A /* VideoClipTopView.swift */; };
+		E1666B181F711C51001FC6E3 /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1666B171F711C51001FC6E3 /* Enums.swift */; };
 		E171BF8E1EEA45D5001F53E2 /* GifEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E171BF8D1EEA45D5001F53E2 /* GifEditViewController.swift */; };
 		E171BF901EEA7A37001F53E2 /* GifEditViewBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E171BF8F1EEA7A37001F53E2 /* GifEditViewBottomBar.swift */; };
 		E171BF921EEAA196001F53E2 /* GifAchieveViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E171BF911EEAA196001F53E2 /* GifAchieveViewController.swift */; };
@@ -56,7 +60,46 @@
 		E1E51E9A1F4E6A9C00981D23 /* VideoRecordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E51E991F4E6A9C00981D23 /* VideoRecordViewController.swift */; };
 		E1E6AF5C1F66825B00163228 /* loading.gif in Resources */ = {isa = PBXBuildFile; fileRef = E1E6AF5B1F66825B00163228 /* loading.gif */; };
 		E1F2B4711EF110F8003948EB /* GifEditToolBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2B4701EF110F8003948EB /* GifEditToolBar.swift */; };
+		E1F466281F6FC6B8006D89F4 /* GPUImage.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E1493ACB1F6FC53A00185E4C /* GPUImage.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E1493AC61F6FC53A00185E4C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1493ABF1F6FC53A00185E4C /* GPUImage.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BC6E7CAB1C39A9D8006DF678;
+			remoteInfo = GPUImage_macOS;
+		};
+		E1493AC81F6FC53A00185E4C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1493ABF1F6FC53A00185E4C /* GPUImage.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BC6E7CB51C39A9D8006DF678;
+			remoteInfo = GPUImageTests_macOS;
+		};
+		E1493ACA1F6FC53A00185E4C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1493ABF1F6FC53A00185E4C /* GPUImage.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BC9E34E91E524A2200B8604F;
+			remoteInfo = GPUImage_iOS;
+		};
+		E1493ACC1F6FC53A00185E4C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1493ABF1F6FC53A00185E4C /* GPUImage.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = BC9E34F11E524A2200B8604F;
+			remoteInfo = GPUImageTests_iOS;
+		};
+		E1493ACE1F6FC59500185E4C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1493ABF1F6FC53A00185E4C /* GPUImage.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = BC9E34E81E524A2200B8604F;
+			remoteInfo = GPUImage_iOS;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		E110C8681F692FAC0024B9C1 /* Embed App Extensions */ = {
@@ -67,6 +110,16 @@
 			files = (
 			);
 			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E1F466241F6FC68E006D89F4 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				E1F466281F6FC6B8006D89F4 /* GPUImage.framework in CopyFiles */,
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -98,8 +151,12 @@
 		E13CACFE1EE50775004D9CAA /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		E13CAD011EE5481A004D9CAA /* NoticeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoticeView.swift; sourceTree = "<group>"; };
 		E13CAD031EE550CA004D9CAA /* NoticeViewManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoticeViewManager.swift; sourceTree = "<group>"; };
+		E1493ABF1F6FC53A00185E4C /* GPUImage.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GPUImage.xcodeproj; path = Gifer/Libs/GPUImage2/GPUImage.xcodeproj; sourceTree = "<group>"; };
+		E14D27C41F7118EC006EDE13 /* FilterCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilterCell.swift; sourceTree = "<group>"; };
+		E14D27C51F7118EC006EDE13 /* FilterCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FilterCell.xib; sourceTree = "<group>"; };
 		E15212561F5E99BD001C2E5A /* VideoRecordTopView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoRecordTopView.swift; sourceTree = "<group>"; };
 		E15212581F5E99F8001C2E5A /* VideoClipTopView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoClipTopView.swift; sourceTree = "<group>"; };
+		E1666B171F711C51001FC6E3 /* Enums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Enums.swift; sourceTree = "<group>"; };
 		E171BF8D1EEA45D5001F53E2 /* GifEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifEditViewController.swift; sourceTree = "<group>"; };
 		E171BF8F1EEA7A37001F53E2 /* GifEditViewBottomBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifEditViewBottomBar.swift; sourceTree = "<group>"; };
 		E171BF911EEAA196001F53E2 /* GifAchieveViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifAchieveViewController.swift; sourceTree = "<group>"; };
@@ -132,6 +189,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1493AD01F6FC5BA00185E4C /* GPUImage.framework in Frameworks */,
 				032CDCBA2BE0C05175F7B7C5 /* Pods_Gifer.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -142,6 +200,7 @@
 		ADBD8BDEC2B2D438AA7F34AA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E1493ABF1F6FC53A00185E4C /* GPUImage.xcodeproj */,
 				7C92EC1B735E9E31E45A866E /* Pods_Gifer.framework */,
 			);
 			name = Frameworks;
@@ -245,6 +304,8 @@
 				E15212581F5E99F8001C2E5A /* VideoClipTopView.swift */,
 				E1A40D661F5FD553002D58AF /* VideoPickerCell.swift */,
 				E1A40D671F5FD553002D58AF /* VideoPickerCell.xib */,
+				E14D27C41F7118EC006EDE13 /* FilterCell.swift */,
+				E14D27C51F7118EC006EDE13 /* FilterCell.xib */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -295,6 +356,7 @@
 			children = (
 				E1E6AF5A1F66825B00163228 /* gif */,
 				E13CACFE1EE50775004D9CAA /* Constants.swift */,
+				E1666B171F711C51001FC6E3 /* Enums.swift */,
 			);
 			path = Resource;
 			sourceTree = "<group>";
@@ -306,6 +368,17 @@
 				E13CAD031EE550CA004D9CAA /* NoticeViewManager.swift */,
 			);
 			path = NoticeView;
+			sourceTree = "<group>";
+		};
+		E1493AC01F6FC53A00185E4C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E1493AC71F6FC53A00185E4C /* GPUImage.framework */,
+				E1493AC91F6FC53A00185E4C /* GPUImageTests_macOS.xctest */,
+				E1493ACB1F6FC53A00185E4C /* GPUImage.framework */,
+				E1493ACD1F6FC53A00185E4C /* GPUImageTests_iOS.xctest */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		E19384CE1EEE420100BE84A4 /* Category */ = {
@@ -348,10 +421,12 @@
 				B1DF724B0197E6D6CC503ABC /* [CP] Embed Pods Frameworks */,
 				2D4B073AD3442A524661CD88 /* [CP] Copy Pods Resources */,
 				E110C8681F692FAC0024B9C1 /* Embed App Extensions */,
+				E1F466241F6FC68E006D89F4 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				E1493ACF1F6FC59500185E4C /* PBXTargetDependency */,
 			);
 			name = Gifer;
 			productName = Gifer;
@@ -386,12 +461,49 @@
 			mainGroup = E11503DA1ECC41D6008BB686;
 			productRefGroup = E11503E41ECC41D6008BB686 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = E1493AC01F6FC53A00185E4C /* Products */;
+					ProjectRef = E1493ABF1F6FC53A00185E4C /* GPUImage.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				E11503E21ECC41D6008BB686 /* Gifer */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		E1493AC71F6FC53A00185E4C /* GPUImage.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = GPUImage.framework;
+			remoteRef = E1493AC61F6FC53A00185E4C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E1493AC91F6FC53A00185E4C /* GPUImageTests_macOS.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = GPUImageTests_macOS.xctest;
+			remoteRef = E1493AC81F6FC53A00185E4C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E1493ACB1F6FC53A00185E4C /* GPUImage.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = GPUImage.framework;
+			remoteRef = E1493ACA1F6FC53A00185E4C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		E1493ACD1F6FC53A00185E4C /* GPUImageTests_iOS.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = GPUImageTests_iOS.xctest;
+			remoteRef = E1493ACC1F6FC53A00185E4C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		E11503E11ECC41D6008BB686 /* Resources */ = {
@@ -404,6 +516,7 @@
 				E11503F11ECC41D6008BB686 /* LaunchScreen.storyboard in Resources */,
 				E11503EE1ECC41D6008BB686 /* Assets.xcassets in Resources */,
 				E1E6AF5C1F66825B00163228 /* loading.gif in Resources */,
+				E14D27C71F7118EC006EDE13 /* FilterCell.xib in Resources */,
 				E19D66201EE7F547008E29F7 /* PhotoPickerCell.xib in Resources */,
 				E11503EC1ECC41D6008BB686 /* Main.storyboard in Resources */,
 			);
@@ -468,6 +581,7 @@
 				E1BD99CE1F5940FE00016F44 /* VideoProgressView.swift in Sources */,
 				E19D661A1EE7E0A8008E29F7 /* NoRecordView.swift in Sources */,
 				E12E2BDA1F56649F00B08FB5 /* VideoClipViewController.swift in Sources */,
+				E1666B181F711C51001FC6E3 /* Enums.swift in Sources */,
 				E171BF921EEAA196001F53E2 /* GifAchieveViewController.swift in Sources */,
 				E112B3C51F4C09EF00341E2E /* AddButtonView.swift in Sources */,
 				E1E37F1D1ED80B67000B4B3F /* GifImageView.swift in Sources */,
@@ -497,6 +611,7 @@
 				E15212571F5E99BD001C2E5A /* VideoRecordTopView.swift in Sources */,
 				E1E51BE21F4D13AD007A2EDB /* CGPoint.swift in Sources */,
 				E1A87EE31F5CFAD30024E01F /* VideoThumbnail.swift in Sources */,
+				E14D27C61F7118EC006EDE13 /* FilterCell.swift in Sources */,
 				E11503E71ECC41D6008BB686 /* AppDelegate.swift in Sources */,
 				E1B456621EE00D10009555A6 /* PhotoCell.swift in Sources */,
 				E1A40D5F1F5FCBFC002D58AF /* VideoPickerViewController.swift in Sources */,
@@ -508,6 +623,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E1493ACF1F6FC59500185E4C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GPUImage_iOS;
+			targetProxy = E1493ACE1F6FC59500185E4C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		E11503EA1ECC41D6008BB686 /* Main.storyboard */ = {

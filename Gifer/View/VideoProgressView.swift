@@ -58,7 +58,6 @@ class VideoProgressView: UIView, UICollectionViewDelegateFlowLayout, UICollectio
         layout.scrollDirection = .horizontal
         
         let collectionView: UICollectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: layout)
-        collectionView.backgroundColor = UIColor.white
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.showsHorizontalScrollIndicator = false

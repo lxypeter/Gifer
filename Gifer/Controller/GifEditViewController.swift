@@ -11,11 +11,40 @@ import SnapKit
 import Photos
 import ImageIO
 import MobileCoreServices
+import GPUImage
 
 enum PlaySequence {
     case normal
     case reverse
     case toAndFor
+}
+
+enum GifEditStatus {
+    case normal
+    case cliping
+    case filtering
+}
+
+enum RatioStatus {
+    case noLimit
+    case fourToThree
+    case sixteenToNine
+    case oneToOne
+    
+    var floatValue: CGFloat {
+        var result : CGFloat
+        switch self {
+        case .noLimit:
+            result = 0
+        case .fourToThree:
+            result = 4/3
+        case .sixteenToNine:
+            result = 16/9
+        case .oneToOne:
+            result = 1/1
+        }
+        return result
+    }
 }
 
 class GifEditViewController: BaseViewController {
@@ -46,8 +75,15 @@ class GifEditViewController: BaseViewController {
         }
     }
     private var kGroup: DispatchGroup = DispatchGroup()
-    private var isCliping: Bool = false
+    private var editStatus: GifEditStatus = .normal {
+        didSet {
+            if editStatus != oldValue {
+                gifEditStatusChange(to: editStatus)
+            }
+        }
+    }
     private var showingRect: CGRect? = nil
+    private var tempShowingRect: CGRect? = nil
     private var sequence: PlaySequence = .normal {
         didSet {
             imageArray.removeAll()
@@ -135,10 +171,10 @@ class GifEditViewController: BaseViewController {
         
         view.addSubview(bottomBar)
         bottomBar.snp.makeConstraints { (make) in
-            make.bottom.equalTo(0)
+            make.bottom.equalTo(GifEditViewBottomBar.filterViewHeight - GifEditViewBottomBar.height)
             make.left.equalTo(0)
             make.right.equalTo(0)
-            make.height.equalTo(GifEditViewBottomBar.height)
+            make.height.equalTo(GifEditViewBottomBar.filterViewHeight)
         }
         
         view.addSubview(contentView)
@@ -216,6 +252,15 @@ class GifEditViewController: BaseViewController {
             for  photo in self.selectedArray {
                 if photo.fullImage != nil {
                     self.imageArray.append(photo.fullImage!)
+//                    let toonFilter = SepiaToneFilter()
+//                    let testImage = photo.fullImage!
+//                    let pictureInput = PictureInput(image:testImage)
+//                    let pictureOutput = PictureOutput()
+//                    pictureOutput.imageAvailableCallback = {image in
+//                        self.imageArray.append(image)
+//                    }
+//                    pictureInput --> toonFilter --> pictureOutput
+//                    pictureInput.processImage(synchronously:true)
                 }
             }
             self.imageView.animationImages = self.imageArray
@@ -361,9 +406,37 @@ class GifEditViewController: BaseViewController {
         resizeShowingArea()
     }
     
+    func clickRatioButton() {
+        let alertViewController = UIAlertController(title: "图像宽高比", message: nil, preferredStyle: .actionSheet)
+        let oneToOneAction = UIAlertAction(title: "1:1", style: .default, handler: { [unowned self](action) in
+            self.ratioStatus = .oneToOne
+            self.bottomBar.ratioStatus = .oneToOne
+        })
+        alertViewController.addAction(oneToOneAction)
+        let fourToThreeAction = UIAlertAction(title: "4:3", style: .default, handler: { [unowned self](action) in
+            self.ratioStatus = .fourToThree
+            self.bottomBar.ratioStatus = .fourToThree
+        })
+        alertViewController.addAction(fourToThreeAction)
+        let sixteenToNineAction = UIAlertAction(title: "16:9", style: .default, handler: { [unowned self](action) in
+            self.ratioStatus = .sixteenToNine
+            self.bottomBar.ratioStatus = .sixteenToNine
+        })
+        alertViewController.addAction(sixteenToNineAction)
+        let noLimitAction = UIAlertAction(title: "无限制", style: .default, handler: { [unowned self](action) in
+            self.ratioStatus = .noLimit
+            self.bottomBar.ratioStatus = .noLimit
+        })
+        alertViewController.addAction(noLimitAction)
+        let cancelAction = UIAlertAction(title: "取消", style: .cancel, handler: { (action) in
+        })
+        alertViewController.addAction(cancelAction)
+        self.present(alertViewController, animated: true, completion: nil)
+    }
+    
     //MARK: gesture
     func pinchImageView(recognizer: UIPinchGestureRecognizer) {
-        if !isCliping { return }
+        if editStatus != .cliping { return }
         
         if recognizer.state == .began {
             maskFade(.fadeIn)
@@ -436,7 +509,7 @@ class GifEditViewController: BaseViewController {
     }
     
     func panImageView(recognizer: UIPanGestureRecognizer) {
-        if !isCliping { return }
+        if editStatus != .cliping { return }
         
         if recognizer.state == .began {
             maskFade(.fadeIn)
@@ -486,7 +559,7 @@ class GifEditViewController: BaseViewController {
     }
     
     func panEdgeView(recognizer: UIPanGestureRecognizer) {
-        if !isCliping { return }
+        if editStatus != .cliping { return }
         
         if recognizer.state == .began {
             maskFade(.fadeIn)
@@ -672,8 +745,10 @@ class GifEditViewController: BaseViewController {
         }
     }
     
-    private func clipingStateChange(to nextState: Bool) {
-        isCliping = nextState
+    private func gifEditStatusChange(to nextStatus: GifEditStatus) {
+        bottomBar.status = nextStatus
+        
+        let isCliping = nextStatus == .cliping
         leftDownEdgeView.isHidden = !isCliping
         leftUpEdgeView.isHidden = !isCliping
         rightDownEdgeView.isHidden = !isCliping
@@ -681,8 +756,8 @@ class GifEditViewController: BaseViewController {
         
         var naviBarFrame = navigationController!.navigationBar.frame
         let toolBarTop: CGFloat
+        let bottomBarBottom: CGFloat
         let scale: CGFloat
-        
         let showingRect: CGRect
         if self.showingRect == nil {
             showingRect = imageView.bounds
@@ -691,21 +766,38 @@ class GifEditViewController: BaseViewController {
         }
         let showingRectRatio = showingRect.size.width / showingRect.size.height
         
-        let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - kNavigationBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
-        if isCliping {
-            bottomBar.status = .cliping
+        switch nextStatus {
+        case .cliping:
             naviBarFrame.origin.y = -(kNavigationBarHeight + kStatusBarHeight)
             toolBarTop = kStatusBarHeight
+            bottomBarBottom = GifEditViewBottomBar.filterViewHeight - GifEditViewBottomBar.height
+//            let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - kNavigationBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
+            
+            let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
+            
             // 缩
             if showingRectRatio >= kScreenWidth / contentViewHeight {
                 scale = (kScreenWidth - kEdgeViewWidth) / showingRect.width
             } else {
                 scale = (contentViewHeight - kEdgeViewWidth) / showingRect.height
             }
-        } else {
-            bottomBar.status = .normal
+        case .filtering:
+            naviBarFrame.origin.y = -(kNavigationBarHeight + kStatusBarHeight)
+            toolBarTop = kStatusBarHeight
+            bottomBarBottom = 0
+            let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - kNavigationBarHeight - GifEditViewBottomBar.filterViewHeight - GifEditToolBar.height
+            
+            // 缩
+            if showingRectRatio >= kScreenWidth / contentViewHeight {
+                scale = (kScreenWidth - kEdgeViewWidth) / showingRect.width
+            } else {
+                scale = (contentViewHeight - kEdgeViewWidth) / showingRect.height
+            }
+        case .normal:
             naviBarFrame.origin.y = kStatusBarHeight
             toolBarTop = kNavigationBarHeight + kStatusBarHeight
+            bottomBarBottom = GifEditViewBottomBar.filterViewHeight - GifEditViewBottomBar.height
+            let contentViewHeight: CGFloat = kScreenHeight - kStatusBarHeight - kNavigationBarHeight - GifEditViewBottomBar.height - GifEditToolBar.height
             // 放
             if showingRectRatio >= kScreenWidth / contentViewHeight {
                 scale = kScreenWidth / showingRect.width
@@ -714,12 +806,12 @@ class GifEditViewController: BaseViewController {
             }
         }
         
-        // 缩放
+        // ImageView缩放
         imageView.transform = .identity
         let scaleTransform = imageView.transform.scaledBy(x: scale, y: scale)
         imageView.transform = scaleTransform
         
-        // 位移
+        // ImageView位移
         let targetCenterX = showingRect.midX
         let targetCenterY = showingRect.midY
         let dx = imageView.bounds.midX - targetCenterX
@@ -736,6 +828,10 @@ class GifEditViewController: BaseViewController {
         toolBar.snp.updateConstraints({ (make) in
             make.top.equalTo(toolBarTop)
         })
+        
+        bottomBar.snp.updateConstraints { (make) in
+            make.bottom.equalTo(bottomBarBottom)
+        }
         
         updateMaskAndEdgeView(animated: false)
     }
@@ -801,31 +897,7 @@ class GifEditViewController: BaseViewController {
             self.frameInterval = value
         }
         bottomBar.ratioButtonHandler = {
-            let alertViewController = UIAlertController(title: "图像宽高比", message: nil, preferredStyle: .actionSheet)
-            let oneToOneAction = UIAlertAction(title: "1:1", style: .default, handler: { [unowned self](action) in
-                self.ratioStatus = .oneToOne
-                bottomBar.ratioStatus = .oneToOne
-            })
-            alertViewController.addAction(oneToOneAction)
-            let fourToThreeAction = UIAlertAction(title: "4:3", style: .default, handler: { [unowned self](action) in
-                self.ratioStatus = .fourToThree
-                bottomBar.ratioStatus = .fourToThree
-            })
-            alertViewController.addAction(fourToThreeAction)
-            let sixteenToNineAction = UIAlertAction(title: "16:9", style: .default, handler: { [unowned self](action) in
-                self.ratioStatus = .sixteenToNine
-                bottomBar.ratioStatus = .sixteenToNine
-            })
-            alertViewController.addAction(sixteenToNineAction)
-            let noLimitAction = UIAlertAction(title: "无限制", style: .default, handler: { [unowned self](action) in
-                self.ratioStatus = .noLimit
-                bottomBar.ratioStatus = .noLimit
-            })
-            alertViewController.addAction(noLimitAction)
-            let cancelAction = UIAlertAction(title: "取消", style: .cancel, handler: { (action) in
-            })
-            alertViewController.addAction(cancelAction)
-            self.present(alertViewController, animated: true, completion: nil)
+            self.clickRatioButton()
         }
         bottomBar.rotateButtonHandler = {
             self.clickRotateButton()
@@ -835,16 +907,28 @@ class GifEditViewController: BaseViewController {
     private lazy var toolBar: GifEditToolBar = {
         let toolBar = GifEditToolBar(frame: CGRect.zero)
         toolBar.clipButtonHandler = {[unowned self] in
-            self.clipingStateChange(to:true)
+            self.tempShowingRect = self.showingRect
+            self.editStatus = .cliping
         }
         toolBar.clipConfirmButtonHandler = {[unowned self] in
-            self.clipingStateChange(to:false)
+            self.editStatus = .normal
         }
         toolBar.clipCancelButtonHandler = {[unowned self] in
-            self.clipingStateChange(to:false)
+            self.showingRect = self.tempShowingRect
+            self.resizeShowingArea()
+            self.editStatus = .normal
         }
         toolBar.seqButtonHandler = {[unowned self](sequence) in
             self.sequence = sequence
+        }
+        toolBar.filterButtonHandler = {[unowned self] in
+            self.editStatus = .filtering
+        }
+        toolBar.filterConfirmButtonHandler = {[unowned self] in
+            self.editStatus = .normal
+        }
+        toolBar.filterCancelButtonHandler = {[unowned self] in
+            self.editStatus = .normal
         }
         return toolBar
     }()
