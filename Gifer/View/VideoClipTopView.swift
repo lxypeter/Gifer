@@ -108,14 +108,14 @@ class VideoClipTopView: UIView {
     }
     
     // MARK: event
-    func clickBackButton() {
+    @objc func clickBackButton() {
         guard let backButtonHandler = self.backButtonHandler else {
             return
         }
         backButtonHandler()
     }
     
-    func clickNextButton() {
+    @objc func clickNextButton() {
         guard let nextButtonHandler = self.nextButtonHandler else {
             return
         }

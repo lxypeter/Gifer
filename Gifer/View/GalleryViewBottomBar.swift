@@ -70,13 +70,13 @@ class GalleryViewBottomBar: UIView {
         
     }
     
-    func clickShareButton() {
+    @objc func clickShareButton() {
         if shareButtonHandler != nil {
             shareButtonHandler!()
         }
     }
     
-    func clickDeleteButton() {
+    @objc func clickDeleteButton() {
         if deleteButtonHandler != nil {
             deleteButtonHandler!()
         }

@@ -44,7 +44,7 @@ class WeChatActivity: UIActivity {
         )))
         
         MonkeyKing.deliver(message) { success in
-            self.activityDidFinish(success)
+//            self.activityDidFinish(success)
             print("shareURLToWeChatSession success: \(success)")
         }
     }

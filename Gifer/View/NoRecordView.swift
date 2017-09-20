@@ -59,7 +59,7 @@ class NoRecordView: UIView {
         }
     }
     
-    func clickReloadButton() {
+    @objc func clickReloadButton() {
         if reloadHandler != nil {
             reloadHandler!()
         }

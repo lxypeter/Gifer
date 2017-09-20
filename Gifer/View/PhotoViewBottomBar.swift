@@ -105,18 +105,18 @@ class PhotoViewBottomBar: UIView {
         
     }
     
-    func clickResetButton() {
+    @objc func clickResetButton() {
         slider.setValue(1.0, animated: true)
         sliderChange(slider)
     }
     
-    func clickDeleteButton() {
+    @objc func clickDeleteButton() {
         if deleteButtonHandler != nil {
             deleteButtonHandler!()
         }
     }
 
-    func sliderChange(_ slider: UISlider) {
+    @objc func sliderChange(_ slider: UISlider) {
         speedTimesLabel.text = "速度: X\(String(format: "%.2f", slider.value))"
         if sliderValueChangeHandler != nil {
             sliderValueChangeHandler!(slider.value)

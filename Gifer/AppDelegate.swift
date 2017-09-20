@@ -32,7 +32,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window?.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         UINavigationBar.appearance().isTranslucent = false
         UINavigationBar.appearance().barTintColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
-        let attributes = [NSForegroundColorAttributeName:#colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)];
+        let attributes = [NSAttributedStringKey.foregroundColor: #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)];
         UINavigationBar.appearance().titleTextAttributes = attributes;
     }
 

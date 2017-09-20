@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E90C425CE97B47D089534427D9892E9B"
+               BlueprintIdentifier = "B9FD2F7799F23DA9A18FCBE12E41D33C"
                BuildableName = "Pods_Gifer.framework"
                BlueprintName = "Pods-Gifer"
                ReferencedContainer = "container:Pods.xcodeproj">
@@ -26,6 +26,7 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      language = ""
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
@@ -36,6 +37,7 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      language = ""
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
@@ -45,7 +47,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E90C425CE97B47D089534427D9892E9B"
+            BlueprintIdentifier = "B9FD2F7799F23DA9A18FCBE12E41D33C"
             BuildableName = "Pods_Gifer.framework"
             BlueprintName = "Pods-Gifer"
             ReferencedContainer = "container:Pods.xcodeproj">

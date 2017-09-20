@@ -32,6 +32,7 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
             self.speedTimesLabel.text = "间隔: \(String(format: "%.2f", self.slider.value))秒，共\(Float(String(format: "%.2f", self.slider.value))! * Float(self.totalCount))秒"
         }
     }
+    public var filters: [ImageFilter] = []
     private let cellId = "FilterCellId"
     
     private lazy var baseView: UIView = {
@@ -75,6 +76,7 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
     private lazy var clipView: UIView = {
         let clipView = UIView(frame: CGRect.zero)
         clipView.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        clipView.isHidden = true
         return clipView
     }()
     private lazy var rotateButton: UIButton = {
@@ -102,6 +104,7 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
     private lazy var filterView: UIView = {
         let filterView = UIView(frame: CGRect.zero)
         filterView.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        filterView.isHidden = true
         return filterView
     }()
     private lazy var filterCollectionView: UICollectionView = {
@@ -226,6 +229,10 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
             make.left.equalTo(0)
             make.right.equalTo(0)
         }
+        filterView.addSubview(filterCollectionView)
+        filterCollectionView.snp.makeConstraints { (make) in
+            make.edges.equalTo(filterView)
+        }
         
         let seperateLine = UIView(frame: CGRect.zero)
         seperateLine.backgroundColor = #colorLiteral(red: 0.862745098, green: 0.862745098, blue: 0.862745098, alpha: 1)
@@ -240,7 +247,7 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
     }
     
     //MARK: events
-    func sliderChange(_ slider: UISlider) {
+    @objc func sliderChange(_ slider: UISlider) {
         updateTimesLabel()
         guard let sliderValueChangeHandler = sliderValueChangeHandler else {
             return
@@ -248,7 +255,7 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
         sliderValueChangeHandler(slider.value)
     }
     
-    func clickRotateButton() {
+    @objc func clickRotateButton() {
         if status != .cliping { return }
         guard let rotateButtonHandler = rotateButtonHandler else {
             return
@@ -256,7 +263,7 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
         rotateButtonHandler()
     }
     
-    func clickRatioButton() {
+    @objc func clickRatioButton() {
         if status != .cliping { return }
         guard let ratioButtonHandler = ratioButtonHandler else {
             return
@@ -264,7 +271,7 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
         ratioButtonHandler()
     }
     
-    func clickResetButton() {
+    @objc func clickResetButton() {
         if status != .cliping { return }
         guard let resetButtonHandler = resetButtonHandler else {
             return
@@ -299,6 +306,8 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
                 make.top.equalTo(0)
             })
         case .normal:
+            clipView.isHidden = true
+            filterView.isHidden = true
             baseView.snp.updateConstraints({ (make) in
                 make.top.equalTo(0)
             })
@@ -312,6 +321,24 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
         baseView.layer.removeAllAnimations()
         clipView.layer.removeAllAnimations()
         filterView.layer.removeAllAnimations()
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return filters.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FilterCell
+        cell.imageFilter = filters[indexPath.row]
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: 80, height: GifEditViewBottomBar.filterViewHeight)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
     }
     
     //MARK: animate
@@ -337,8 +364,8 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
                 make.top.equalTo(GifEditViewBottomBar.height)
             }
             
-            baseViewAnimation.toValue = -GifEditViewBottomBar.height
-            otherViewAnimation.toValue = 0
+            baseViewAnimation.toValue = -GifEditViewBottomBar.height / 2
+            otherViewAnimation.toValue = GifEditViewBottomBar.height / 2
             clipView.layer.add(otherViewAnimation, forKey: nil)
         case .filtering:
             filterView.isHidden = false
@@ -348,12 +375,12 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
                 make.top.equalTo(GifEditViewBottomBar.height)
             }
             
-            baseViewAnimation.toValue = -GifEditViewBottomBar.height
-            otherViewAnimation.toValue = 0
+            baseViewAnimation.toValue = -GifEditViewBottomBar.height / 2
+            otherViewAnimation.toValue = filterView.bounds.size.height / 2
             filterView.layer.add(otherViewAnimation, forKey: nil)
         case .normal:
-            baseViewAnimation.toValue = 0
-            otherViewAnimation.toValue = GifEditViewBottomBar.height
+            baseViewAnimation.toValue = GifEditViewBottomBar.height / 2
+            otherViewAnimation.toValue = GifEditViewBottomBar.height * 3 / 2
             clipView.layer.add(otherViewAnimation, forKey: nil)
             filterView.layer.add(otherViewAnimation, forKey: nil)
         }

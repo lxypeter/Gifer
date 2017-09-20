@@ -58,7 +58,7 @@ class VideoRecordTopView: UIView {
         return flashDisableButton
     }()
     
-    var flashMode: AVCaptureTorchMode = .auto {
+    var flashMode: AVCaptureDevice.TorchMode = .auto {
         didSet {
             switch flashMode {
             case .auto:
@@ -79,7 +79,7 @@ class VideoRecordTopView: UIView {
         }
     }
     var backButtonHandler: (() -> ())?
-    var flashSwitchHandler: ((AVCaptureTorchMode) -> Bool)?
+    var flashSwitchHandler: ((AVCaptureDevice.TorchMode) -> Bool)?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -153,23 +153,23 @@ class VideoRecordTopView: UIView {
     }
     
     // MARK: event
-    func clickBackButton() {
+    @objc func clickBackButton() {
         guard let backButtonHandler = self.backButtonHandler else {
             return
         }
         backButtonHandler()
     }
     
-    func clickFlashButton() {
+    @objc func clickFlashButton() {
         normalBackgroundView.isHidden = true
         flashBackgroundView.isHidden = false
     }
     
-    func clickFlashSwitchButton(_ button: UIButton) {
+    @objc func clickFlashSwitchButton(_ button: UIButton) {
         normalBackgroundView.isHidden = false
         flashBackgroundView.isHidden = true
         
-        let tempFlashMode: AVCaptureTorchMode
+        let tempFlashMode: AVCaptureDevice.TorchMode
         if button === flashAutoButton {
             tempFlashMode = .auto
         } else if button === flashEnableButton {

@@ -156,7 +156,7 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
     }
     
     //MARK: events
-    func clickCollectionView() {
+    @objc func clickCollectionView() {
         isBrowsing = !isBrowsing
         setNeedsStatusBarAppearanceUpdate()
         if isBrowsing {
@@ -190,14 +190,14 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
         }
     }
     
-    func doubleClickCollectionView() {
+    @objc func doubleClickCollectionView() {
         for cell in collectionView.visibleCells {
             let photoCell = cell as! PhotoCell
             photoCell.resetZoomScale(animated: true)
         }
     }
     
-    func clickDeleteButton() {
+    @objc func clickDeleteButton() {
         if collectionView.indexPathsForVisibleItems.count != 1 {
             return
         }

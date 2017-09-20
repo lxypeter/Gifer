@@ -40,21 +40,21 @@ class GifAchieveViewController: BaseViewController {
         view.backgroundColor = #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
         view.addSubview(imageView)
         imageView.snp.makeConstraints { (make) in
-            make.centerX.equalTo(self.view)
-            make.centerY.equalTo(self.view)
+            make.centerX.equalTo(view)
+            make.centerY.equalTo(view)
             make.width.equalTo(kScreenWidth * 0.8)
             make.height.equalTo(kScreenWidth * 0.8)
         }
         view.addSubview(closeButton)
         closeButton.snp.makeConstraints { (make) in
-            make.top.equalTo(25)
+            make.top.equalTo(kStatusBarHeight + 5)
             make.left.equalTo(25)
             make.width.equalTo(24)
             make.height.equalTo(24)
         }
     }
     
-    func dismissController() {
+    @objc func dismissController() {
         dismiss(animated: true, completion: nil)
     }
     

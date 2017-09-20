@@ -48,7 +48,7 @@ class NoticeViewManager : NSObject {
         }
     }
     
-    func swipeNoticeView(recognizer: UISwipeGestureRecognizer) {
+    @objc func swipeNoticeView(recognizer: UISwipeGestureRecognizer) {
         let noticeView: NoticeView = recognizer.view as! NoticeView
         noticeView.triggeredSwipeGesture = true
         

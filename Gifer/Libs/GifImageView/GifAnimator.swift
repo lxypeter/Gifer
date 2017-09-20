@@ -44,7 +44,7 @@ class GifAnimator: NSObject {
         if self.animatedFrames.count <= 0 { return nil }
         return self.animatedFrames[self.currentFrameIndex].image
     }
-    dynamic public var isFinishLoading: Bool = false
+    @objc dynamic public var isFinishLoading: Bool = false
     
     init(data: NSData) {
         isBigImage = data.length / 1024 / 1024 > 10

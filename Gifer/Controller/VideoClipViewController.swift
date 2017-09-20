@@ -166,7 +166,7 @@ class VideoClipViewController: BaseViewController {
         // preview layer
         var videoWidthHeightRatio: CGFloat = 1
         for track in videoAsset.tracks {
-            if track.mediaType == AVMediaTypeVideo {
+            if track.mediaType == AVMediaType.video {
                 let realSize = track.naturalSize.applying(track.preferredTransform)
                 videoWidthHeightRatio = fabs(realSize.width) / fabs(realSize.height)
             }
@@ -186,7 +186,7 @@ class VideoClipViewController: BaseViewController {
     }
     
     // MARK: events
-    func clickPlayButton() {
+    @objc func clickPlayButton() {
         playButton.isSelected = !playButton.isSelected
         
         if !playButton.isSelected {

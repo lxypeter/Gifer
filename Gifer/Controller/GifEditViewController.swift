@@ -13,40 +13,6 @@ import ImageIO
 import MobileCoreServices
 import GPUImage
 
-enum PlaySequence {
-    case normal
-    case reverse
-    case toAndFor
-}
-
-enum GifEditStatus {
-    case normal
-    case cliping
-    case filtering
-}
-
-enum RatioStatus {
-    case noLimit
-    case fourToThree
-    case sixteenToNine
-    case oneToOne
-    
-    var floatValue: CGFloat {
-        var result : CGFloat
-        switch self {
-        case .noLimit:
-            result = 0
-        case .fourToThree:
-            result = 4/3
-        case .sixteenToNine:
-            result = 16/9
-        case .oneToOne:
-            result = 1/1
-        }
-        return result
-    }
-}
-
 class GifEditViewController: BaseViewController {
     private enum MaskFadeType {
         case fadeIn
@@ -171,7 +137,11 @@ class GifEditViewController: BaseViewController {
         
         view.addSubview(bottomBar)
         bottomBar.snp.makeConstraints { (make) in
-            make.bottom.equalTo(GifEditViewBottomBar.filterViewHeight - GifEditViewBottomBar.height)
+            if #available(iOS 11, *) {
+                make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(GifEditViewBottomBar.filterViewHeight - GifEditViewBottomBar.height)
+            } else {
+                make.bottom.equalTo(GifEditViewBottomBar.filterViewHeight - GifEditViewBottomBar.height)
+            }
             make.left.equalTo(0)
             make.right.equalTo(0)
             make.height.equalTo(GifEditViewBottomBar.filterViewHeight)
@@ -247,7 +217,7 @@ class GifEditViewController: BaseViewController {
                 kGroup.leave()
             }
         }
-        self.kGroup.notify(queue: DispatchQueue.main) { [unowned self] in 
+        kGroup.notify(queue: DispatchQueue.main) { [unowned self] in
             self.hideHud()
             for  photo in self.selectedArray {
                 if photo.fullImage != nil {
@@ -353,7 +323,7 @@ class GifEditViewController: BaseViewController {
     }
     
     //MARK: event
-    func clickGenerateButton() {
+    @objc func clickGenerateButton() {
         let alertController = UIAlertController(title: "选择Gif画质", message: nil, preferredStyle: .actionSheet)
         let lowQualityAction = UIAlertAction(title: "低清晰度", style: .default) { [unowned self](action) in
             self.generateGif(by: .low)
@@ -435,7 +405,7 @@ class GifEditViewController: BaseViewController {
     }
     
     //MARK: gesture
-    func pinchImageView(recognizer: UIPinchGestureRecognizer) {
+    @objc func pinchImageView(recognizer: UIPinchGestureRecognizer) {
         if editStatus != .cliping { return }
         
         if recognizer.state == .began {
@@ -508,7 +478,7 @@ class GifEditViewController: BaseViewController {
         recognizer.scale = 1
     }
     
-    func panImageView(recognizer: UIPanGestureRecognizer) {
+    @objc func panImageView(recognizer: UIPanGestureRecognizer) {
         if editStatus != .cliping { return }
         
         if recognizer.state == .began {
@@ -558,7 +528,7 @@ class GifEditViewController: BaseViewController {
         recognizer.setTranslation(CGPoint.zero, in: self.view)
     }
     
-    func panEdgeView(recognizer: UIPanGestureRecognizer) {
+    @objc func panEdgeView(recognizer: UIPanGestureRecognizer) {
         if editStatus != .cliping { return }
         
         if recognizer.state == .began {
@@ -758,12 +728,14 @@ class GifEditViewController: BaseViewController {
         let toolBarTop: CGFloat
         let bottomBarBottom: CGFloat
         let scale: CGFloat
-        let showingRect: CGRect
-        if self.showingRect == nil {
-            showingRect = imageView.bounds
-        } else {
-            showingRect = self.showingRect!
-        }
+//        let showingRect: CGRect
+//        if self.showingRect == nil {
+//            showingRect = imageView.bounds
+//        } else {
+//            showingRect = self.showingRect!
+//        }
+        let showingRect: CGRect = self.showingRect ?? imageView.bounds
+        
         let showingRectRatio = showingRect.size.width / showingRect.size.height
         
         switch nextStatus {
@@ -830,7 +802,11 @@ class GifEditViewController: BaseViewController {
         })
         
         bottomBar.snp.updateConstraints { (make) in
-            make.bottom.equalTo(bottomBarBottom)
+            if #available(iOS 11, *) {
+                make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(bottomBarBottom)
+            } else {
+                make.bottom.equalTo(GifEditViewBottomBar.filterViewHeight - GifEditViewBottomBar.height)
+            }
         }
         
         updateMaskAndEdgeView(animated: false)
@@ -874,6 +850,36 @@ class GifEditViewController: BaseViewController {
         borderLayer.add(borderAnimation, forKey: nil)
     }
     
+    private func filterArray() -> [ImageFilter] {
+        let originImage = selectedArray[0].thumbnail!
+        
+        var filters: [ImageFilter] = [ImageFilter(title: "原始", previewImage: originImage, filter: nil)]
+        
+        let sepiaTooeFilter = SepiaToneFilter()
+        let pictureInput = PictureInput(image:originImage)
+        let pictureOutput = PictureOutput()
+        pictureOutput.imageAvailableCallback = {image in
+            let filter = ImageFilter(title: "怀旧", previewImage: image, filter: sepiaTooeFilter)
+            filters.append(filter)
+        }
+        pictureInput --> sepiaTooeFilter --> pictureOutput
+        pictureInput.processImage(synchronously:true)
+        
+        
+        let brightnessInput = PictureInput(image:originImage)
+        let brightnessOutput = PictureOutput()
+        let brightnessFilter = BrightnessAdjustment()
+        brightnessFilter.brightness = 0.3
+        brightnessOutput.imageAvailableCallback = {image in
+            let filter = ImageFilter(title: "高亮", previewImage: image, filter: brightnessFilter)
+            filters.append(filter)
+        }
+        brightnessInput --> brightnessFilter --> brightnessOutput
+        brightnessInput.processImage(synchronously:true)
+        
+        return filters
+    }
+    
     //MARK: UI property
     private lazy var imageView: UIImageView = {
         let imageView = UIImageView()
@@ -888,6 +894,7 @@ class GifEditViewController: BaseViewController {
     private lazy var bottomBar: GifEditViewBottomBar = {
         let bottomBar = GifEditViewBottomBar(frame: CGRect.zero)
         bottomBar.totalCount = self.selectedArray.count
+        bottomBar.filters = self.filterArray()
         bottomBar.resetButtonHandler = {
             // 恢复cliping模式初始状态
             self.showingRect = nil

@@ -18,7 +18,7 @@ enum ThumbnailState {
 
 class VideoThumbnail: NSObject {
     let asset: AVAsset
-    dynamic var thumbnail: UIImage?
+    @objc dynamic var thumbnail: UIImage?
     let requestedTime: CMTime
     var actualTime: CMTime
     var state: ThumbnailState = .pendding

@@ -69,7 +69,7 @@ struct VideoUtil {
         let outputPath = videoDirPath.appending("\(timeStamp()).mp4")
         let url = URL(fileURLWithPath: outputPath)
         
-        guard let assetWriter = try? AVAssetWriter(url: url, fileType: AVFileTypeQuickTimeMovie) else {
+        guard let assetWriter = try? AVAssetWriter(url: url, fileType: AVFileType.mov) else {
             completeHandler(false, nil)
             return
         }
@@ -81,7 +81,7 @@ struct VideoUtil {
             AVVideoWidthKey: size.width,
             AVVideoHeightKey: size.height,
         ]
-        let writerInput = AVAssetWriterInput(mediaType: AVMediaTypeVideo, outputSettings: outputSettings)
+        let writerInput = AVAssetWriterInput(mediaType: AVMediaType.video, outputSettings: outputSettings)
         writerInput.expectsMediaDataInRealTime = true
         
         if assetWriter.canAdd(writerInput) {

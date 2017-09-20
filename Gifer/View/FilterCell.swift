@@ -12,6 +12,15 @@ class FilterCell: UICollectionViewCell {
 
     @IBOutlet weak var previewImageView: UIImageView!
     @IBOutlet weak var titleLabel: UILabel!
+    var imageFilter: ImageFilter? {
+        didSet {
+            guard let imageFilter = imageFilter else {
+                return
+            }
+            previewImageView.image = imageFilter.previewImage
+            titleLabel.text = imageFilter.title
+        }
+    }
     
     override func awakeFromNib() {
         super.awakeFromNib()

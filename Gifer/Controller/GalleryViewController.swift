@@ -256,7 +256,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         }
     }
     
-    func fetchGIFFromLibrary() {
+    @objc func fetchGIFFromLibrary() {
         
         noRecordView.isHidden = true
         gifArray.removeAll()
@@ -454,7 +454,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     }
     
     //MARK: events
-    func clickAddButton() {
+    @objc func clickAddButton() {
         if isAnimating { return }
         isAnimating = true
         if addView.button.isSelected { // quit
@@ -495,28 +495,28 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         }
     }
     
-    func clickPhotoButton() {
+    @objc func clickPhotoButton() {
         if isAnimating { return }
         clickAddButton()
         let ctrl = PhotoPickerViewController()
         navigationController!.pushViewController(ctrl, animated: true)
     }
     
-    func clickVideoButton() {
+    @objc func clickVideoButton() {
         if isAnimating { return }
         clickAddButton()
         let ctrl = VideoPickerViewController()
         navigationController!.pushViewController(ctrl, animated: true)
     }
     
-    func clickRecordButton() {
+    @objc func clickRecordButton() {
         if isAnimating { return }
         clickAddButton()
         let ctrl = VideoRecordViewController()
         navigationController!.pushViewController(ctrl, animated: true)
     }
     
-    func clickSelectButton() {
+    @objc func clickSelectButton() {
         if isAnimating { return }
         isAnimating = true
         isSelecting = !isSelecting
@@ -578,7 +578,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         })
     }
     
-    func clickShareButton() {
+    @objc func clickShareButton() {
         guard let selectedIndexPaths = collectionView.indexPathsForSelectedItems, selectedIndexPaths.count > 0 else {
             showNotice(message: "请至少选择一张照片")
             return
@@ -661,7 +661,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         }
     }
     
-    func gifGenerated(_ notification: NSNotification) {
+    @objc func gifGenerated(_ notification: NSNotification) {
         let ctrl = GifAchieveViewController()
         ctrl.imageUrl = notification.object as? URL
         UIApplication.shared.delegate?.window??.rootViewController?.present(ctrl, animated: true, completion: nil)

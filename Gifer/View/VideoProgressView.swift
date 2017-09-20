@@ -10,11 +10,6 @@ import UIKit
 import SnapKit
 import AVFoundation
 
-enum VideoProgressViewEdgeType {
-    case start
-    case end
-}
-
 class VideoProgressView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     
     public static let height: CGFloat = 48
@@ -154,7 +149,7 @@ class VideoProgressView: UIView, UICollectionViewDelegateFlowLayout, UICollectio
     }
     
     // MARK: events
-    func panEdgeView(recognizer: UIPanGestureRecognizer) {
+    @objc func panEdgeView(recognizer: UIPanGestureRecognizer) {
         let edgeType: VideoProgressViewEdgeType
         var time: CMTime? = nil
         

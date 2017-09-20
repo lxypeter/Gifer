@@ -123,7 +123,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     private var captureVideoPreviewLayer: AVCaptureVideoPreviewLayer?
     private lazy var videoDataOutput: AVCaptureVideoDataOutput = {
         let videoDataOutput = AVCaptureVideoDataOutput()
-        videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as AnyHashable: kCVPixelFormatType_32BGRA]
+        videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as! String: kCVPixelFormatType_32BGRA]
         videoDataOutput.alwaysDiscardsLateVideoFrames = false
         videoDataOutput.setSampleBufferDelegate(self, queue: self.captureQueue)
         return videoDataOutput
@@ -168,7 +168,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     }
     
     func checkCamaraAuth() -> Bool {
-        let status = AVCaptureDevice.authorizationStatus(forMediaType: AVMediaTypeVideo)
+        let status = AVCaptureDevice.authorizationStatus(for: AVMediaType.video)
         if status == .denied {
             let alertViewController = UIAlertController(title: nil, message: "请在\"设置\"中允许访问相机", preferredStyle: .alert)
             let confrimAction = UIAlertAction(title: "确定", style: .default, handler: { [unowned self](action) in
@@ -221,7 +221,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     }
 
     // MARK: events
-    func clickShotButton() {
+    @objc func clickShotButton() {
         shotButton.isSelected = !shotButton.isSelected
         
         if shotButton.isSelected { // begin to record
@@ -239,14 +239,14 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         }
     }
     
-    func clickCamaraButton() {
+    @objc func clickCamaraButton() {
         if camaraButton.isSelected { return }
         camaraButton.isSelected = true
         switchCamara()
         camaraButton.isSelected = false
     }
     
-    func clickRatioButton() {
+    @objc func clickRatioButton() {
         let alertViewController = UIAlertController(title: "视频宽高比", message: nil, preferredStyle: .actionSheet)
         let oneToOneAction = UIAlertAction(title: "1:1", style: .default, handler: { [unowned self](action) in
             self.currentVideoRatio = .oneToOne
@@ -266,7 +266,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         present(alertViewController, animated: true, completion: nil)
     }
     
-    func tapToFocus(_ recognizer: UIGestureRecognizer) {
+    @objc func tapToFocus(_ recognizer: UIGestureRecognizer) {
         var touchPoint = recognizer.location(in: view)
         touchPoint.y = touchPoint.y - captureVideoPreviewLayer!.frame.minY
         
@@ -291,7 +291,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         focusAnimationGroup.animations = [opacityAmt, transformAmt]
         focusLayer.add(focusAnimationGroup, forKey: nil)
         
-        let capturePoint = captureVideoPreviewLayer!.captureDevicePointOfInterest(for: touchPoint)
+        let capturePoint = captureVideoPreviewLayer!.captureDevicePointConverted(fromLayerPoint: touchPoint)
         
         focusAtPoint(capturePoint)
     }
@@ -339,31 +339,28 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     
     // MARK: video method
     func configureCaptureSession() {
-        guard let camara = getCamara(of: .back) else {
-            showNotice(message: "无可用相机")
+        guard let camara = getCamara(of: .back), let mic = AVCaptureDevice.default(for: AVMediaType.audio) else {
+            showNotice(message: "初始化失败")
             navigationController?.popViewController(animated: true)
             return
         }
-        let mic = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeAudio)
         
         do {
             currentVideoInput = try AVCaptureDeviceInput(device: camara)
             currentAudioInput = try AVCaptureDeviceInput(device: mic)
             
             // 添加视频输入输出源
-            if captureSession.canAddInput(currentVideoInput) && captureSession.canAddOutput(videoDataOutput) {
-                captureSession.addInput(currentVideoInput)
+            if captureSession.canAddInput(currentVideoInput!) && captureSession.canAddOutput(videoDataOutput) {
+                captureSession.addInput(currentVideoInput!)
                 captureSession.addOutput(videoDataOutput)
                 
                 // 防抖
                 if currentVideoInput!.device.activeFormat.isVideoStabilizationModeSupported(.cinematic) {
-                    let captureConnection = videoDataOutput.connection(withMediaType: AVMediaTypeVideo)
+                    let captureConnection = videoDataOutput.connection(with: AVMediaType.video)
                     captureConnection?.preferredVideoStabilizationMode = .auto
                 }
                 
-                guard let previewLayer = AVCaptureVideoPreviewLayer(session: captureSession) else {
-                    throw VideoCaptureError.FailToInitSession
-                }
+                let previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
                 captureVideoPreviewLayer = previewLayer
                 
             } else {
@@ -371,8 +368,8 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             }
             
             // 添加音频输入输出源
-            if captureSession.canAddInput(currentAudioInput) && captureSession.canAddOutput(audioDataOutput){
-                captureSession.addInput(currentAudioInput)
+            if captureSession.canAddInput(currentAudioInput!) && captureSession.canAddOutput(audioDataOutput){
+                captureSession.addInput(currentAudioInput!)
                 captureSession.addOutput(audioDataOutput)
             }
         } catch {
@@ -383,7 +380,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         
         let layerHeight = kScreenWidth / RatioStatus.fourToThree.floatValue
         captureVideoPreviewLayer!.frame = CGRect(x: 0, y: kScreenHeight * (0.5 + previewLayerOffsetRatio) - layerHeight / 2, width: kScreenWidth, height: layerHeight)
-        captureVideoPreviewLayer!.videoGravity = AVLayerVideoGravityResizeAspectFill
+        captureVideoPreviewLayer!.videoGravity = AVLayerVideoGravity.resizeAspectFill
         view.layer.addSublayer(captureVideoPreviewLayer!)
         
         // 对焦手势
@@ -395,19 +392,17 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         }
     }
     
-    func getCamara(of position: AVCaptureDevicePosition) -> AVCaptureDevice? {
+    func getCamara(of position: AVCaptureDevice.Position) -> AVCaptureDevice? {
         if #available(iOS 10.0, *) {
-            let discoverySession = AVCaptureDeviceDiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: AVMediaTypeVideo, position: position)
-            guard let devices = discoverySession?.devices else {
-                return nil
-            }
+            let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: AVMediaType.video, position: position)
+            let devices = discoverySession.devices
             for device in devices {
                 if device.position == position {
                     return device
                 }
             }
         } else {
-            let devices = AVCaptureDevice.devices(withMediaType: AVMediaTypeVideo) as! [AVCaptureDevice]
+            let devices = AVCaptureDevice.devices(for: AVMediaType.video)
             for device in devices {
                 if device.position == position {
                     return device
@@ -430,7 +425,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         printLog("\(outputPath)")
         
         captureQueue.async {[unowned self] in
-            guard let aw = try? AVAssetWriter(url: url, fileType: AVFileTypeQuickTimeMovie) else {
+            guard let aw = try? AVAssetWriter(url: url, fileType: AVFileType.mov) else {
                 self.showNotice(message: "创建视频失败！")
                 self.shotButton.isSelected = false
                 return
@@ -460,7 +455,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
                     AVVideoProfileLevelKey: AVVideoProfileLevelH264BaselineAutoLevel
                 ]
             ]
-            let writerInput = AVAssetWriterInput(mediaType: AVMediaTypeVideo, outputSettings: outputSettings)
+            let writerInput = AVAssetWriterInput(mediaType: AVMediaType.video, outputSettings: outputSettings)
             writerInput.expectsMediaDataInRealTime = true
             let transform: CGAffineTransform
             switch UIDevice.current.orientation {
@@ -494,8 +489,8 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             self.assetWriterInputPixelBufferAdaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: writerInput, sourcePixelBufferAttributes: bufferAttributes)
             
             // 音频
-            let audioOutputSetting = self.audioDataOutput.recommendedAudioSettingsForAssetWriter(withOutputFileType: AVFileTypeQuickTimeMovie) as? [String : Any]
-            self.assetWriterAudioInput = AVAssetWriterInput(mediaType: AVMediaTypeAudio, outputSettings: audioOutputSetting)
+            let audioOutputSetting = self.audioDataOutput.recommendedAudioSettingsForAssetWriter(writingTo: AVFileType.mov) as? [String : Any]
+            self.assetWriterAudioInput = AVAssetWriterInput(mediaType: AVMediaType.audio, outputSettings: audioOutputSetting)
             self.assetWriterAudioInput!.expectsMediaDataInRealTime = true;
             if self.assetWriter!.canAdd(self.assetWriterAudioInput!) {
                 self.assetWriter!.add(self.assetWriterAudioInput!)
@@ -543,7 +538,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             return
         }
         let currentPosition = currentDevice.position
-        let nextPosition: AVCaptureDevicePosition
+        let nextPosition: AVCaptureDevice.Position
         switch currentPosition {
         case .back:
             nextPosition = .front
@@ -552,7 +547,10 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             nextPosition = .back
             topView.isFlashButtonEnable = true
         }
-        let nextDevice = getCamara(of: nextPosition)
+        guard let nextDevice = getCamara(of: nextPosition) else {
+            showNotice(message: "相机初始化失败")
+            return
+        }
         do {
             let nextVideoInput = try AVCaptureDeviceInput(device: nextDevice)
             captureSession.beginConfiguration()
@@ -566,7 +564,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             
             // 防抖
             if nextVideoInput.device.activeFormat.isVideoStabilizationModeSupported(.cinematic) {
-                let captureConnection = videoDataOutput.connection(withMediaType: AVMediaTypeVideo)
+                let captureConnection = videoDataOutput.connection(with: AVMediaType.video)
                 captureConnection?.preferredVideoStabilizationMode = .cinematic
             }
             
@@ -579,7 +577,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         return
     }
     
-    func switchFlashMode(_ flashMode: AVCaptureTorchMode) -> Bool {
+    func switchFlashMode(_ flashMode: AVCaptureDevice.TorchMode) -> Bool {
         var result = false
         do {
             guard let currentDevice = currentVideoInput?.device else {

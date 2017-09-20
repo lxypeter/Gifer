@@ -20,6 +20,7 @@
 		E12826A21ED4116700262F63 /* GalleryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12826A11ED4116700262F63 /* GalleryViewController.swift */; };
 		E12826A61ED42B4600262F63 /* GalleryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12826A41ED42B4600262F63 /* GalleryCell.swift */; };
 		E12826A71ED42B4600262F63 /* GalleryCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E12826A51ED42B4600262F63 /* GalleryCell.xib */; };
+		E12CA12F1F7244880092E92A /* ImageFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12CA12E1F7244880092E92A /* ImageFilter.swift */; };
 		E12DFDC51ED6CBE5009608E8 /* PhotoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12DFDC41ED6CBE5009608E8 /* PhotoViewController.swift */; };
 		E12DFDCB1ED6D8F1009608E8 /* GifAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12DFDCA1ED6D8F1009608E8 /* GifAnimator.swift */; };
 		E12E2BDA1F56649F00B08FB5 /* VideoClipViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12E2BD91F56649F00B08FB5 /* VideoClipViewController.swift */; };
@@ -142,6 +143,7 @@
 		E12826A11ED4116700262F63 /* GalleryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GalleryViewController.swift; sourceTree = "<group>"; };
 		E12826A41ED42B4600262F63 /* GalleryCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GalleryCell.swift; sourceTree = "<group>"; };
 		E12826A51ED42B4600262F63 /* GalleryCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = GalleryCell.xib; sourceTree = "<group>"; };
+		E12CA12E1F7244880092E92A /* ImageFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageFilter.swift; sourceTree = "<group>"; };
 		E12DFDC41ED6CBE5009608E8 /* PhotoViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoViewController.swift; sourceTree = "<group>"; };
 		E12DFDCA1ED6D8F1009608E8 /* GifAnimator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifAnimator.swift; sourceTree = "<group>"; };
 		E12E2BD91F56649F00B08FB5 /* VideoClipViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoClipViewController.swift; sourceTree = "<group>"; };
@@ -347,6 +349,7 @@
 				E1333D281ED564D60017C07B /* Photo.swift */,
 				E1A87EE21F5CFAD30024E01F /* VideoThumbnail.swift */,
 				E1A40D601F5FD1B3002D58AF /* Video.swift */,
+				E12CA12E1F7244880092E92A /* ImageFilter.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -606,6 +609,7 @@
 				E1F2B4711EF110F8003948EB /* GifEditToolBar.swift in Sources */,
 				E13CACFF1EE50775004D9CAA /* Constants.swift in Sources */,
 				E195333E1EE6A48D00C23BE2 /* PublicMethod.swift in Sources */,
+				E12CA12F1F7244880092E92A /* ImageFilter.swift in Sources */,
 				E171BF8E1EEA45D5001F53E2 /* GifEditViewController.swift in Sources */,
 				E195333A1EE68CF000C23BE2 /* GalleryViewBottomBar.swift in Sources */,
 				E15212571F5E99BD001C2E5A /* VideoRecordTopView.swift in Sources */,
@@ -755,7 +759,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lxypeter.gifer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -769,7 +773,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lxypeter.gifer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};

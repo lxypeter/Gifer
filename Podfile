@@ -8,8 +8,6 @@ target 'Gifer' do
   pod 'JGProgressHUD'
   pod 'SnapKit'
   pod 'MJRefresh'
-  pod 'SwiftyJSON'
-  pod 'ObjectMapper'
   pod 'Kingfisher'
   pod 'MonkeyKing'
 end

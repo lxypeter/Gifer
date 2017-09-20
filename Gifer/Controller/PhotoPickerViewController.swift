@@ -172,7 +172,7 @@ class PhotoPickerViewController: BaseViewController, UICollectionViewDataSource,
     }
     
     //MARK: events
-    func clickNextButton() {
+    @objc func clickNextButton() {
         if selectedArray.count < 2 {
             showNotice(message: "请至少选择两张图片！")
             return

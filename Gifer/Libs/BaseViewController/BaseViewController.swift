@@ -34,16 +34,21 @@ class BaseViewController: UIViewController {
         
         let backBtn: UIButton = UIButton()
         backBtn.setImage(UIImage(named:"back"), for: .normal)
-        backBtn.bounds = CGRect(x: 0, y: 0, width: 24, height: 24)
+        backBtn.imageView?.contentMode = .scaleAspectFit
+//        backBtn.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
+        let widthConstraint = backBtn.widthAnchor.constraint(equalToConstant: 24)
+        let heightConstraint = backBtn.heightAnchor.constraint(equalToConstant: 24)
+        heightConstraint.isActive = true
+        widthConstraint.isActive = true
         backBtn.addTarget(self, action: #selector(backToLastController), for: .touchUpInside)
         let backItem: UIBarButtonItem = UIBarButtonItem(customView:backBtn)
-        self.navigationItem.leftBarButtonItem = backItem;
+        navigationItem.leftBarButtonItem = backItem;
         
     }
     
-    func backToLastController() {
-        self.view.endEditing(true)
-        self.navigationController?.popViewController(animated: true)
+    @objc func backToLastController() {
+        view.endEditing(true)
+        navigationController?.popViewController(animated: true)
     }
     
     func showHudWithMsg(msg: String) {

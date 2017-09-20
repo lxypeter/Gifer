@@ -15,7 +15,7 @@ class Photo: NSObject {
     let photoWidth: CGFloat
     let photoHeight: CGFloat
     var thumbnail: UIImage?
-    dynamic var fullImageData: NSData?{
+    @objc dynamic var fullImageData: NSData?{
         didSet{
             guard let fullImageData = self.fullImageData, fullImageData.imageFormat != .GIF  else {
                 return

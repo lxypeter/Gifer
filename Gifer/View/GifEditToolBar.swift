@@ -168,7 +168,7 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
     }
     
     //MARK: events
-    func clickClipButton() {
+    @objc func clickClipButton() {
         if status != .normal { return }
         status = .cliping
         animationOfStatusSwitch(status: .enterConfirm)
@@ -177,7 +177,7 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
         }
         clipButtonHandler()
     }
-    func clickFilterButton() {
+    @objc func clickFilterButton() {
         if status != .normal { return }
         status = .filtering
         animationOfStatusSwitch(status: .enterConfirm)
@@ -187,7 +187,7 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
         filterButtonHandler()
     }
     
-    func clickConfirmButton() {
+    @objc func clickConfirmButton() {
         switch status {
         case .cliping:
             status = .normal
@@ -207,7 +207,7 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
         }
     }
     
-    func clickCancelButton() {
+    @objc func clickCancelButton() {
         switch status {
         case .cliping:
             status = .normal
@@ -227,7 +227,7 @@ class GifEditToolBar: UIView, CAAnimationDelegate {
         }
     }
     
-    func clickSeqButton() {
+    @objc func clickSeqButton() {
         if status != .normal { return }
         switch sequence {
         case .normal:
