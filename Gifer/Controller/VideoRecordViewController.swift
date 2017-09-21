@@ -83,9 +83,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         return recordingLayer
     }()
     
-    private lazy var captureQueue: DispatchQueue = {
-        return DispatchQueue(label: "com.lxy.videoCapture")
-    }()
+    private let captureQueue: DispatchQueue = DispatchQueue(label: "com.lxy.videoCapture")
     private var isWriting: Bool = false {
         didSet {
             DispatchQueue.main.async { [unowned self] in
@@ -123,7 +121,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     private var captureVideoPreviewLayer: AVCaptureVideoPreviewLayer?
     private lazy var videoDataOutput: AVCaptureVideoDataOutput = {
         let videoDataOutput = AVCaptureVideoDataOutput()
-        videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as! String: kCVPixelFormatType_32BGRA]
+        videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
         videoDataOutput.alwaysDiscardsLateVideoFrames = false
         videoDataOutput.setSampleBufferDelegate(self, queue: self.captureQueue)
         return videoDataOutput
@@ -471,8 +469,8 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             writerInput.transform = transform
             self.assetWriterVideoInput = writerInput
             
-            if self.assetWriter!.canAdd(self.assetWriterVideoInput!) {
-                self.assetWriter!.add(self.assetWriterVideoInput!)
+            if self.assetWriter!.canAdd(writerInput) {
+                self.assetWriter!.add(writerInput)
             } else {
                 DispatchQueue.main.async { [unowned self] in
                     self.showNotice(message: "创建视频失败！")
@@ -510,7 +508,6 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     func stopRecording() {
         if !isWriting { return }
         isWriting = false;
-        
         captureQueue.async { [unowned self] in
             self.assetWriter?.finishWriting {
                 printLog("finish")

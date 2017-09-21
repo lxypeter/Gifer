@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import GPUImage
 
 class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource {
     
@@ -32,7 +33,7 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
             self.speedTimesLabel.text = "间隔: \(String(format: "%.2f", self.slider.value))秒，共\(Float(String(format: "%.2f", self.slider.value))! * Float(self.totalCount))秒"
         }
     }
-    public var filters: [ImageFilter] = []
+    public var filters: [PreviewFilterModel] = []
     private let cellId = "FilterCellId"
     
     private lazy var baseView: UIView = {
@@ -146,6 +147,7 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
     }
     var ratioButtonHandler: (() -> ())?
     var resetButtonHandler: (() -> ())?
+    var filterHandler: ((ImageFilter?) -> ())?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -329,7 +331,7 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FilterCell
-        cell.imageFilter = filters[indexPath.row]
+        cell.previewFilterModel = filters[indexPath.row]
         return cell
     }
     
@@ -338,7 +340,11 @@ class GifEditViewBottomBar: UIView, CAAnimationDelegate, UICollectionViewDelegat
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
+        let previewFilterModel = filters[indexPath.row]
+        guard let filterHandler = filterHandler else {
+            return
+        }
+        filterHandler(previewFilterModel.filter)
     }
     
     //MARK: animate

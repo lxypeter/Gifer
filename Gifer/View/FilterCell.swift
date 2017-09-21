@@ -12,13 +12,13 @@ class FilterCell: UICollectionViewCell {
 
     @IBOutlet weak var previewImageView: UIImageView!
     @IBOutlet weak var titleLabel: UILabel!
-    var imageFilter: ImageFilter? {
+    var previewFilterModel: PreviewFilterModel? {
         didSet {
-            guard let imageFilter = imageFilter else {
+            guard let previewFilterModel = previewFilterModel else {
                 return
             }
-            previewImageView.image = imageFilter.previewImage
-            titleLabel.text = imageFilter.title
+            previewImageView.image = previewFilterModel.previewImage
+            titleLabel.text = previewFilterModel.title
         }
     }
     

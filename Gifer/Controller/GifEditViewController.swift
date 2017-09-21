@@ -41,6 +41,7 @@ class GifEditViewController: BaseViewController {
         }
     }
     private var kGroup: DispatchGroup = DispatchGroup()
+    private lazy var filterContext = { return CIContext(options: nil) }()
     private var editStatus: GifEditStatus = .normal {
         didSet {
             if editStatus != oldValue {
@@ -222,15 +223,6 @@ class GifEditViewController: BaseViewController {
             for  photo in self.selectedArray {
                 if photo.fullImage != nil {
                     self.imageArray.append(photo.fullImage!)
-//                    let toonFilter = SepiaToneFilter()
-//                    let testImage = photo.fullImage!
-//                    let pictureInput = PictureInput(image:testImage)
-//                    let pictureOutput = PictureOutput()
-//                    pictureOutput.imageAvailableCallback = {image in
-//                        self.imageArray.append(image)
-//                    }
-//                    pictureInput --> toonFilter --> pictureOutput
-//                    pictureInput.processImage(synchronously:true)
                 }
             }
             self.imageView.animationImages = self.imageArray
@@ -850,34 +842,32 @@ class GifEditViewController: BaseViewController {
         borderLayer.add(borderAnimation, forKey: nil)
     }
     
-    private func filterArray() -> [ImageFilter] {
-        let originImage = selectedArray[0].thumbnail!
+    private func previewFilters() -> [PreviewFilterModel] {
+        let originImage = selectedArray[0].thumbnail ?? selectedArray[0].fullImage!
         
-        var filters: [ImageFilter] = [ImageFilter(title: "原始", previewImage: originImage, filter: nil)]
-        
-        let sepiaTooeFilter = SepiaToneFilter()
-        let pictureInput = PictureInput(image:originImage)
-        let pictureOutput = PictureOutput()
-        pictureOutput.imageAvailableCallback = {image in
-            let filter = ImageFilter(title: "怀旧", previewImage: image, filter: sepiaTooeFilter)
-            filters.append(filter)
+        var previewFilters: [PreviewFilterModel] = []
+        previewFilters.append(PreviewFilterModel(title: "原始", previewImage: originImage, filter: nil))
+        let filters: [ImageFilter] = ImageFilter.supportedFilters()
+        for filter in filters{
+            if let previewImage = createImage(with: originImage, by: filter) {
+                let model = PreviewFilterModel(title: filter.nickname, previewImage: previewImage, filter: filter)
+                previewFilters.append(model)
+            }
         }
-        pictureInput --> sepiaTooeFilter --> pictureOutput
-        pictureInput.processImage(synchronously:true)
-        
-        
-        let brightnessInput = PictureInput(image:originImage)
-        let brightnessOutput = PictureOutput()
-        let brightnessFilter = BrightnessAdjustment()
-        brightnessFilter.brightness = 0.3
-        brightnessOutput.imageAvailableCallback = {image in
-            let filter = ImageFilter(title: "高亮", previewImage: image, filter: brightnessFilter)
-            filters.append(filter)
+        return previewFilters
+    }
+    
+    private func createImage(with image: UIImage, by imageFilter: ImageFilter) -> UIImage? {
+        guard let filter = CIFilter(name: imageFilter.name, withInputParameters: imageFilter.preset), let beginImage = CIImage(image: image) else {
+            return nil
         }
-        brightnessInput --> brightnessFilter --> brightnessOutput
-        brightnessInput.processImage(synchronously:true)
+        filter.setValue(beginImage, forKey: kCIInputImageKey)
         
-        return filters
+        guard let output = filter.outputImage, let cgimg = filterContext.createCGImage(output, from: output.extent) else {
+            return nil
+        }
+        
+        return UIImage(cgImage: cgimg)
     }
     
     //MARK: UI property
@@ -894,7 +884,7 @@ class GifEditViewController: BaseViewController {
     private lazy var bottomBar: GifEditViewBottomBar = {
         let bottomBar = GifEditViewBottomBar(frame: CGRect.zero)
         bottomBar.totalCount = self.selectedArray.count
-        bottomBar.filters = self.filterArray()
+        bottomBar.filters = self.previewFilters()
         bottomBar.resetButtonHandler = {
             // 恢复cliping模式初始状态
             self.showingRect = nil
@@ -908,6 +898,41 @@ class GifEditViewController: BaseViewController {
         }
         bottomBar.rotateButtonHandler = {
             self.clickRotateButton()
+        }
+        bottomBar.filterHandler = {[unowned self] filter in
+            var filterImages: [UIImage] = []
+            
+            for photo in self.selectedArray {
+                if let fullImage = photo.fullImage {
+                    if let filter = filter, let resultImage = self.createImage(with: fullImage, by: filter) {
+                        filterImages.append(resultImage)
+                    } else {
+                        filterImages.append(fullImage)
+                    }
+                }
+            }
+            
+            self.imageArray.removeAll()
+            switch self.sequence {
+            case .normal:
+                for image in filterImages {
+                    self.imageArray.append(image)
+                }
+            case .reverse:
+                for image in filterImages.reversed() {
+                    self.imageArray.append(image)
+                }
+            case .toAndFor:
+                for image in filterImages {
+                    self.imageArray.append(image)
+                }
+                for image in filterImages.reversed() {
+                    self.imageArray.append(image)
+                }
+            }
+            self.imageView.animationDuration = Double(String(format: "%.2f", self.frameInterval))! * Double(self.imageArray.count)
+            self.imageView.animationImages = self.imageArray
+            self.imageView.startAnimating()
         }
         return bottomBar
     }()
