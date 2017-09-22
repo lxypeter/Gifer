@@ -26,9 +26,12 @@ class GifEditViewController: BaseViewController {
     
     //MARK: property
     private let kEdgeViewWidth: CGFloat = 50
-    private let lowQualityLength: CGFloat = 334
-    private let mediumQualityLength: CGFloat = 667
-    private let highQualityLength: CGFloat = 1000
+//    private let lowQualityLength: CGFloat = 334
+//    private let mediumQualityLength: CGFloat = 667
+//    private let highQualityLength: CGFloat = 1000
+    private let lowQualityLength: CGFloat = 167
+    private let mediumQualityLength: CGFloat = 334
+    private let highQualityLength: CGFloat = 667
     
     public var selectedArray: [Photo] = []
     private var imageArray: [UIImage] = []
@@ -267,6 +270,8 @@ class GifEditViewController: BaseViewController {
         
         let filename = timeStamp()
         let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("\(filename).gif")
+        let imageViewWidth = imageView.bounds.width
+        let imageViewHeight = imageView.bounds.height
         
         DispatchQueue.global().async { [unowned self] in
             let destination: CGImageDestination? = CGImageDestinationCreateWithURL(url as CFURL, kUTTypeGIF, self.imageArray.count, nil);
@@ -281,8 +286,8 @@ class GifEditViewController: BaseViewController {
             
             for image in self.imageArray {
                 autoreleasepool {
-                    let originWidth = scale * self.imageView.bounds.width
-                    let originHeight = scale * self.imageView.bounds.height
+                    let originWidth = scale * imageViewWidth
+                    let originHeight = scale * imageViewHeight
                     
                     let newImage = image.imageCenterScalingWith(targetSize: CGSize(width: originWidth, height: originHeight))?.clipImage(in: CGRect(x: sr.origin.x * scale, y: sr.origin.y * scale, width: sr.size.width * scale, height: sr.size.height * scale))
                 

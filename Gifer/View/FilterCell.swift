@@ -24,6 +24,7 @@ class FilterCell: UICollectionViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        previewImageView.clipsToBounds = true
         // Initialization code
     }
 

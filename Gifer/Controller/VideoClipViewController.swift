@@ -100,9 +100,7 @@ class VideoClipViewController: BaseViewController {
         
         NotificationCenter.default.removeObserver(self)
         
-        if player?.timeControlStatus == .playing {
-            player?.pause()
-        }
+        player?.pause()
     }
     
     override var prefersStatusBarHidden: Bool{
@@ -223,8 +221,9 @@ class VideoClipViewController: BaseViewController {
         
         imageGenerator.generateCGImagesAsynchronously(forTimes: times) {[unowned self](requestedTime, cgImage, actualTime, result, error) in
             autoreleasepool {
+                totalCount -= 1
+                
                 if result == .succeeded {
-                    totalCount -= 1
                     guard let videoFrame = cgImage else {
                         return
                     }
@@ -232,18 +231,18 @@ class VideoClipViewController: BaseViewController {
                     let photo = Photo(fullImage: image)
                     photo.videoFrameTime = actualTime
                     photos.append(photo)
-                    
-                    if totalCount == 0 {
-                        photos.sort(by: { (firstThumbnail, secThumbnail) -> Bool in
-                            return CMTimeGetSeconds(firstThumbnail.videoFrameTime!) < CMTimeGetSeconds(secThumbnail.videoFrameTime!)
-                        })
-                        DispatchQueue.main.async {[unowned self] in
-                            self.hideHud()
-                            let ctrl = GifEditViewController()
-                            ctrl.selectedArray = photos
-                            ctrl.frameInterval = Float(1 / framePerSec)
-                            self.navigationController?.pushViewController(ctrl, animated: true)
-                        }
+                }
+                
+                if totalCount == 0 {
+                    photos.sort(by: { (firstThumbnail, secThumbnail) -> Bool in
+                        return CMTimeGetSeconds(firstThumbnail.videoFrameTime!) < CMTimeGetSeconds(secThumbnail.videoFrameTime!)
+                    })
+                    DispatchQueue.main.async {[unowned self] in
+                        self.hideHud()
+                        let ctrl = GifEditViewController()
+                        ctrl.selectedArray = photos
+                        ctrl.frameInterval = Float(1 / framePerSec)
+                        self.navigationController?.pushViewController(ctrl, animated: true)
                     }
                 }
             }

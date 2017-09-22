@@ -633,7 +633,8 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         kGroup.notify(queue: DispatchQueue.main) {[unowned self] in
             self.hideHud()
             self.addView.isHidden = true
-            let ctrl = UIActivityViewController(activityItems: preShareImage, applicationActivities: [WeChatActivity(), MomentsActivity()])
+//            let ctrl = UIActivityViewController(activityItems: preShareImage, applicationActivities: [WeChatActivity(), MomentsActivity()])
+            let ctrl = UIActivityViewController(activityItems: preShareImage, applicationActivities: nil)
             ctrl.excludedActivityTypes = [
                 .postToFacebook,
                 .postToTwitter,

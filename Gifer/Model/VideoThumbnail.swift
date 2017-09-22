@@ -30,7 +30,7 @@ class VideoThumbnail: NSObject {
         super.init()
     }
     
-    func generateThumbnail(successHandler: ((UIImage)->())?) {
+    func generateThumbnail(completeHandler: ((ThumbnailState, UIImage?)->())?) {
         state = .loading
         
         DispatchQueue.global().async {[unowned self] in
@@ -46,14 +46,15 @@ class VideoThumbnail: NSObject {
                 let image = UIImage(cgImage: thumbnailCgImage)
                 self.thumbnail = image
                 self.state = .loaded
-                guard let successHandler = successHandler else {
-                    return
-                }
-                DispatchQueue.main.async {
-                    successHandler(image)
-                }
             } catch {
                 self.state = .fail
+            }
+            
+            guard let completeHandler = completeHandler else {
+                return
+            }
+            DispatchQueue.main.async {[unowned self] in
+                completeHandler(self.state, self.thumbnail)
             }
         }
     }

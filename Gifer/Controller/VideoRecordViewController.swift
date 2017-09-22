@@ -295,7 +295,7 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     }
     
     // MARK: delegate
-    func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         if !isWriting { return }
         
         let formatDesc: CMFormatDescription = CMSampleBufferGetFormatDescription(sampleBuffer)!

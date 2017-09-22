@@ -146,9 +146,11 @@ class GifImageView: UIImageView {
         if object as? GifAnimator === loadingAnimator {
             let isFinishLoading = change?[NSKeyValueChangeKey.newKey] as! Bool
             if isFinishLoading {
-                animator = loadingAnimator
-                contentMode = tempContentMode
-                loadingAnimator = nil
+                DispatchQueue.main.async {[unowned self] in
+                    self.animator = self.loadingAnimator
+                    self.contentMode = self.tempContentMode
+                    self.loadingAnimator = nil
+                }
             }
         }
     }

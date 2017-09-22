@@ -42,8 +42,8 @@ class GifAchieveViewController: BaseViewController {
         imageView.snp.makeConstraints { (make) in
             make.centerX.equalTo(view)
             make.centerY.equalTo(view)
-            make.width.equalTo(kScreenWidth * 0.8)
-            make.height.equalTo(kScreenWidth * 0.8)
+            make.width.equalTo(kScreenWidth * 0.9)
+            make.height.equalTo(kScreenWidth * 0.9)
         }
         view.addSubview(closeButton)
         closeButton.snp.makeConstraints { (make) in
