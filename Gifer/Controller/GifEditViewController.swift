@@ -11,7 +11,6 @@ import SnapKit
 import Photos
 import ImageIO
 import MobileCoreServices
-import GPUImage
 
 class GifEditViewController: BaseViewController {
     private enum MaskFadeType {
@@ -54,6 +53,7 @@ class GifEditViewController: BaseViewController {
     }
     private var showingRect: CGRect? = nil
     private var tempShowingRect: CGRect? = nil
+    private var tempImageArray: [UIImage] = []
     private var sequence: PlaySequence = .normal {
         didSet {
             imageArray.removeAll()
@@ -959,12 +959,20 @@ class GifEditViewController: BaseViewController {
             self.sequence = sequence
         }
         toolBar.filterButtonHandler = {[unowned self] in
+            self.tempImageArray.removeAll()
+            self.tempImageArray.append(contentsOf: self.imageArray)
             self.editStatus = .filtering
         }
         toolBar.filterConfirmButtonHandler = {[unowned self] in
             self.editStatus = .normal
         }
         toolBar.filterCancelButtonHandler = {[unowned self] in
+            self.imageArray.removeAll()
+            self.imageArray.append(contentsOf: self.tempImageArray)
+            self.imageView.animationDuration = Double(String(format: "%.2f", self.frameInterval))! * Double(self.imageArray.count)
+            self.imageView.animationImages = self.imageArray
+            self.imageView.startAnimating()
+            self.tempImageArray.removeAll()
             self.editStatus = .normal
         }
         return toolBar

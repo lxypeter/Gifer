@@ -31,7 +31,7 @@ class PhotoPickerCell: UICollectionViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        selectedView.backgroundColor = UIColor(displayP3Red: 0.25, green: 0.8, blue: 0.8, alpha: 0.5)
+        selectedView.backgroundColor = UIColor(red: 0.25, green: 0.8, blue: 0.8, alpha: 0.5)
         selectedView.isHidden = true
     }
     

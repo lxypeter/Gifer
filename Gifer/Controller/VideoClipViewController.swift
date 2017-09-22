@@ -45,9 +45,10 @@ class VideoClipViewController: BaseViewController {
             switch state {
             case .began:
                 self.playButton.isEnabled = false
-                if self.player?.timeControlStatus == .playing {
-                    self.player?.pause()
-                }
+//                if self.player?.timeControlStatus == .playing {
+//                    self.player?.pause()
+//                }
+                self.player?.pause()
             case .ended, .failed:
                 self.playButton.isEnabled = true
                 switch type {
