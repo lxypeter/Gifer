@@ -35,7 +35,7 @@ class BaseViewController: UIViewController {
         let backBtn: UIButton = UIButton()
         backBtn.setImage(UIImage(named:"back"), for: .normal)
         backBtn.imageView?.contentMode = .scaleAspectFit
-//        backBtn.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
+        backBtn.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
         let widthConstraint = backBtn.widthAnchor.constraint(equalToConstant: 24)
         let heightConstraint = backBtn.heightAnchor.constraint(equalToConstant: 24)
         heightConstraint.isActive = true
