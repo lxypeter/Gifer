@@ -87,10 +87,18 @@ struct ImageFilter {
                 "inputBiasVector": CIVector(x: -66.6 / 255, y: -66.6 / 255, z: -66.6 / 255, w: 0)])
         ]
     }
-}
-
-struct PreviewFilterModel {
-    let title: String
-    let previewImage: UIImage
-    let filter: ImageFilter?
+    
+    func createImage(with image: UIImage, context: CIContext) -> UIImage? {
+        guard let filter = CIFilter(name: name, withInputParameters: preset), let beginImage = CIImage(image: image, options: ["opaque": false]) else {
+            return nil
+        }
+        filter.setValue(beginImage, forKey: kCIInputImageKey)
+        
+        guard let output = filter.outputImage, let cgimg = context.createCGImage(output, from: output.extent) else {
+            return nil
+        }
+        
+        return UIImage(cgImage: cgimg)
+    }
+    
 }

@@ -802,7 +802,7 @@ class GifEditViewController: BaseViewController {
             if #available(iOS 11, *) {
                 make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(bottomBarBottom)
             } else {
-                make.bottom.equalTo(GifEditViewBottomBar.filterViewHeight - GifEditViewBottomBar.height)
+                make.bottom.equalTo(bottomBarBottom)
             }
         }
         
@@ -851,23 +851,21 @@ class GifEditViewController: BaseViewController {
         let originImage = selectedArray[0].thumbnail ?? selectedArray[0].fullImage!
         
         var previewFilters: [PreviewFilterModel] = []
-        previewFilters.append(PreviewFilterModel(title: "原始", previewImage: originImage, filter: nil))
+        previewFilters.append(PreviewFilterModel(title: "原始", originImage: originImage, filter: nil, filterContext: filterContext))
         let filters: [ImageFilter] = ImageFilter.supportedFilters()
-        for filter in filters{
-            if let previewImage = createImage(with: originImage, by: filter) {
-                let model = PreviewFilterModel(title: filter.nickname, previewImage: previewImage, filter: filter)
-                previewFilters.append(model)
-            }
+        for filter in filters {
+            let model = PreviewFilterModel(title: filter.nickname, originImage: originImage, filter: filter, filterContext: filterContext)
+            previewFilters.append(model)
         }
         return previewFilters
     }
     
     private func createImage(with image: UIImage, by imageFilter: ImageFilter) -> UIImage? {
-        guard let filter = CIFilter(name: imageFilter.name, withInputParameters: imageFilter.preset), let beginImage = CIImage(image: image) else {
+        guard let filter = CIFilter(name: imageFilter.name, withInputParameters: imageFilter.preset), let beginImage = CIImage(image: image, options: ["opaque": false]) else {
             return nil
         }
         filter.setValue(beginImage, forKey: kCIInputImageKey)
-        
+
         guard let output = filter.outputImage, let cgimg = filterContext.createCGImage(output, from: output.extent) else {
             return nil
         }
@@ -907,37 +905,43 @@ class GifEditViewController: BaseViewController {
         bottomBar.filterHandler = {[unowned self] filter in
             var filterImages: [UIImage] = []
             
-            for photo in self.selectedArray {
-                if let fullImage = photo.fullImage {
-                    if let filter = filter, let resultImage = self.createImage(with: fullImage, by: filter) {
-                        filterImages.append(resultImage)
-                    } else {
-                        filterImages.append(fullImage)
+            self.showHudWithMsg(msg: "请稍候")
+            DispatchQueue.global().async {
+                for photo in self.selectedArray {
+                    if let fullImage = photo.fullImage {
+                        if let filter = filter, let resultImage = self.createImage(with: fullImage, by: filter) {
+                            filterImages.append(resultImage)
+                        } else {
+                            filterImages.append(fullImage)
+                        }
                     }
                 }
+                
+                self.imageArray.removeAll()
+                switch self.sequence {
+                case .normal:
+                    for image in filterImages {
+                        self.imageArray.append(image)
+                    }
+                case .reverse:
+                    for image in filterImages.reversed() {
+                        self.imageArray.append(image)
+                    }
+                case .toAndFor:
+                    for image in filterImages {
+                        self.imageArray.append(image)
+                    }
+                    for image in filterImages.reversed() {
+                        self.imageArray.append(image)
+                    }
+                }
+                DispatchQueue.main.async {
+                    self.imageView.animationDuration = Double(String(format: "%.2f", self.frameInterval))! * Double(self.imageArray.count)
+                    self.imageView.animationImages = self.imageArray
+                    self.imageView.startAnimating()
+                    self.hideHud()
+                }
             }
-            
-            self.imageArray.removeAll()
-            switch self.sequence {
-            case .normal:
-                for image in filterImages {
-                    self.imageArray.append(image)
-                }
-            case .reverse:
-                for image in filterImages.reversed() {
-                    self.imageArray.append(image)
-                }
-            case .toAndFor:
-                for image in filterImages {
-                    self.imageArray.append(image)
-                }
-                for image in filterImages.reversed() {
-                    self.imageArray.append(image)
-                }
-            }
-            self.imageView.animationDuration = Double(String(format: "%.2f", self.frameInterval))! * Double(self.imageArray.count)
-            self.imageView.animationImages = self.imageArray
-            self.imageView.startAnimating()
         }
         return bottomBar
     }()
