@@ -595,8 +595,11 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         let generateVideoHandler: (NSData, String) -> () = {(data, localIdentifier) in
             VideoUtil.video(with: data, completeHandler: { (result, url) in
                 if result, let url = url {
-                    cache![localIdentifier] = url.absoluteString
+                    let filename = url.path.components(separatedBy: "/").last!
+                    cache![localIdentifier] = filename
+                    
                     preShareImage.append(url)
+                    UserDefaults.standard.set(cache, forKey: kUserDefalutShareCacheKey)
                 }
                 self.kGroup.leave()
             })
@@ -604,8 +607,10 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
         for indexPath in selectedIndexPaths {
             kGroup.enter()
             let photo = gifArray[indexPath.row]
-            if let cache = cache, let cachePath = cache[photo.asset.localIdentifier] { // 有缓存
-                preShareImage.append(URL(fileURLWithPath: cachePath))
+            if let cache = cache, let filename = cache[photo.asset.localIdentifier] { // 有缓存
+                let videoDirPath = kVideoDirPath
+                let outputPath = videoDirPath.appending("\(filename)")
+                preShareImage.append(URL(fileURLWithPath: outputPath))
                 kGroup.leave()
             } else { // 无缓存
                 if let fullImageData = photo.fullImageData {

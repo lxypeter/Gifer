@@ -45,7 +45,7 @@ struct VideoUtil {
                     let frameDuration = unclampedDelayTime != nil && unclampedDelayTime!.floatValue > 0 ? unclampedDelayTime! : delayTime
                     
                     let image = UIImage(cgImage: imageRef , scale: UIScreen.main.scale, orientation: .up)
-                    animatedFrames.append(GifFrame(image: image, duration: Double(frameDuration)))
+                    animatedFrames.append(GifFrame(image: image, duration: Double(truncating: frameDuration)))
                 }
             }
             let firstImage = animatedFrames[0].image!

@@ -92,6 +92,18 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
         
         title = "\(currentIndex+1) / \(gifArray.count)"
         
+        let shareButton: UIButton = UIButton()
+        shareButton.setImage(#imageLiteral(resourceName: "share"), for: .normal)
+        shareButton.imageView?.contentMode = .scaleAspectFit
+        shareButton.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
+        let widthConstraint = shareButton.widthAnchor.constraint(equalToConstant: 24)
+        let heightConstraint = shareButton.heightAnchor.constraint(equalToConstant: 24)
+        heightConstraint.isActive = true
+        widthConstraint.isActive = true
+        shareButton.addTarget(self, action: #selector(clickShareButton), for: .touchUpInside)
+        let shareItem: UIBarButtonItem = UIBarButtonItem(customView:shareButton)
+        navigationItem.rightBarButtonItem = shareItem;
+        
         view.addSubview(self.bottomBar)
         bottomBar.snp.makeConstraints { (make) in
             make.bottom.equalTo(0)
@@ -218,6 +230,80 @@ class PhotoViewController: BaseViewController, UIScrollViewDelegate, UICollectio
                 }
             }
         })
+    }
+    
+    @objc func clickShareButton() {
+        if collectionView.indexPathsForVisibleItems.count != 1 {
+            return
+        }
+        let indexPath = collectionView.indexPathsForVisibleItems.last!
+        let photo = gifArray[indexPath.row]
+        
+        var cache = UserDefaults.standard.object(forKey: kUserDefalutShareCacheKey) as? [String: String]
+        if cache == nil {
+            cache = [:]
+        }
+        
+        let shareHandler: (URL) -> () = {url in
+            let ctrl = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+            ctrl.excludedActivityTypes = [
+                .postToFacebook,
+                .postToTwitter,
+                .postToWeibo,
+                .message,
+                .mail,
+                .print,
+                .copyToPasteboard,
+                .assignToContact,
+                .saveToCameraRoll,
+                .addToReadingList,
+                .postToFlickr,
+                .postToVimeo,
+                .postToTencentWeibo,
+                .openInIBooks,
+                .remindersEditorExtension,
+                .googleDriveShareExtension,
+                .streamShareService,
+                .appleNote,
+            ]
+            self.present(ctrl, animated: true, completion: nil)
+        }
+        
+        let generateVideoHandler: (NSData, String) -> () = {(data, localIdentifier) in
+            VideoUtil.video(with: data, completeHandler: { (result, url) in
+                if result, let url = url {
+                    let filename = url.path.components(separatedBy: "/").last!
+                    cache![localIdentifier] = filename
+                    UserDefaults.standard.set(cache, forKey: kUserDefalutShareCacheKey)
+                    
+                    shareHandler(url)
+                }
+            })
+        }
+        
+        if let cache = cache, let filename = cache[photo.asset.localIdentifier] { // 有缓存
+            let videoDirPath = kVideoDirPath
+            let outputPath = videoDirPath.appending("\(filename)")
+            shareHandler(URL(fileURLWithPath: outputPath))
+        } else { // 无缓存
+            if let fullImageData = photo.fullImageData {
+                generateVideoHandler(fullImageData, photo.asset.localIdentifier)
+            } else {
+                if !isHudVisible {
+                    showHudWithMsg(msg: "请稍候")
+                }
+                let requestOptions = PHImageRequestOptions()
+                requestOptions.isSynchronous = false
+                requestOptions.deliveryMode = .highQualityFormat
+                requestOptions.resizeMode = .fast
+                PHImageManager.default().requestImageData(for: photo.asset, options: requestOptions, resultHandler: {(data, type, orientation, info) in
+                    if let fullImageData = data as NSData? {
+                        photo.fullImageData = fullImageData
+                        generateVideoHandler(fullImageData, photo.asset.localIdentifier)
+                    }
+                })
+            }
+        }
     }
     
     override var prefersStatusBarHidden: Bool {

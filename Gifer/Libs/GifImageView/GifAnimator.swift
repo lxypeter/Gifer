@@ -30,7 +30,6 @@ class GifAnimator: NSObject {
     private var timeSinceLastFrameChange: TimeInterval = 0.0 // 距离上一帧改变的时间
     private var loopCount = 0 // 循环次数
     private let maxTimeStep: TimeInterval = 1.0 // 最大间隔
-    private let isBigImage: Bool
     public var speedTimes: Double = 1 {
         didSet {
             if self.speedTimes > 3 {
@@ -47,7 +46,6 @@ class GifAnimator: NSObject {
     @objc dynamic public var isFinishLoading: Bool = false
     
     init(data: NSData) {
-        isBigImage = data.length / 1024 / 1024 > 10
         super.init()
         createImageSource(data: data)
         prepareFrames()
@@ -112,11 +110,8 @@ class GifAnimator: NSObject {
         
         let frameDuration = unclampedDelayTime != nil && unclampedDelayTime!.floatValue > 0 ? unclampedDelayTime! : delayTime
         
-        var image: UIImage? = UIImage(cgImage: imageRef , scale: UIScreen.main.scale, orientation: .up)
-        if self.isBigImage {
-            image = image?.imageKeepRatioScalingWith(targetSize: CGSize(width: 500, height: 500))
-        }
-        return GifFrame(image: image, duration: Double(frameDuration))
+        let image: UIImage? = UIImage(cgImage: imageRef , scale: UIScreen.main.scale, orientation: .up)
+        return GifFrame(image: image, duration: Double(truncating: frameDuration))
         
     }
     
