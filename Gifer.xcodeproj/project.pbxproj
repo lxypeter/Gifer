@@ -54,6 +54,8 @@
 		E1A87EE71F5CFE740024E01F /* VideoThumbnailCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = E1A87EE51F5CFE740024E01F /* VideoThumbnailCell.xib */; };
 		E1B456621EE00D10009555A6 /* PhotoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B456611EE00D10009555A6 /* PhotoCell.swift */; };
 		E1BD99CE1F5940FE00016F44 /* VideoProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1BD99CD1F5940FE00016F44 /* VideoProgressView.swift */; };
+		E1D8F43E1F79F270007B5811 /* VideoZoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D8F43D1F79F270007B5811 /* VideoZoomView.swift */; };
+		E1D8F4401F79FF23007B5811 /* Timer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D8F43F1F79FF23007B5811 /* Timer.swift */; };
 		E1E37F1D1ED80B67000B4B3F /* GifImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E37F1C1ED80B67000B4B3F /* GifImageView.swift */; };
 		E1E37F1F1ED8107E000B4B3F /* ImageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E37F1E1ED8107E000B4B3F /* ImageType.swift */; };
 		E1E51BE21F4D13AD007A2EDB /* CGPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E51BE11F4D13AD007A2EDB /* CGPoint.swift */; };
@@ -128,6 +130,8 @@
 		E1A87EE51F5CFE740024E01F /* VideoThumbnailCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = VideoThumbnailCell.xib; sourceTree = "<group>"; };
 		E1B456611EE00D10009555A6 /* PhotoCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCell.swift; sourceTree = "<group>"; };
 		E1BD99CD1F5940FE00016F44 /* VideoProgressView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoProgressView.swift; sourceTree = "<group>"; };
+		E1D8F43D1F79F270007B5811 /* VideoZoomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoZoomView.swift; sourceTree = "<group>"; };
+		E1D8F43F1F79FF23007B5811 /* Timer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timer.swift; sourceTree = "<group>"; };
 		E1E37F1C1ED80B67000B4B3F /* GifImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GifImageView.swift; sourceTree = "<group>"; };
 		E1E37F1E1ED8107E000B4B3F /* ImageType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageType.swift; sourceTree = "<group>"; };
 		E1E51BE11F4D13AD007A2EDB /* CGPoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGPoint.swift; sourceTree = "<group>"; };
@@ -257,6 +261,7 @@
 				E1A40D671F5FD553002D58AF /* VideoPickerCell.xib */,
 				E14D27C41F7118EC006EDE13 /* FilterCell.swift */,
 				E14D27C51F7118EC006EDE13 /* FilterCell.xib */,
+				E1D8F43D1F79F270007B5811 /* VideoZoomView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -329,6 +334,7 @@
 				E19384CF1EEE428800BE84A4 /* UIImage.swift */,
 				E1E51BE11F4D13AD007A2EDB /* CGPoint.swift */,
 				E10F3B9E1F6A688000C2323D /* UIActivityType.swift */,
+				E1D8F43F1F79FF23007B5811 /* Timer.swift */,
 			);
 			path = Category;
 			sourceTree = "<group>";
@@ -486,6 +492,7 @@
 				E12E2BDA1F56649F00B08FB5 /* VideoClipViewController.swift in Sources */,
 				E1666B181F711C51001FC6E3 /* Enums.swift in Sources */,
 				E171BF921EEAA196001F53E2 /* GifAchieveViewController.swift in Sources */,
+				E1D8F43E1F79F270007B5811 /* VideoZoomView.swift in Sources */,
 				E112B3C51F4C09EF00341E2E /* AddButtonView.swift in Sources */,
 				E1E37F1D1ED80B67000B4B3F /* GifImageView.swift in Sources */,
 				E1E526F01F78A6F20081D2C3 /* PreviewFilterModel.swift in Sources */,
@@ -524,6 +531,7 @@
 				E1A40D681F5FD553002D58AF /* VideoPickerCell.swift in Sources */,
 				E1E37F1F1ED8107E000B4B3F /* ImageType.swift in Sources */,
 				E12DFDC51ED6CBE5009608E8 /* PhotoViewController.swift in Sources */,
+				E1D8F4401F79FF23007B5811 /* Timer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

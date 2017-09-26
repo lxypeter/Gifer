@@ -97,7 +97,7 @@ class GalleryViewController: BaseViewController, UICollectionViewDataSource, UIC
     }()
     private lazy var photoAddView: AddButtonView = {
         let photoAddView = AddButtonView()
-        photoAddView.backgroundView.backgroundColor = #colorLiteral(red: 0.8549019694, green: 0.250980407, blue: 0.4784313738, alpha: 1)
+        photoAddView.backgroundView.backgroundColor = #colorLiteral(red: 1, green: 0.1607843137, blue: 0.3333333333, alpha: 1)
         photoAddView.layer.cornerRadius = 30
         photoAddView.button.setBackgroundImage(#imageLiteral(resourceName: "photoButton"), for: .normal)
         photoAddView.button.addTarget(self, action: #selector(clickPhotoButton), for: .touchUpInside)

@@ -22,7 +22,10 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     // MARK: property
     private let kMaxVideoLength: CFTimeInterval = 15
     private let kRecordingAnimation = "kRecordingAnimation"
+    private let kZoomViewAnimation = "kZoomViewAnimation"
     private let previewLayerOffsetRatio: CGFloat = -0.05
+    private let kZoomViewRemainTotalSec = 5
+    private var zoomViewRemainSec = 0
     
     private lazy var topView: VideoRecordTopView = {
         let topView = VideoRecordTopView()
@@ -82,7 +85,16 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         recordingLayer.fillColor = UIColor.clear.cgColor
         return recordingLayer
     }()
+    private lazy var zoomView: VideoZoomView = {
+        let zoomView = VideoZoomView()
+        zoomView.valueChangedHandler = {[unowned self] value in
+            self.zoom(to: value)
+        }
+        zoomView.isHidden = true
+        return zoomView
+    }()
     
+    private var zoomViewTimer: Timer?
     private let captureQueue: DispatchQueue = DispatchQueue(label: "com.lxy.videoCapture")
     private var isWriting: Bool = false {
         didSet {
@@ -199,6 +211,14 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             make.bottom.equalTo(-25)
         }
         
+        view.addSubview(zoomView)
+        zoomView.snp.makeConstraints { (make) in
+            make.height.equalTo(VideoZoomView.height)
+            make.bottom.equalTo(shotButton.snp.top).offset(-15)
+            make.left.equalTo(0)
+            make.right.equalTo(0)
+        }
+        
         view.addSubview(camaraButton)
         camaraButton.snp.makeConstraints { (make) in
             make.width.equalTo(30)
@@ -228,6 +248,8 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
             recordingAnimation.fromValue = 0
             recordingAnimation.toValue = 1
             recordingAnimation.duration = kMaxVideoLength
+            recordingAnimation.isRemovedOnCompletion = false
+            recordingAnimation.fillMode = kCAFillModeForwards;
             shotButton.layer.addSublayer(recordingLayer)
             recordingLayer.add(recordingAnimation, forKey: kRecordingAnimation)
             
@@ -294,6 +316,46 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         focusAtPoint(capturePoint)
     }
     
+    @objc func pinchToZoom(recognizer: UIPinchGestureRecognizer) {
+        
+        if recognizer.state == .began {
+            zoomView.isHidden = false
+            zoomView.layer.removeAllAnimations()
+            if zoomViewTimer == nil {
+                zoomViewRemainSec = kZoomViewRemainTotalSec
+                zoomViewTimer = Timer.cy_scheduledTimer(withTimeInterval: 1, repeats: true, block: { (timer) in
+                    zoomViewRemainSec -= 1
+                    if zoomViewRemainSec <= 0 {
+                        let fadeoutAnimation: CABasicAnimation = CABasicAnimation(keyPath: "opacity")
+                        fadeoutAnimation.isRemovedOnCompletion = false
+                        fadeoutAnimation.fillMode = kCAFillModeForwards;
+                        fadeoutAnimation.duration = 0.25
+                        fadeoutAnimation.toValue = 0
+                        fadeoutAnimation.delegate = self
+                        zoomView.layer.add(fadeoutAnimation, forKey: kZoomViewAnimation)
+                        
+                        timer.invalidate()
+                        zoomViewTimer = nil
+                    }
+                })
+            }
+            return
+        }
+        
+        let scale = Float(recognizer.scale)
+        let sliderValue = zoomView.slider.value
+        var newValue = sliderValue * scale
+        if newValue < zoomView.slider.minimumValue {
+            newValue = zoomView.slider.minimumValue
+        } else if newValue > zoomView.slider.maximumValue {
+            newValue = zoomView.slider.maximumValue
+        }
+        zoomView.slider.setValue(newValue, animated: true)
+        zoom(to: CGFloat(newValue))
+        
+        recognizer.scale = 1
+    }
+    
     // MARK: delegate
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         if !isWriting { return }
@@ -330,9 +392,14 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
     }
     
     func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
-        shotButton.isSelected = false
-        recordingLayer.removeFromSuperlayer()
-        stopRecording()
+        if anim.isEqual(recordingLayer.animation(forKey: kRecordingAnimation)) {
+            shotButton.isSelected = false
+            recordingLayer.removeFromSuperlayer()
+            stopRecording()
+        } else if anim.isEqual(zoomView.layer.animation(forKey: kZoomViewAnimation)) {
+            zoomView.isHidden = true
+            zoomView.layer.removeAllAnimations()
+        }
     }
     
     // MARK: video method
@@ -384,6 +451,9 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         // 对焦手势
         let focusGest = UITapGestureRecognizer(target: self, action: #selector(tapToFocus(_:)))
         view.addGestureRecognizer(focusGest)
+        // 变焦手势
+        let zoomGest = UIPinchGestureRecognizer(target: self, action: #selector(pinchToZoom(recognizer:)))
+        view.addGestureRecognizer(zoomGest)
         
         captureQueue.async {[unowned self] in
             self.captureSession.startRunning()
@@ -613,5 +683,19 @@ class VideoRecordViewController: BaseViewController, AVCaptureVideoDataOutputSam
         } catch {
             showNotice(message: "相机对焦失败")
         }
+    }
+    
+    func zoom(to value: CGFloat) {
+        do {
+            guard let currentDevice = currentVideoInput?.device else {
+                throw VideoCaptureError.FailToFocus
+            }
+            try currentDevice.lockForConfiguration()
+            currentDevice.videoZoomFactor = value
+            currentDevice.unlockForConfiguration()
+        } catch {
+            showNotice(message: "相机变焦失败")
+        }
+        zoomViewRemainSec = kZoomViewRemainTotalSec
     }
 }

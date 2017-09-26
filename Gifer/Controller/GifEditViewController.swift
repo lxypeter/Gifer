@@ -412,10 +412,7 @@ class GifEditViewController: BaseViewController {
         
         if recognizer.state == .ended {
             maskFade(.fadeOut)
-            return
-        }
-        
-        if recognizer.state == .ended {
+            
             let imageLeftUpPoint = contentView.convert(leftUpEdgeView.center, to: imageView)
             let imageRightDownPoint = contentView.convert(rightDownEdgeView.center, to: imageView)
             
